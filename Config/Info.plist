@@ -33,8 +33,8 @@
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUFeedURL</key>
-	<string>https://dqhieu.github.io/Silica/appcast.xml</string>
+	<string>https://perez987.github.io/Silica/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>T9aDbtANF0yr9ZMLWC98FVvzQiAmkIPy/JggQKIEvl0=</string>
+	<string>ZlKWZcBX5/V65EwhgJe0G+veSzYUiYrpJZL9dLE8vjw=</string>
 </dict>
 </plist>

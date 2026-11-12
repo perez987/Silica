@@ -3,6 +3,29 @@
     <channel>
         <title>Silica</title>
         <item>
+            <title>0.3.5</title>
+            <pubDate>Thu, 12 Nov 2026 18:58:59 +0800</pubDate>
+            <link>https://github.com/perez987/Silica</link>
+            <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
+            <sparkle:version>0035</sparkle:version>
+            <sparkle:shortVersionString>0.3.5</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[### What's new
+
+- **Localize the interface and alerts**: Two languages for now, English (default) and Spanish.
+- **Option to switch windows style**: Add glass and opaque window styles.
+- **Welcome window**: Make the welcome window optional at launch
+- **Change the Xcode project type**: Migrate the Xcode project to `pbxproj` format
+- **Update the release script**.
+
+If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
+
+Found a bug or have an idea? Please [open an issue](https://github.com/perez987/Silica/issues).
+
+]]></description>
+            <enclosure url="https://github.com/perez987/Silica/releases/download/v0.3.5/Silica-0.3.5.dmg" length="7709093" type="application/octet-stream" sparkle:edSignature="giQNcGdK1G2GDwtFVXJxL8Wx8TAfMpyLwGFip2mnJOzC5ISVe7u2qHJE/ULYCl3axJIN/pfWR6Zl08d2MsmgDQ=="/>
+        </item>
+        <item>
             <title>0.3.0</title>
             <pubDate>Thu, 12 Nov 2026 18:58:59 +0800</pubDate>
             <link>https://github.com/dqhieu/Silica</link>
