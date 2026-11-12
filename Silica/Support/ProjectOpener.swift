@@ -15,8 +15,8 @@ struct ProjectOpener {
         panel.canChooseFiles = true
         panel.allowsMultipleSelection = true
         panel.canCreateDirectories = true
-        panel.prompt = "Open"
-        panel.message = "Choose a project folder or files to open in Silica"
+        panel.prompt = String(localized: "Open")
+        panel.message = String(localized: "Choose a project folder or files to open in Silica")
         guard panel.runModal() == .OK else { return }
         ExternalOpener.shared.openWindow = openWindow
         ExternalOpener.shared.open(panel.urls)
@@ -41,10 +41,10 @@ struct ProjectOpener {
             openWindow(id: WindowID.workspace, value: project.id)
         } catch {
             let alert = NSAlert()
-            alert.messageText = "“\(project.name)” couldn’t be opened."
-            alert.informativeText = "It may have been moved, renamed or deleted."
-            alert.addButton(withTitle: "Remove from Recents")
-            alert.addButton(withTitle: "Cancel")
+            alert.messageText = String(localized: "“\(project.name)” couldn’t be opened.")
+            alert.informativeText = String(localized: "It may have been moved, renamed or deleted.")
+            alert.addButton(withTitle: String(localized: "Remove from Recents"))
+            alert.addButton(withTitle: String(localized: "Cancel"))
             if alert.runModal() == .alertFirstButtonReturn {
                 store.remove(project.id)
             }

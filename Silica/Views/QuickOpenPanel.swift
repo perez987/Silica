@@ -90,7 +90,7 @@ private struct QuickOpenPanel: View {
             .padding(.horizontal, 14)
             .frame(height: Self.rowHeight + 8)
         } else if model.results.isEmpty {
-            Text(model.isIndexing ? "Indexing files…" : "No matching files")
+            Text(model.isIndexing ? String(localized: "Indexing files…") : String(localized: "No matching files"))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 18)
@@ -141,9 +141,9 @@ private struct QuickOpenPanel: View {
     private var goToLinePrompt: String {
         let count = workspace.activeLineCount ?? 1
         if let line = model.lineTarget {
-            return "Go to line \(min(max(line, 1), count))"
+            return String(localized: "Go to line \(min(max(line, 1), count))")
         }
-        return "Type a line number between 1 and \(count)"
+        return String(localized: "Type a line number between 1 and \(count)")
     }
 
     private func openSelection() {

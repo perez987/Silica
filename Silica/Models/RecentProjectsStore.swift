@@ -21,7 +21,7 @@ enum RecentProjectError: LocalizedError {
     case notFound
 
     var errorDescription: String? {
-        "This project is no longer in the recent projects list."
+        String(localized: "This project is no longer in the recent projects list.")
     }
 }
 

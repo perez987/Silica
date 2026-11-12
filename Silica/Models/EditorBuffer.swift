@@ -105,7 +105,7 @@ final class EditorBuffer: Identifiable {
             } else if let image = Self.loadImage(url, byteCount: size) {
                 content = .image(image)
             } else {
-                content = .unreadable("“\(url.lastPathComponent)” couldn’t be decoded as an image.")
+                content = .unreadable(String(localized: "“\(url.lastPathComponent)” couldn’t be decoded as an image."))
             }
             return
         }

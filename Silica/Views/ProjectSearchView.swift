@@ -46,7 +46,7 @@ struct ProjectSearchView: View {
                     }
             }
             .buttonStyle(.plain)
-            .help(model.isCaseSensitive ? "Match Case: On" : "Match Case: Off")
+            .help(model.isCaseSensitive ? String(localized: "Match Case: On") : String(localized: "Match Case: Off"))
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
@@ -67,9 +67,10 @@ struct ProjectSearchView: View {
                 if model.matchCount == 0 {
                     Text("No results")
                 } else {
-                    let results = model.matchCount == 1 ? "1 result" : "\(model.matchCount.formatted()) results"
-                    let files = model.results.count == 1 ? "1 file" : "\(model.results.count.formatted()) files"
-                    Text("\(results) in \(files)" + (model.isTruncated ? " (first \(ProjectSearch.maxMatches.formatted()) shown)" : ""))
+                    let results = model.matchCount == 1 ? String(localized: "1 result") : String(localized: "\(model.matchCount.formatted()) results")
+                    let files = model.results.count == 1 ? String(localized: "1 file") : String(localized: "\(model.results.count.formatted()) files")
+                    let summary = String(localized: "\(results) in \(files)")
+                    Text(summary + (model.isTruncated ? String(localized: " (first \(ProjectSearch.maxMatches.formatted()) shown)") : ""))
                 }
             }
             .font(.caption)

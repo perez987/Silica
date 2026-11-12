@@ -30,3 +30,16 @@ struct VisualEffectView: NSViewRepresentable {
         nsView.state = state
     }
 }
+
+struct WindowBackground: View {
+    var material: NSVisualEffectView.Material = .menu
+    private var settings: EditorSettings { .shared }
+
+    var body: some View {
+        if settings.windowStyle == .glass {
+            VisualEffectView(material)
+        } else {
+            Color(nsColor: .windowBackgroundColor)
+        }
+    }
+}

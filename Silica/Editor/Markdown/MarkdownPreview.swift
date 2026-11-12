@@ -7,7 +7,7 @@ import WebKit
 /// back and forth is instant.
 ///
 /// The page is HTML from `MarkdownHTMLRenderer`, styled to match the editor and drawn
-/// on a transparent background so the glass card shows through. Scripts in the
+/// on a transparent background so the editor card shows through. Scripts in the
 /// document itself never run; Silica's own small script (scroll position, double-click)
 /// runs in a separate script world. Relative images load from disk through the
 /// `silica-preview:` scheme, links to project files open in Silica, and web links open

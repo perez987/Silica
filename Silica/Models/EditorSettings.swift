@@ -30,6 +30,8 @@ final class EditorSettings {
         static let showsMinimap = "editorShowsMinimap"
         static let syntaxTheme = "syntaxTheme"
         static let appearance = "appearance"
+        static let windowStyle = "windowStyle"
+        static let showsWelcomeAtLaunch = "showsWelcomeAtLaunch"
         static let restoresTabs = "restoresOpenTabs"
         static let pinsParentFolders = "fileTreePinsParentFolders"
     }
@@ -120,6 +122,24 @@ final class EditorSettings {
         }
     }
 
+    enum WindowStyle: String {
+        case glass, opaque
+    }
+
+    var windowStyle: WindowStyle {
+        didSet {
+            guard windowStyle != oldValue else { return }
+            store(windowStyle.rawValue, Key.windowStyle, isDefault: windowStyle == .glass)
+        }
+    }
+
+    var showsWelcomeAtLaunch: Bool {
+        didSet {
+            guard showsWelcomeAtLaunch != oldValue else { return }
+            store(showsWelcomeAtLaunch, Key.showsWelcomeAtLaunch, isDefault: showsWelcomeAtLaunch)
+        }
+    }
+
     /// Reopen a project's tabs where they were left.
     var restoresTabs: Bool {
         didSet {
@@ -155,6 +175,8 @@ final class EditorSettings {
         showsMinimap = defaults.bool(forKey: Key.showsMinimap)
         syntaxTheme = defaults.string(forKey: Key.syntaxTheme).flatMap(SyntaxTheme.init(rawValue:)) ?? .default
         appearance = defaults.string(forKey: Key.appearance).flatMap(Appearance.init(rawValue:)) ?? .system
+        windowStyle = defaults.string(forKey: Key.windowStyle).flatMap(WindowStyle.init(rawValue:)) ?? .glass
+        showsWelcomeAtLaunch = defaults.object(forKey: Key.showsWelcomeAtLaunch) as? Bool ?? true
         restoresTabs = defaults.object(forKey: Key.restoresTabs) as? Bool ?? true
         pinsParentFolders = defaults.object(forKey: Key.pinsParentFolders) as? Bool ?? true
     }

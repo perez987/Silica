@@ -41,7 +41,7 @@ struct FileTreeView: View {
 
     private var header: some View {
         HStack(spacing: 8) {
-            Text(workspace.sidebarMode == .search ? "Search" : workspace.name)
+            Text(workspace.sidebarMode == .search ? String(localized: "Search") : workspace.name)
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .font(.headline)
@@ -65,7 +65,7 @@ struct FileTreeView: View {
                 Image(systemName: "magnifyingglass")
                     .foregroundStyle(workspace.sidebarMode == .search ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
             }
-            .help(workspace.sidebarMode == .search ? "Show Explorer (⇧⌘E)" : "Find in Project (⇧⌘F)")
+            .help(workspace.sidebarMode == .search ? String(localized: "Show Explorer (⇧⌘E)") : String(localized: "Find in Project (⇧⌘F)"))
         }
         .buttonStyle(.borderless)
         .foregroundStyle(.secondary)
@@ -86,7 +86,7 @@ struct FileTreeView: View {
         return ScrollViewReader { proxy in
             List(selection: $workspace.selection) {
                 if rows.isEmpty {
-                    Text(workspace.isFilteringTree ? "No files match “\(workspace.treeFilter)”" : "This project is empty")
+                    Text(workspace.isFilteringTree ? String(localized: "No files match “\(workspace.treeFilter)”") : String(localized: "This project is empty"))
                         .foregroundStyle(.secondary)
                         .selectionDisabled()
                 } else {
@@ -351,7 +351,7 @@ private struct TreeFilterField: View {
                 Text(result.matchCount.formatted())
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
-                    .help(result.matchCount == 1 ? "1 matching file" : "\(result.matchCount.formatted()) matching files")
+                    .help(result.matchCount == 1 ? String(localized: "1 matching file") : String(localized: "\(result.matchCount.formatted()) matching files"))
             }
             if !workspace.treeFilter.isEmpty {
                 Button {

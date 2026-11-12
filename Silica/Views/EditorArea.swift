@@ -3,6 +3,9 @@ import SwiftUI
 struct EditorArea: View {
     let workspace: WorkspaceModel
 
+    @Environment(\.colorScheme) private var colorScheme
+    private var settings: EditorSettings { .shared }
+
     var body: some View {
         VStack(spacing: 0) {
             // Title bar row: tabs share it with the traffic lights.
@@ -39,10 +42,14 @@ struct EditorArea: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background {
+            if settings.windowStyle == .opaque {
+                colorScheme == .dark ? Color.black : Color.white
+            }
+        }
         .clipShape(shape)
-        // Liquid Glass card; a light text-background tint keeps code readable.
         .glassEffect(
-            .regular,
+            settings.windowStyle == .glass ? .regular : .identity,
             in: shape
         )
     }
@@ -391,7 +398,7 @@ private struct EditorTab: View {
                 .font(.callout)
                 .lineLimit(1)
                 .strikethrough(isMissing)
-                .help(isMissing ? "Deleted from disk. Save to write it again." : "")
+                .help(isMissing ? String(localized: "Deleted from disk. Save to write it again.") : "")
 
             ZStack {
                 if isDirty && !isHovering {
@@ -506,10 +513,10 @@ private struct StatusBar: View {
             }
             .buttonStyle(.plain)
             .help("Go to Line (⌘L)")
-            Text(buffer.indentation.usesTabs ? "Tabs" : "Spaces: \(buffer.indentation.width)")
+            Text(buffer.indentation.usesTabs ? String(localized: "Tabs") : String(localized: "Spaces: \(buffer.indentation.width)"))
             Text(buffer.encodingName)
             Text(buffer.lineEndingName)
-            Text(buffer.language?.displayName ?? "Plain Text")
+            Text(buffer.language?.displayName ?? String(localized: "Plain Text"))
         }
         .font(.caption)
         .monospacedDigit()
@@ -523,8 +530,8 @@ private struct StatusBar: View {
 
     private var position: String {
         let cursor = buffer.cursor
-        let base = "Ln \(cursor.line), Col \(cursor.column)"
-        return cursor.selectedLength > 0 ? base + " (\(cursor.selectedLength) selected)" : base
+        let base = String(localized: "Ln \(cursor.line), Col \(cursor.column)")
+        return cursor.selectedLength > 0 ? base + String(localized: " (\(cursor.selectedLength) selected)") : base
     }
 }
 
@@ -546,7 +553,7 @@ private struct MarkdownModeToggle: View {
         }
     }
 
-    private func option(_ symbol: String, help: String, isOn: Bool, action: @escaping () -> Void) -> some View {
+    private func option(_ symbol: String, help: LocalizedStringKey, isOn: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
                 .frame(width: 26, height: 22)
@@ -560,7 +567,7 @@ private struct MarkdownModeToggle: View {
                     .fill(.primary.opacity(0.08))
             }
         }
-        .help(help)
+        .help(Text(help))
     }
 }
 
@@ -642,7 +649,7 @@ private struct EmptyEditorView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func shortcut(_ title: String, keys: String) -> some View {
+    private func shortcut(_ title: LocalizedStringKey, keys: String) -> some View {
         GridRow {
             Text(title)
                 .foregroundStyle(.secondary)

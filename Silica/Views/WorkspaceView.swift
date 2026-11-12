@@ -33,6 +33,9 @@ struct WorkspaceWindow: View {
                     .frame(minWidth: 500, minHeight: 360)
             }
         }
+        .containerBackground(for: .window) {
+            WindowBackground()
+        }
         .onAppear {
             ExternalOpener.shared.openWindow = openWindow
             Self.openCount += 1
@@ -105,9 +108,6 @@ struct WorkspaceView: View {
             }
         }
         .frame(minWidth: 640, minHeight: 400)
-        .containerBackground(for: .window) {
-            VisualEffectView()
-        }
         .navigationTitle(workspace.name)
         .background(KeyWindowTracker(workspace: workspace))
         .background(UnsavedChangesGuard(workspace: workspace, hasUnsavedChanges: workspace.hasUnsavedChanges))
@@ -149,6 +149,6 @@ struct SidebarToggleButton: View {
         // Same plain icon style as the Refresh and Collapse buttons in the sidebar header.
         .buttonStyle(.borderless)
         .foregroundStyle(.secondary)
-        .help(workspace.isSidebarVisible ? "Hide Sidebar (⌃⌘S)" : "Show Sidebar (⌃⌘S)")
+        .help(workspace.isSidebarVisible ? String(localized: "Hide Sidebar (⌃⌘S)") : String(localized: "Show Sidebar (⌃⌘S)"))
     }
 }

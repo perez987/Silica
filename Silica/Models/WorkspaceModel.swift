@@ -465,7 +465,7 @@ final class WorkspaceModel {
         guard !name.isEmpty else { return }
         let url = Self.normalized(folder.appending(path: name), isDirectory: isDirectory)
         guard !FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else {
-            showAlert("“\(url.lastPathComponent)” already exists.", info: "Choose a different name.")
+            showAlert(String(localized: "“\(url.lastPathComponent)” already exists."), info: String(localized: "Choose a different name."))
             return
         }
         do {
@@ -492,7 +492,7 @@ final class WorkspaceModel {
         let name = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, name != url.lastPathComponent else { return }
         guard !name.contains("/"), !name.contains(":") else {
-            showAlert("“\(name)” can’t be used as a name.", info: "Names can’t contain “/” or “:”.")
+            showAlert(String(localized: "“\(name)” can’t be used as a name."), info: String(localized: "Names can’t contain “/” or “:”."))
             return
         }
         let isDirectory = url.hasDirectoryPath
@@ -500,7 +500,7 @@ final class WorkspaceModel {
         // A case-only change is the same file on a case-insensitive disk.
         let isCaseChange = name.lowercased() == url.lastPathComponent.lowercased()
         guard isCaseChange || !FileManager.default.fileExists(atPath: destination.path(percentEncoded: false)) else {
-            showAlert("“\(name)” already exists.", info: "Choose a different name.")
+            showAlert(String(localized: "“\(name)” already exists."), info: String(localized: "Choose a different name."))
             return
         }
         do {
@@ -762,11 +762,11 @@ final class WorkspaceModel {
     private func confirmOverwrite(_ buffer: EditorBuffer) -> Bool {
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = "“\(buffer.name)” was changed by another app."
-        alert.informativeText = "Saving replaces those changes with yours. Revert discards your unsaved edits and shows the file as it is on disk (you can undo it)."
-        alert.addButton(withTitle: "Save Anyway")
-        alert.addButton(withTitle: "Revert")
-        alert.addButton(withTitle: "Cancel")
+        alert.messageText = String(localized: "“\(buffer.name)” was changed by another app.")
+        alert.informativeText = String(localized: "Saving replaces those changes with yours. Revert discards your unsaved edits and shows the file as it is on disk (you can undo it).")
+        alert.addButton(withTitle: String(localized: "Save Anyway"))
+        alert.addButton(withTitle: String(localized: "Revert"))
+        alert.addButton(withTitle: String(localized: "Cancel"))
         switch alert.runModal() {
         case .alertFirstButtonReturn:
             return true
@@ -781,11 +781,11 @@ final class WorkspaceModel {
     /// Returns `true` if the tab may be closed.
     private func confirmDiscardOrSave(_ buffer: EditorBuffer) -> Bool {
         let alert = NSAlert()
-        alert.messageText = "Do you want to save the changes you made to “\(buffer.name)”?"
-        alert.informativeText = "Your changes will be lost if you don’t save them."
-        alert.addButton(withTitle: "Save")
+        alert.messageText = String(localized: "Do you want to save the changes you made to “\(buffer.name)”?")
+        alert.informativeText = String(localized: "Your changes will be lost if you don’t save them.")
+        alert.addButton(withTitle: String(localized: "Save"))
         addDontSaveButton(to: alert)
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: String(localized: "Cancel"))
         switch alert.runModal() {
         case .alertFirstButtonReturn: return save(buffer)
         case .alertSecondButtonReturn: return true
@@ -813,18 +813,19 @@ final class WorkspaceModel {
 
         let alert = NSAlert()
         if unsaved.count == 1 {
-            alert.messageText = "Do you want to save the changes you made to “\(unsaved[0].name)”?"
-            alert.informativeText = "Your changes will be lost if you don’t save them."
-            alert.addButton(withTitle: "Save")
+            alert.messageText = String(localized: "Do you want to save the changes you made to “\(unsaved[0].name)”?")
+            alert.informativeText = String(localized: "Your changes will be lost if you don’t save them.")
+            alert.addButton(withTitle: String(localized: "Save"))
         } else {
-            alert.messageText = "Do you want to save the changes you made to \(unsaved.count) files in “\(name)”?"
+            alert.messageText = String(localized: "Do you want to save the changes you made to \(unsaved.count) files in “\(name)”?")
             let names = unsaved.prefix(5).map(\.name).formatted(.list(type: .and))
-            let more = unsaved.count > 5 ? " and \(unsaved.count - 5) more" : ""
-            alert.informativeText = "\(names)\(more)\n\nYour changes will be lost if you don’t save them."
-            alert.addButton(withTitle: "Save All")
+            let more = unsaved.count > 5 ? String(localized: " and \(unsaved.count - 5) more") : ""
+            let warning = String(localized: "Your changes will be lost if you don’t save them.")
+            alert.informativeText = "\(names)\(more)\n\n\(warning)"
+            alert.addButton(withTitle: String(localized: "Save All"))
         }
         addDontSaveButton(to: alert)
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: String(localized: "Cancel"))
 
         alert.beginSheetModal(for: window) { [weak self] response in
             guard let self else { return completion(true) }
@@ -842,7 +843,7 @@ final class WorkspaceModel {
     }
 
     private func addDontSaveButton(to alert: NSAlert) {
-        let button = alert.addButton(withTitle: "Don’t Save")
+        let button = alert.addButton(withTitle: String(localized: "Don’t Save"))
         button.keyEquivalent = "d"
         button.keyEquivalentModifierMask = .command
     }

@@ -106,7 +106,7 @@ struct AppCommands: Commands {
         }
 
         CommandGroup(replacing: .sidebar) {
-            Button(workspace?.isSidebarVisible == false ? "Show Sidebar" : "Hide Sidebar") {
+            Button(workspace?.isSidebarVisible == false ? String(localized: "Show Sidebar") : String(localized: "Hide Sidebar")) {
                 workspace?.toggleSidebar()
             }
             .keyboardShortcut("s", modifiers: [.control, .command])
@@ -132,7 +132,7 @@ struct AppCommands: Commands {
             Divider()
 
             // ⇧⌘V itself is handled by KeyWorkspace.installKeyboardShortcuts().
-            Button(workspace?.activeBuffer?.isShowingPreview == true ? "Show Markdown" : "Show Preview") {
+            Button(workspace?.activeBuffer?.isShowingPreview == true ? String(localized: "Show Markdown") : String(localized: "Show Preview")) {
                 workspace?.activeBuffer?.togglePreview()
             }
             .keyboardShortcut("v", modifiers: [.command, .shift])
@@ -207,7 +207,7 @@ struct AppCommands: Commands {
     }
 
     /// A menu item that sends `action` to the focused editor through the responder chain.
-    private func editorAction(_ title: String, _ action: Selector, key: KeyEquivalent, modifiers: EventModifiers) -> some View {
+    private func editorAction(_ title: LocalizedStringKey, _ action: Selector, key: KeyEquivalent, modifiers: EventModifiers) -> some View {
         Button(title) { NSApp.sendAction(action, to: nil, from: nil) }
             .keyboardShortcut(key, modifiers: modifiers)
             .disabled(workspace?.activeBuffer?.textController == nil)

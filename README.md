@@ -29,7 +29,11 @@ Silica needs macOS 26 or later.
 - **Editing tools.** Tabs, line numbers, indent guides, a minimap, word wrap, go to
   line, toggle comment, and moving or duplicating lines.
 - **Picks up where you left off.** Projects reopen their tabs, and recent projects
-  are on the welcome window.
+  are on the welcome window. You can turn off the welcome window at launch in
+  Settings › General and reopen it with File › Welcome Window or ⇧⌘1.
+- **Appearance and language.** Choose glass or opaque windows in Settings › General.
+  The opaque editor background is black in dark appearance and white in light appearance.
+  Silica follows the macOS language preference, with English and Spanish available.
 - **Works with Finder.** Use Open With, drop files on the Dock icon, or run
   `open -a Silica <path>`.
 
@@ -37,6 +41,7 @@ Silica needs macOS 26 or later.
 
 | Shortcut | Action |
 |---|---|
+| ⇧⌘1 | Show welcome window |
 | ⌘P | Quick Open |
 | ⇧⌘F | Find in Project |
 | ⌥⌘J | Filter files in the tree |

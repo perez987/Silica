@@ -21,7 +21,7 @@ struct WelcomeView: View {
         .ignoresSafeArea(.container, edges: .top)
         // Frosted, behind-window blur for the whole welcome window.
         .containerBackground(for: .window) {
-          VisualEffectView(.hudWindow)
+          WindowBackground(material: .hudWindow)
         }
         .overlay {
             if isDropTargeted {
@@ -85,8 +85,8 @@ struct WelcomeView: View {
             .frame(width: 230)
 
             Text("or drop a project folder anywhere in this window")
-                .font(.caption)
-                .foregroundStyle(.tertiary)
+                .font(.callout)
+                .foregroundStyle(.secondary)
                 .padding(.top, 14)
 
             Spacer(minLength: 32)

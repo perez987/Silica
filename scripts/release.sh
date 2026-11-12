@@ -28,7 +28,7 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT"
 
 PROJECT=Silica.xcodeproj
-PROJECT_FILE=$PROJECT/project.xcproj
+PROJECT_FILE=$PROJECT/project.pbxproj
 SCHEME=Silica
 FEED=docs/appcast.xml
 TAG=v$VERSION
@@ -54,10 +54,10 @@ REPO=$(gh repo view --json nameWithOwner -q .nameWithOwner 2>/dev/null) \
 git fetch -q origin main
 [[ $(git rev-parse HEAD) == $(git rev-parse origin/main) ]] || die "main isn't in sync with origin/main"
 
-grep -q '"PRODUCT_BUNDLE_IDENTIFIER": "devplaceholder' "$PROJECT_FILE" \
+grep -q 'PRODUCT_BUNDLE_IDENTIFIER = devplaceholder' "$PROJECT_FILE" \
     && die "set a real PRODUCT_BUNDLE_IDENTIFIER first; it can't change after the first release"
 
-TEAM_ID=$(sed -n 's/.*"DEVELOPMENT_TEAM": "\([^"]*\)".*/\1/p' "$PROJECT_FILE" | head -1)
+TEAM_ID=$(sed -n 's/.*DEVELOPMENT_TEAM = \([^;]*\);.*/\1/p' "$PROJECT_FILE" | head -1)
 SIGN_IDENTITY=$(security find-identity -v -p codesigning \
     | sed -n "s/.*\"\(Developer ID Application: .*($TEAM_ID)\)\".*/\1/p" | head -1)
 [[ -n $SIGN_IDENTITY ]] || die "no Developer ID Application certificate for team $TEAM_ID in your keychain"
@@ -70,7 +70,7 @@ xcrun notarytool history --keychain-profile "$NOTARY_PROFILE" >/dev/null 2>&1 \
 
 # --- Version bump, undone if anything fails before it's committed --------------
 
-OLD_BUILD=$(sed -n 's/.*"CURRENT_PROJECT_VERSION": "\([0-9]*\)".*/\1/p' "$PROJECT_FILE" | head -1)
+OLD_BUILD=$(sed -n 's/.*CURRENT_PROJECT_VERSION = \([0-9]*\);.*/\1/p' "$PROJECT_FILE" | head -1)
 BUILD_NUMBER=$((OLD_BUILD + 1))
 
 COMMITTED=false
@@ -79,8 +79,8 @@ trap restore EXIT
 
 step "Silica $VERSION (build $BUILD_NUMBER) for $REPO"
 sed -i '' \
-    -e "s/\"MARKETING_VERSION\": \"[^\"]*\"/\"MARKETING_VERSION\": \"$VERSION\"/" \
-    -e "s/\"CURRENT_PROJECT_VERSION\": \"[^\"]*\"/\"CURRENT_PROJECT_VERSION\": \"$BUILD_NUMBER\"/" \
+    -e "s/MARKETING_VERSION = [^;]*;/MARKETING_VERSION = $VERSION;/" \
+    -e "s/CURRENT_PROJECT_VERSION = [^;]*;/CURRENT_PROJECT_VERSION = $BUILD_NUMBER;/" \
     "$PROJECT_FILE"
 
 rm -rf "$WORK"

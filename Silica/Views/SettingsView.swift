@@ -9,7 +9,7 @@ struct SettingsView: View {
 
         var id: String { rawValue }
 
-        var title: String {
+        var title: LocalizedStringKey {
             switch self {
             case .general: "General"
             case .fontsAndColors: "Fonts & Colors"
@@ -38,6 +38,7 @@ struct SettingsView: View {
     }
 
     @AppStorage(SettingsView.paneKey) private var pane: Pane = .general
+    private var settings = EditorSettings.shared
     static let paneKey = "settingsTab"
 
     var body: some View {
@@ -47,16 +48,19 @@ struct SettingsView: View {
         HStack(spacing: 0) {
             SettingsSidebar(selection: $pane)
                 .frame(width: 215)
-                .background(SettingsColors.sidebar)
+                .background(SettingsColors.sidebar.opacity(settings.windowStyle == .glass ? 0.55 : 1))
 
             detail
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 // Clear of the hidden title bar, so the first group title lines up with
                 // the first sidebar item; content still scrolls up to the window's edge.
                 .contentMargins(.top, Self.titleBarHeight + 8, for: .scrollContent)
-                .background(SettingsColors.detail)
+                .background(SettingsColors.detail.opacity(settings.windowStyle == .glass ? 0.55 : 1))
         }
         .ignoresSafeArea(.container, edges: .top)
+        .containerBackground(for: .window) {
+            WindowBackground()
+        }
         .frame(minWidth: 620, idealWidth: 760, maxWidth: .infinity,
                minHeight: 460, idealHeight: 560, maxHeight: .infinity)
     }
@@ -179,6 +183,19 @@ private struct GeneralSettingsPane: View {
                     .labelsHidden()
                     .fixedSize()
                 }
+                SettingsRow("Window Style") {
+                    Picker("Window Style", selection: $settings.windowStyle) {
+                        Text("Glass").tag(EditorSettings.WindowStyle.glass)
+                        Text("Opaque").tag(EditorSettings.WindowStyle.opaque)
+                    }
+                    .pickerStyle(.segmented)
+                    .labelsHidden()
+                    .fixedSize()
+                }
+            }
+
+            SettingsGroup("Startup") {
+                SettingsToggle("Show welcome window at launch", isOn: $settings.showsWelcomeAtLaunch)
             }
 
             SettingsGroup("Projects") {

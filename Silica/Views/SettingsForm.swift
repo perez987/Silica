@@ -22,11 +22,11 @@ struct SettingsForm<Content: View>: View {
 /// A rounded box of rows split by hairlines, with an optional title above it and a
 /// note below it, like a grouped Form section.
 struct SettingsGroup<Content: View, Footer: View>: View {
-    let title: String?
+    let title: LocalizedStringKey?
     @ViewBuilder var content: Content
     @ViewBuilder var footer: Footer
 
-    init(_ title: String? = nil, @ViewBuilder content: () -> Content, @ViewBuilder footer: () -> Footer) {
+    init(_ title: LocalizedStringKey? = nil, @ViewBuilder content: () -> Content, @ViewBuilder footer: () -> Footer) {
         self.title = title
         self.content = content()
         self.footer = footer()
@@ -64,7 +64,7 @@ struct SettingsGroup<Content: View, Footer: View>: View {
 }
 
 extension SettingsGroup where Footer == EmptyView {
-    init(_ title: String? = nil, @ViewBuilder content: () -> Content) {
+    init(_ title: LocalizedStringKey? = nil, @ViewBuilder content: () -> Content) {
         self.init(title, content: content, footer: { EmptyView() })
     }
 }
@@ -86,7 +86,7 @@ struct SettingsRow<Label: View, Control: View>: View {
 }
 
 extension SettingsRow where Label == Text {
-    init(_ title: String, @ViewBuilder control: () -> Control) {
+    init(_ title: LocalizedStringKey, @ViewBuilder control: () -> Control) {
         self.label = Text(title)
         self.control = control()
     }
@@ -94,10 +94,10 @@ extension SettingsRow where Label == Text {
 
 /// A switch row, as Toggle draws in a grouped Form.
 struct SettingsToggle: View {
-    let title: String
+    let title: LocalizedStringKey
     @Binding var isOn: Bool
 
-    init(_ title: String, isOn: Binding<Bool>) {
+    init(_ title: LocalizedStringKey, isOn: Binding<Bool>) {
         self.title = title
         self._isOn = isOn
     }
@@ -114,11 +114,11 @@ struct SettingsToggle: View {
 
 /// A pop-up menu row, as Picker draws in a grouped Form.
 struct SettingsPicker<Value: Hashable, Options: View>: View {
-    let title: String
+    let title: LocalizedStringKey
     @Binding var selection: Value
     @ViewBuilder var options: Options
 
-    init(_ title: String, selection: Binding<Value>, @ViewBuilder options: () -> Options) {
+    init(_ title: LocalizedStringKey, selection: Binding<Value>, @ViewBuilder options: () -> Options) {
         self.title = title
         self._selection = selection
         self.options = options()
