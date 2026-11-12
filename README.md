@@ -1,39 +1,37 @@
 # Silica
 
-A lightweight code editor for macOS, made of glass. Open a folder, find files fast,
-and edit with syntax highlighting, a minimap and a Markdown preview, all in a native
-SwiftUI and AppKit app.
+A lightweight code editor for macOS, made of glass. Open a folder, find files fast, and edit with syntax highlighting, a minimap and a Markdown preview, all in a native SwiftUI and AppKit app.
 
 ![Silica editing a Swift project, with the file tree on the left and the editor on a glass card](.github/assets/screenshot.jpg)
 
+## Personal motivation
+
+I really like the original project and the Silica app, which works very well on macOS 26 and 27. I have made a few changes to the project, tailored to my personal preferences. Without any intention of interfering with the original project—which I consider an excellent piece of work—here are the changes I have made in my fork:
+
+- Localize the interface and alerts, adding a simple language system with English (default) and Spanish
+- Add an option to switch between glass and opaque window styles, since I prefer opaque windows
+- Make the welcome window optional at launch, so that it doesn't appear every time the app starts
+- Migrate the Xcode project to `pbxproj` format for compatibility
+- Update the release script, not actually used for the release available in this fork.
+
 ## Download
 
-Get the latest DMG from [Releases](https://github.com/dqhieu/Silica/releases/latest),
-open it and drag Silica to Applications. Silica checks for updates once a day and
-installs them for you; you can turn that off in Settings › General.
+Get the latest DMG from [Releases](https://github.com/perez987/Silica/releases/latest),
+open it and drag Silica to Applications. Silica checks for updates once a day and installs them for you; you can turn that off in Settings › General.
 
 Silica needs macOS 26 or later.
 
 ## Features
 
-- **Projects.** Open a folder to get a window with a file tree. Files and folders
-  your `.gitignore` excludes are dimmed, and the tree updates as files change on disk.
-  Create, rename and move files to the Trash right in the tree, and filter it as you type.
-- **Quick Open and project search.** Jump to any file with fuzzy matching, or search
-  the text of every file in the project.
-- **Syntax highlighting** for 25 languages, including Swift, JavaScript, TypeScript,
-  Python, Go, Rust, C, C++, Java, Kotlin, HTML, CSS, JSON, YAML and Markdown.
+- **Projects.** Open a folder to get a window with a file tree. Files and folder your `.gitignore` excludes are dimmed, and the tree updates as files change on disk. Create, rename and move files to the Trash right in the tree, and filter it as you type.
+- **Quick Open and project search.** Jump to any file with fuzzy matching, or search the text of every file in the project.
+- **Syntax highlighting** for 25 languages, including Swift, JavaScript, TypeScript, Python, Go, Rust, C, C++, Java, Kotlin, HTML, CSS, JSON, YAML and Markdown.
 - **Nine color themes**, each with a light and a dark palette: Atom One, GitHub,
   Xcode, Solarized, Catppuccin, Gruvbox, Tokyo Night, Rosé Pine and Dracula.
 - **Markdown preview**, with highlighted code blocks.
-- **Editing tools.** Tabs, line numbers, indent guides, a minimap, word wrap, go to
-  line, toggle comment, and moving or duplicating lines.
-- **Picks up where you left off.** Projects reopen their tabs, and recent projects
-  are on the welcome window. You can turn off the welcome window at launch in
-  Settings › General and reopen it with File › Welcome Window or ⇧⌘1.
-- **Appearance and language.** Choose glass or opaque windows in Settings › General.
-  The opaque editor background is black in dark appearance and white in light appearance.
-  Silica follows the macOS language preference, with English and Spanish available.
+- **Editing tools.** Tabs, line numbers, indent guides, a minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
+- **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. You can turn off the welcome window at launch in Settings › General and reopen it with File › Welcome Window or `⇧⌘1`.
+- **Appearance and language.** Choose glass or opaque windows in Settings › General. The opaque editor background is black in dark appearance and white in light appearance. Silica follows the macOS language preference, with English and Spanish available.
 - **Works with Finder.** Use Open With, drop files on the Dock icon, or run
   `open -a Silica <path>`.
 
