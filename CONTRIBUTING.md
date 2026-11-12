@@ -69,8 +69,7 @@ from the subject.
 
 1. Create a branch from `main` in your fork.
 2. Make your change and push the branch.
-3. Open a pull request against `main`. Describe what it changes and how you tested
-   it, and link the issue it addresses.
+3. Open a pull request against `main`. Describe what it changes and how you tested it, and link the issue it addresses.
 
 A maintainer will review it, and may ask for changes before merging.
 
