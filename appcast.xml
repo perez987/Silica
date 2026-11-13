@@ -2,6 +2,27 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <title>Silica</title>
+       <item>
+            <title>0.3.6</title>
+            <pubDate>Thu, 12 Nov 2026 18:58:59 +0800</pubDate>
+            <link>https://github.com/perez987/Silica</link>
+            <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
+            <sparkle:version>0036</sparkle:version>
+            <sparkle:shortVersionString>0.3.6</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <description sparkle:format="markdown"><![CDATA[### What's new
+            
+- Ported latest commits from the <a src="https://github.com/dqhieu/Silica" target="_blank">source repository </a>.
+- Add PDF viewing with password support, CSV/TSV previews, and diff highlighting.
+- Add sidebar hover effects and font sizing, preserving Spanish localization.
+
+If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
+
+Found a bug or have an idea? Please [open an issue](https://github.com/perez987/Silica/issues).
+
+]]></description>
+            <enclosure url="https://github.com/perez987/Silica/releases/download/v0.3.5/Silica-0.3.5.dmg" length="7990445" type="application/octet-stream" sparkle:edSignature="qtpUK28rECCOEkcAgWaLk4TQPv2EKBqfWog7+ObFcNL5GqJTAwFzYTlt/pXrm8k1dSR5qW3Ofn6zLpnKR9zvCg=="/>
+        </item>
         <item>
             <title>0.3.5</title>
             <pubDate>Thu, 12 Nov 2026 18:58:59 +0800</pubDate>
