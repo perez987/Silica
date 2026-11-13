@@ -31,6 +31,7 @@ struct AppCommands: Commands {
             }
 
             Button("Check for Updates…") { updater.checkForUpdates() }
+                .keyboardShortcut("u", modifiers: [.command])
                 .disabled(!updater.canCheckForUpdates)
         }
 
