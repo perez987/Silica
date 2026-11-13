@@ -413,7 +413,7 @@ final class TextController: NSObject, NSTextViewDelegate {
         scheduleStatusUpdate()
     }
 
-    // MARK: Lines (shared with the Markdown preview)
+    // MARK: Lines (shared with the preview)
 
     /// The 1-based line shown at the top of the editor.
     func topVisibleLine() -> Int {

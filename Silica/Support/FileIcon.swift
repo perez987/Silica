@@ -5,13 +5,14 @@ struct FileIcon: View {
     let url: URL
     var isDirectory = false
     var isExpanded = false
+    var width: CGFloat = 16
 
     var body: some View {
         let (symbol, color) = Self.style(for: url, isDirectory: isDirectory, isExpanded: isExpanded)
         Image(systemName: symbol)
             .symbolVariant(isDirectory ? .fill : .none)
             .foregroundStyle(color)
-            .frame(width: 16)
+            .frame(width: width)
     }
 
     static func style(for url: URL, isDirectory: Bool, isExpanded: Bool) -> (String, Color) {
@@ -49,6 +50,7 @@ struct FileIcon: View {
         case "png", "jpg", "jpeg", "gif", "heic", "webp", "ico", "icns": return ("photo", C.mint)
         case "pdf": return ("doc.richtext", C.red)
         case "zip", "gz", "tar", "rar", "7z": return ("archivebox", C.brown)
+        case "diff", "patch", "rej": return ("plusminus", C.green)
         case "lock", "resolved": return ("lock", C.neutral)
         case "txt", "log": return ("doc.plaintext", C.neutral)
         default: return ("doc", C.neutral)

@@ -25,10 +25,12 @@ Silica needs macOS 26 or later.
 
 - **Projects.** Open a folder to get a window with a file tree. Files and folder your `.gitignore` excludes are dimmed, and the tree updates as files change on disk. Create, rename and move files to the Trash right in the tree, and filter it as you type.
 - **Quick Open and project search.** Jump to any file with fuzzy matching, or search the text of every file in the project.
-- **Syntax highlighting** for 25 languages, including Swift, JavaScript, TypeScript, Python, Go, Rust, C, C++, Java, Kotlin, HTML, CSS, JSON, YAML and Markdown.
+- **Syntax highlighting** for 26 languages, including Swift, JavaScript, TypeScript, Python, Go, Rust, C, C++, Java, Kotlin, HTML, CSS, JSON, YAML, Markdown and diff files.
 - **Nine color themes**, each with a light and a dark palette: Atom One, GitHub,
   Xcode, Solarized, Catppuccin, Gruvbox, Tokyo Night, Rosé Pine and Dracula.
 - **Markdown preview**, with highlighted code blocks.
+- **CSV and TSV preview**, with a table view and double-click to edit a row.
+- **PDF viewing**, including password-protected files.
 - **Editing tools.** Tabs, line numbers, indent guides, a minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
 - **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. You can turn off the welcome window at launch in Settings › General and reopen it with File › Welcome Window or `⇧⌘1`.
 - **Appearance and language.** Choose glass or opaque windows in Settings › General. The opaque editor background is black in dark appearance and white in light appearance. Silica follows the macOS language preference, with English and Spanish available.
@@ -44,7 +46,7 @@ Silica needs macOS 26 or later.
 | ⇧⌘F | Find in Project |
 | ⌥⌘J | Filter files in the tree |
 | ⌘L | Go to Line |
-| ⇧⌘V | Toggle Markdown preview |
+| ⇧⌘V | Toggle Markdown or CSV preview |
 | ⌃⌘S | Show or hide the sidebar |
 | ⌘/ | Toggle comment |
 | ⌥↑ / ⌥↓ | Move lines up or down |

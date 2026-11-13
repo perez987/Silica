@@ -33,7 +33,7 @@ final class KeyWorkspace: ObservableObject {
                   let key = event.charactersIgnoringModifiers?.lowercased() else { return event }
             switch key {
             case "v":
-                guard let buffer = workspace.activeBuffer, buffer.isMarkdown else { return event }
+                guard let buffer = workspace.activeBuffer, buffer.previewFormat != nil else { return event }
                 buffer.togglePreview()
             case "f":
                 workspace.showSearch()

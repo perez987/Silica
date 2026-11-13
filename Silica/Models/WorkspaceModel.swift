@@ -347,7 +347,7 @@ final class WorkspaceModel {
 
     private func makeBuffer(for url: URL) -> EditorBuffer {
         let buffer = EditorBuffer(url: url)
-        // Links in a Markdown preview open other project files here, like Quick Open.
+        // Links in a preview open other project files here, like Quick Open.
         buffer.openFile = { [weak self] target in
             self?.open(target)
             self?.reveal(target)

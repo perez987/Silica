@@ -146,9 +146,35 @@ struct SidebarToggleButton: View {
         } label: {
             Image(systemName: "sidebar.left")
         }
-        // Same plain icon style as the Refresh and Collapse buttons in the sidebar header.
-        .buttonStyle(.borderless)
+        .buttonStyle(.titleBarIcon)
         .foregroundStyle(.secondary)
         .help(workspace.isSidebarVisible ? String(localized: "Hide Sidebar (⌃⌘S)") : String(localized: "Show Sidebar (⌃⌘S)"))
     }
+}
+
+struct TitleBarIconButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        IconLabel(configuration: configuration)
+    }
+
+    private struct IconLabel: View {
+        let configuration: Configuration
+        @State private var isHovering = false
+
+        var body: some View {
+            configuration.label
+                .frame(width: 26, height: 22)
+                .background(
+                    Color.primary.opacity(configuration.isPressed ? 0.14 : isHovering ? 0.08 : 0),
+                    in: .rect(cornerRadius: 6, style: .continuous)
+                )
+                .contentShape(.rect(cornerRadius: 6, style: .continuous))
+                .onHover { isHovering = $0 }
+                .animation(.easeOut(duration: 0.12), value: isHovering)
+        }
+    }
+}
+
+extension ButtonStyle where Self == TitleBarIconButtonStyle {
+    static var titleBarIcon: TitleBarIconButtonStyle { TitleBarIconButtonStyle() }
 }

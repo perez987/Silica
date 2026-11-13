@@ -101,7 +101,7 @@ struct ProjectSearchView: View {
         .scrollContentBackground(.hidden)
         .scrollIndicators(.never)
         .environment(\.sidebarRowSize, .small)
-        .environment(\.defaultMinListRowHeight, 22)
+        .environment(\.defaultMinListRowHeight, EditorSettings.shared.sidebarFontSize + 11)
         .onChange(of: selection) { _, id in
             guard let id else { return }
             for file in model.results {
@@ -130,7 +130,7 @@ private struct FileHeaderRow: View {
                     .contentShape(.rect)
             }
             .buttonStyle(.plain)
-            FileIcon(url: file.url)
+            FileIcon(url: file.url, width: EditorSettings.shared.sidebarIconWidth)
                 .padding(.trailing, 2)
             Text(file.url.lastPathComponent)
                 .lineLimit(1)
@@ -151,6 +151,7 @@ private struct FileHeaderRow: View {
                 .padding(.vertical, 1)
                 .background(Capsule().fill(.primary.opacity(0.08)))
         }
+        .font(.system(size: EditorSettings.shared.sidebarFontSize))
     }
 }
 
@@ -161,8 +162,9 @@ private struct MatchRow: View {
         Text(highlighted)
             .lineLimit(1)
             .truncationMode(.tail)
-            .font(.callout)
-            .padding(.leading, 32)
+            // A point larger than the file names, as `.callout` is at the default size.
+            .font(.system(size: EditorSettings.shared.sidebarFontSize + 1))
+            .padding(.leading, 16 + EditorSettings.shared.sidebarIconWidth)
             .help("Line \(match.line)")
     }
 

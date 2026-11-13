@@ -15,6 +15,9 @@ nonisolated enum TokenKind: Sendable, CaseIterable {
     case variable
     case heading
     case link
+    /// Added and removed lines in a diff.
+    case inserted
+    case deleted
 }
 
 nonisolated struct SyntaxToken: Sendable {

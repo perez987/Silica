@@ -1,3 +1,4 @@
+import PDFKit
 import SwiftUI
 
 struct EditorArea: View {
@@ -16,8 +17,8 @@ struct EditorArea: View {
                 }
                 EditorTabBar(workspace: workspace)
                 Spacer(minLength: 0)
-                if let buffer = workspace.activeBuffer, buffer.isMarkdown {
-                    MarkdownModeToggle(buffer: buffer)
+                if let buffer = workspace.activeBuffer, let format = buffer.previewFormat {
+                    PreviewModeToggle(buffer: buffer, format: format)
                         .padding(.trailing, WorkspaceLayout.cardInset + 4)
                 }
             }
@@ -463,7 +464,7 @@ private struct BufferView: View {
         switch buffer.content {
         case .text(let controller):
             if buffer.isShowingPreview, let preview = buffer.preview {
-                MarkdownPreviewHost(preview: preview)
+                PreviewHost(preview: preview)
             } else {
                 // The status bar floats over the text's bottom corner rather than
                 // taking a strip of the card, left of the minimap when it's shown.
@@ -476,6 +477,8 @@ private struct BufferView: View {
             }
         case .image(let file):
             ImagePreview(file: file)
+        case .pdf(let file):
+            PDFPreview(file: file, name: buffer.name)
         case .binary:
             ContentUnavailableView(
                 "Binary File",
@@ -535,16 +538,17 @@ private struct StatusBar: View {
     }
 }
 
-// MARK: - Markdown
+// MARK: - Preview
 
-/// Source / Preview switch for Markdown tabs, in the quiet icon style of the other
-/// title bar buttons; the current mode is drawn in the primary color on a soft fill.
-private struct MarkdownModeToggle: View {
+/// Source / Preview switch for Markdown and CSV tabs, in the quiet icon style of the
+/// other title bar buttons; the current mode is drawn in the primary color on a soft fill.
+private struct PreviewModeToggle: View {
     let buffer: EditorBuffer
+    let format: PreviewFormat
 
     var body: some View {
         HStack(spacing: 2) {
-            option("doc.plaintext", help: "Show Markdown (⇧⌘V)", isOn: !buffer.isShowingPreview) {
+            option("doc.plaintext", help: "Show \(format.sourceName) (⇧⌘V)", isOn: !buffer.isShowingPreview) {
                 buffer.setShowingPreview(false)
             }
             option("eye", help: "Show Preview (⇧⌘V)", isOn: buffer.isShowingPreview) {
@@ -615,6 +619,107 @@ private struct Checkerboard: View {
                     context.fill(Path(rect), with: .color(.primary.opacity(0.06)))
                 }
             }
+        }
+    }
+}
+
+// MARK: - PDF
+
+/// Shows a PDF's pages in the editor card, with its page count and size over the
+/// corner where text files have their status bar. A password-protected PDF asks
+/// for its password first.
+private struct PDFPreview: View {
+    let file: EditorBuffer.PDFFile
+    let name: String
+
+    var body: some View {
+        if file.isLocked {
+            PDFPasswordPrompt(file: file, name: name)
+                // Each locked tab keeps its own half-typed password.
+                .id(ObjectIdentifier(file))
+        } else {
+            PDFViewHost(pdfView: file.view)
+                .overlay(alignment: .bottomTrailing) {
+                    Text(details)
+                        .font(.caption)
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .glassEffect(.regular, in: .capsule)
+                        .fixedSize()
+                        .padding(4)
+                }
+        }
+    }
+
+    private var details: String {
+        let pages = file.pageCount == 1 ? String(localized: "1 page") : String(localized: "\(file.pageCount) pages")
+        return [pages, file.byteCount.formatted(.byteCount(style: .file))].joined(separator: "  ·  ")
+    }
+}
+
+/// Stands in for a protected PDF's pages until the right password is entered.
+private struct PDFPasswordPrompt: View {
+    let file: EditorBuffer.PDFFile
+    let name: String
+
+    @State private var password = ""
+    @State private var wasRejected = false
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        ContentUnavailableView {
+            Label("Password Required", systemImage: "lock.doc")
+        } description: {
+            Text(wasRejected ? String(localized: "That password didn’t unlock “\(name)”.") : String(localized: "“\(name)” is password-protected."))
+        } actions: {
+            HStack {
+                SecureField("Password", text: $password)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(width: 200)
+                    .focused($isFocused)
+                    .onSubmit(unlock)
+                Button("Unlock", action: unlock)
+                    .disabled(password.isEmpty)
+            }
+        }
+        .onAppear { isFocused = true }
+    }
+
+    private func unlock() {
+        guard !password.isEmpty else { return }
+        wasRejected = !file.unlock(with: password)
+        if wasRejected { password = "" }
+    }
+}
+
+/// Hosts whichever PDF tab's view is active.
+private struct PDFViewHost: NSViewRepresentable {
+    let pdfView: PDFView
+
+    func makeNSView(context: Context) -> NSView {
+        let container = NSView()
+        attach(to: container)
+        return container
+    }
+
+    func updateNSView(_ container: NSView, context: Context) {
+        if pdfView.superview !== container {
+            container.subviews.forEach { $0.removeFromSuperview() }
+            attach(to: container)
+        }
+    }
+
+    private func attach(to container: NSView) {
+        pdfView.removeFromSuperview()
+        pdfView.frame = container.bounds
+        pdfView.autoresizingMask = [.width, .height]
+        container.addSubview(pdfView)
+        // So the arrow keys, Page Up and Page Down scroll it straight away.
+        DispatchQueue.main.async { [pdfView] in
+            pdfView.window?.makeFirstResponder(pdfView)
         }
     }
 }

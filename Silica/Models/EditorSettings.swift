@@ -17,11 +17,15 @@ final class EditorSettings {
 
     static let defaultFontSize: CGFloat = 13
     static let fontSizeRange: ClosedRange<CGFloat> = 9...36
+    /// The text size of the sidebar list's small rows (`.subheadline`).
+    static let defaultSidebarFontSize: CGFloat = 11
+    static let sidebarFontSizeRange: ClosedRange<CGFloat> = 9...20
     static let tabWidths = [2, 4, 8]
 
     private enum Key {
         static let fontSize = "editorFontSize"
         static let fontFamily = "editorFontFamily"
+        static let sidebarFontSize = "sidebarFontSize"
         static let wrapsLines = "editorWrapsLines"
         static let tabWidth = "editorTabWidth"
         static let indentsWithTabs = "editorIndentsWithTabs"
@@ -46,6 +50,20 @@ final class EditorSettings {
             store(fontFamily, Key.fontFamily, isDefault: fontFamily == nil)
             NotificationCenter.default.post(name: .editorSettingsDidChange, object: self)
         }
+    }
+
+    /// Font size of the sidebar's file tree and search results, apart from the editor's.
+    var sidebarFontSize: CGFloat {
+        didSet {
+            guard sidebarFontSize != oldValue else { return }
+            store(Double(sidebarFontSize), Key.sidebarFontSize, isDefault: sidebarFontSize == Self.defaultSidebarFontSize)
+        }
+    }
+
+    /// The width of a file icon beside sidebar text: 16pt at the default size,
+    /// growing with the text so larger icons don't run into the names.
+    var sidebarIconWidth: CGFloat {
+        (sidebarFontSize * 16 / Self.defaultSidebarFontSize).rounded()
     }
 
     /// Long lines wrap to the editor's width; off, they scroll sideways.
@@ -166,6 +184,10 @@ final class EditorSettings {
         let storedSize = defaults.double(forKey: Key.fontSize)
         fontSize = storedSize > 0 ? Self.clamped(CGFloat(storedSize)) : Self.defaultFontSize
         fontFamily = defaults.string(forKey: Key.fontFamily)
+        let storedSidebarSize = defaults.double(forKey: Key.sidebarFontSize)
+        sidebarFontSize = storedSidebarSize > 0
+            ? Self.clamped(CGFloat(storedSidebarSize), to: Self.sidebarFontSizeRange)
+            : Self.defaultSidebarFontSize
         wrapsLines = defaults.object(forKey: Key.wrapsLines) as? Bool ?? true
         let storedTabWidth = defaults.integer(forKey: Key.tabWidth)
         tabWidth = Self.tabWidths.contains(storedTabWidth) ? storedTabWidth : 4
@@ -203,8 +225,8 @@ final class EditorSettings {
         NotificationCenter.default.post(name: .editorFontSizeDidChange, object: self)
     }
 
-    private static func clamped(_ size: CGFloat) -> CGFloat {
-        min(max(size.rounded(), fontSizeRange.lowerBound), fontSizeRange.upperBound)
+    private static func clamped(_ size: CGFloat, to range: ClosedRange<CGFloat> = fontSizeRange) -> CGFloat {
+        min(max(size.rounded(), range.lowerBound), range.upperBound)
     }
 
     /// The editor font at `size`: the chosen family, or the system monospaced font.

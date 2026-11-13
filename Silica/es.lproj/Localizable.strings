@@ -24,6 +24,8 @@
 "Filter Files" = "Filtrar archivos";
 "Refresh Explorer" = "Actualizar explorador";
 "Show Markdown" = "Mostrar Markdown";
+"Show %@" = "Mostrar %@";
+"Show %@ (⇧⌘V)" = "Mostrar %@ (⇧⌘V)";
 "Show Preview" = "Mostrar vista previa";
 "Select Next Tab" = "Seleccionar pestaña siguiente";
 "Select Previous Tab" = "Seleccionar pestaña anterior";
@@ -158,6 +160,18 @@
 "Cancel" = "Cancelar";
 "This project is no longer in the recent projects list." = "Este proyecto ya no está en la lista de proyectos recientes.";
 "“%@” couldn’t be decoded as an image." = "No se ha podido decodificar «%@» como imagen.";
+"“%@” couldn’t be read as a PDF." = "No se ha podido leer «%@» como PDF.";
+"Password Required" = "Contraseña necesaria";
+"Password" = "Contraseña";
+"Unlock" = "Desbloquear";
+"That password didn’t unlock “%@”." = "La contraseña no ha desbloqueado «%@».";
+"“%@” is password-protected." = "«%@» está protegido con contraseña.";
+"1 page" = "1 página";
+"%lld pages" = "%lld páginas";
+"Sidebar" = "Barra lateral";
+"Sidebar size" = "Tamaño de la barra lateral";
+"No rows to show." = "No hay filas para mostrar.";
+"Showing the first %@ of %@ rows." = "Se muestran las primeras %@ de %@ filas.";
 "“%@” already exists." = "«%@» ya existe.";
 "Choose a different name." = "Elige otro nombre.";
 "“%@” can’t be used as a name." = "No se puede usar «%@» como nombre.";

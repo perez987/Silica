@@ -9,13 +9,15 @@ struct FileTreeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Title bar row: traffic lights, then the header, then the toggle.
-            HStack(spacing: 8) {
+            // The buttons' hover fills sit side by side, so no spacing between them,
+            // and the trailing padding leaves the last icon about 8pt from the edge.
+            HStack(spacing: 0) {
                 header
                 SidebarToggleButton(workspace: workspace)
             }
             .frame(height: WorkspaceLayout.titleBarHeight)
             .padding(.leading, WorkspaceLayout.trafficLightsWidth)
-            .padding(.trailing, 8)
+            .padding(.trailing, 4)
             // Above the list, which reaches up underneath this row (see below).
             .zIndex(1)
 
@@ -35,19 +37,22 @@ struct FileTreeView: View {
         .onChange(of: workspace.selection) {
             workspace.handleSelectionChange()
         }
+        .onChange(of: EditorSettings.shared.sidebarFontSize) {
+            pinnedFolders.scheduleUpdate()
+        }
     }
 
     // MARK: Header
 
     private var header: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 0) {
             Text(workspace.sidebarMode == .search ? String(localized: "Search") : workspace.name)
                 .lineLimit(1)
                 .truncationMode(.middle)
                 .font(.headline)
                 .help(workspace.rootURL.path(percentEncoded: false))
 
-            Spacer(minLength: 0)
+            Spacer(minLength: 8)
 
             if workspace.sidebarMode == .explorer {
                 Button {
@@ -67,7 +72,7 @@ struct FileTreeView: View {
             }
             .help(workspace.sidebarMode == .search ? String(localized: "Show Explorer (⇧⌘E)") : String(localized: "Find in Project (⇧⌘F)"))
         }
-        .buttonStyle(.borderless)
+        .buttonStyle(.titleBarIcon)
         .foregroundStyle(.secondary)
     }
 
@@ -87,6 +92,7 @@ struct FileTreeView: View {
             List(selection: $workspace.selection) {
                 if rows.isEmpty {
                     Text(workspace.isFilteringTree ? String(localized: "No files match “\(workspace.treeFilter)”") : String(localized: "This project is empty"))
+                        .font(.system(size: EditorSettings.shared.sidebarFontSize))
                         .foregroundStyle(.secondary)
                         .selectionDisabled()
                 } else {
@@ -133,9 +139,9 @@ struct FileTreeView: View {
                 Button("New File…") { workspace.beginNewItem(isDirectory: false, in: workspace.rootURL) }
                 Button("New Folder…") { workspace.beginNewItem(isDirectory: true, in: workspace.rootURL) }
             }
-            // Compact, editor-style rows.
+            // Compact, editor-style rows, 22pt high at the default font size.
             .environment(\.sidebarRowSize, .small)
-            .environment(\.defaultMinListRowHeight, 22)
+            .environment(\.defaultMinListRowHeight, EditorSettings.shared.sidebarFontSize + 11)
             // The sidebar list style has a fixed top inset that content margins don't
             // change. Pull the list up by most of it and clip, so rows start closer to
             // the title bar and scrolled rows still disappear at its bottom edge.
@@ -288,8 +294,6 @@ private struct PinnedFolders: View {
                 }
             }
         }
-        // The text size of the list's small sidebar rows.
-        .font(.subheadline)
         // A hairline between the pinned folders and the rows scrolling under them.
         .overlay(alignment: .top) {
             if !tracker.pinned.isEmpty {
@@ -418,7 +422,8 @@ private struct FileNodeRow: View {
         HStack(spacing: 4) {
             disclosureChevron
             Group {
-                FileIcon(url: node.url, isDirectory: node.isDirectory, isExpanded: isOpen)
+                FileIcon(url: node.url, isDirectory: node.isDirectory, isExpanded: isOpen,
+                         width: EditorSettings.shared.sidebarIconWidth)
                     .padding(.trailing, 2)
                 if isRenaming {
                     NameField(initialName: node.name, selectsExtension: node.isDirectory) { name in
@@ -441,6 +446,7 @@ private struct FileNodeRow: View {
             }
         }
         .padding(.leading, Self.leadingPadding(depth: depth))
+        .font(.system(size: EditorSettings.shared.sidebarFontSize))
         .tag(node.url)
         .listRowBackground(SelectionHighlight(isSelected: workspace.selection == node.url))
         .contextMenu { FileNodeMenu(node: node, workspace: workspace) }
@@ -566,7 +572,8 @@ private struct NewItemRow: View {
     var body: some View {
         HStack(spacing: 4) {
             Color.clear.frame(width: 12, height: 16)
-            FileIcon(url: folder.appending(path: "untitled"), isDirectory: isDirectory)
+            FileIcon(url: folder.appending(path: "untitled"), isDirectory: isDirectory,
+                     width: EditorSettings.shared.sidebarIconWidth)
                 .padding(.trailing, 2)
             NameField(initialName: "", selectsExtension: true) { name in
                 if let name {
@@ -577,6 +584,7 @@ private struct NewItemRow: View {
             }
         }
         .padding(.leading, FileNodeRow.leadingPadding(depth: depth))
+        .font(.system(size: EditorSettings.shared.sidebarFontSize))
     }
 }
 

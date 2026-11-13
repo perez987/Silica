@@ -76,7 +76,7 @@ final class PinnedFolderTracker {
 
     /// Updates on the next turn of the run loop: after the table has caught up with
     /// a change, and outside SwiftUI's view update.
-    fileprivate func scheduleUpdate() {
+    func scheduleUpdate() {
         guard !isUpdateScheduled else { return }
         isUpdateScheduled = true
         DispatchQueue.main.async { [weak self] in

@@ -214,7 +214,8 @@ private struct GeneralSettingsPane: View {
     }
 }
 
-/// Editor font and syntax colors, with a live sample. Changes apply to open editors at once.
+/// Editor font and syntax colors, with a live sample, and the sidebar's font size.
+/// Changes apply to open windows at once.
 private struct FontsAndColorsSettingsPane: View {
     @Bindable private var settings = EditorSettings.shared
 
@@ -242,6 +243,18 @@ private struct FontsAndColorsSettingsPane: View {
                         Text("\(Int(settings.fontSize)) pt")
                             .monospacedDigit()
                         Stepper("Size", value: fontSize, in: EditorSettings.fontSizeRange, step: 1)
+                            .labelsHidden()
+                    }
+                }
+            }
+
+            SettingsGroup("Sidebar") {
+                SettingsRow("Size") {
+                    HStack(spacing: 8) {
+                        Text("\(Int(settings.sidebarFontSize)) pt")
+                            .monospacedDigit()
+                        Stepper("Sidebar size", value: $settings.sidebarFontSize,
+                                in: EditorSettings.sidebarFontSizeRange, step: 1)
                             .labelsHidden()
                     }
                 }

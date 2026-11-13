@@ -4,7 +4,7 @@ import Foundation
 nonisolated enum SyntaxLanguage: String, Sendable, CaseIterable {
     case swift, javascript, typescript, json, python, ruby, go, rust
     case c, cpp, objectiveC, java, kotlin, csharp, php
-    case shell, yaml, toml, html, xml, css, markdown, sql, dockerfile, makefile
+    case shell, yaml, toml, html, xml, css, markdown, sql, dockerfile, makefile, diff
 
     init?(url: URL) {
         let name = url.lastPathComponent.lowercased()
@@ -44,6 +44,7 @@ nonisolated enum SyntaxLanguage: String, Sendable, CaseIterable {
         case "md", "markdown", "mdx", "mdown": self = .markdown
         case "sql": self = .sql
         case "mk": self = .makefile
+        case "diff", "patch", "rej": self = .diff
         default: return nil
         }
     }
@@ -96,6 +97,7 @@ nonisolated enum SyntaxLanguage: String, Sendable, CaseIterable {
         case .sql: "SQL"
         case .dockerfile: "Dockerfile"
         case .makefile: "Makefile"
+        case .diff: "Diff"
         }
     }
 
@@ -109,7 +111,7 @@ nonisolated enum SyntaxLanguage: String, Sendable, CaseIterable {
             "#"
         case .sql:
             "--"
-        case .html, .xml, .css, .markdown:
+        case .html, .xml, .css, .markdown, .diff:
             nil
         }
     }
@@ -151,6 +153,7 @@ nonisolated enum SyntaxLanguage: String, Sendable, CaseIterable {
         case .sql: Grammars.sql
         case .dockerfile: Grammars.dockerfile
         case .makefile: Grammars.makefile
+        case .diff: Grammars.diff
         }
     }
 }
@@ -605,6 +608,41 @@ private nonisolated enum Grammars {
             SyntaxPattern(.comment, P.hashComment),
             SyntaxPattern(.string, P.doubleString),
             SyntaxPattern(.string, P.singleString),
+        ]
+    )
+
+    /// Unified diffs as `git diff` and `git format-patch` write them, plus the older
+    /// context and normal formats. A line is classified by how it starts, so `+` and `-`
+    /// rules come first and the headers that also start with them override.
+    static let diff = SyntaxGrammar(
+        rules: [
+            SyntaxPattern(.inserted, ##"^(?:\+|>(?= |$)).*"##),
+            SyntaxPattern(.deleted, ##"^(?:-|<(?= |$)).*"##),
+            // A changed line in a context diff.
+            SyntaxPattern(.type, ##"^!(?= |$).*"##),
+            // The bar of a diffstat line: ` Silica/App.swift | 12 +++++-----`.
+            SyntaxPattern(.inserted, ##"^ \S.*\|[ \t]+\d+ (\++)-*$"##, group: 1),
+            SyntaxPattern(.deleted, ##"^ \S.*\|[ \t]+\d+ \+*(-+)$"##, group: 1),
+            // File headers. `--- a` only counts with `+++ b` (or, in a context diff, `*** a`)
+            // beside it, so a removed `-- comment` line stays a removed line.
+            SyntaxPattern(.type, ##"^(?:diff -|Index: |={10,}$).*"##),
+            SyntaxPattern(.type, ##"^--- .*\r?\n\+\+\+ .*"##),
+            SyntaxPattern(.type, ##"^\*\*\* .*(?:\r?\n--- .*)?"##),
+            SyntaxPattern(.comment, ##"^(?:index [0-9a-f,]+\.\.[0-9a-f]+|old mode |new mode |deleted file mode |new file mode |similarity index |dissimilarity index |rename from |rename to |copy from |copy to |Binary files |GIT binary patch|Only in |\\ ).*"##),
+            // The `---` before a diffstat or between the halves of a normal diff. A removed
+            // `--` line reads the same, so the line after it has to tell them apart.
+            SyntaxPattern(.comment, ##"^---(?=\r?\n(?:>(?: |$)| \S.*\| +(?:\d+(?: [+-]+)?|Bin .*)$| \d+ files? changed|\r?\n))"##),
+            // The mail signature (`-- ` above git's version) and a context diff's separator.
+            SyntaxPattern(.comment, ##"^(?:-- (?=\r?\n\d)|\*{15}$)"##),
+            // Hunk ranges: `@@ -1,4 +1,6 @@`, then the context and normal forms.
+            SyntaxPattern(.link, ##"^(@@+) [-+\d, ]+ \1"##),
+            SyntaxPattern(.link, ##"^(?:\*\*\* \d+(?:,\d+)? \*\*\*\*|--- \d+(?:,\d+)? ----)$"##),
+            SyntaxPattern(.link, ##"^\d+(?:,\d+)?[acd]\d+(?:,\d+)?$"##),
+            // A format-patch's mail header and commit message, through the `---` that ends
+            // them, so `- ` bullets in the message aren't read as removed lines. It comes
+            // last to cover whatever else the message resembles; a cover letter has no
+            // `---` and is all message.
+            SyntaxPattern(.comment, ##"^From [0-9a-f]{40} [\s\S]*?(?:^---$|\z)"##),
         ]
     )
 }

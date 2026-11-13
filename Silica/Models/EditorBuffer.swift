@@ -3,6 +3,7 @@ import CryptoKit
 import Foundation
 import ImageIO
 import Observation
+import PDFKit
 import UniformTypeIdentifiers
 
 /// One open file. Text files own a live `TextController` so each tab keeps
@@ -12,6 +13,7 @@ final class EditorBuffer: Identifiable {
     enum Content {
         case text(TextController)
         case image(ImageFile)
+        case pdf(PDFFile)
         case binary
         case tooLarge(Int64)
         case unreadable(String)
@@ -41,11 +43,12 @@ final class EditorBuffer: Identifiable {
     var cursor = CursorStatus()
     var indentation = EditorTextView.Indentation(usesTabs: false, width: 4)
 
-    /// Markdown files can switch between their source and a rendered preview.
-    private(set) var isMarkdown: Bool
+    /// Markdown and CSV files can switch between their source and a rendered preview;
+    /// `nil` for every other kind of file.
+    private(set) var previewFormat: PreviewFormat?
     private(set) var isShowingPreview = false
     /// Created the first time the preview is shown, then kept with the tab.
-    @ObservationIgnored private(set) var preview: MarkdownPreview?
+    @ObservationIgnored private(set) var preview: DocumentPreview?
     /// Opens a project file a preview link points to.
     @ObservationIgnored var openFile: ((URL) -> Void)?
 
@@ -65,14 +68,51 @@ final class EditorBuffer: Identifiable {
         let format: String
     }
 
+    /// A PDF shown read-only in the editor card. The tab owns the view, so it keeps
+    /// its place and zoom while other tabs are shown.
+    @Observable
+    final class PDFFile {
+        let view: PDFView
+        let byteCount: Int64
+        /// A password-protected PDF has no pages to show until it's unlocked.
+        private(set) var isLocked: Bool
+        private(set) var pageCount: Int
+        private let document: PDFDocument
+
+        init(document: PDFDocument, byteCount: Int64) {
+            self.document = document
+            self.byteCount = byteCount
+            isLocked = document.isLocked
+            pageCount = document.pageCount
+            view = PDFView()
+            view.displayMode = .singlePageContinuous
+            // Fits the page width to the card until the reader zooms.
+            view.autoScales = true
+            // The pages lie on the card's glass, like images do.
+            view.backgroundColor = .clear
+            // The view gets a locked document only once it's unlocked, so what a
+            // protected PDF shows is Silica's own prompt and never an empty card.
+            if !document.isLocked { view.document = document }
+        }
+
+        /// Returns whether the password was right; the pages show once it is.
+        func unlock(with password: String) -> Bool {
+            guard document.unlock(withPassword: password) else { return false }
+            view.document = document
+            pageCount = document.pageCount
+            isLocked = false
+            return true
+        }
+    }
+
     private static let maxFileSize: Int64 = 20 * 1024 * 1024
-    private static let maxImageSize: Int64 = 200 * 1024 * 1024
+    /// For images and PDFs, which are shown rather than loaded into the editor.
+    private static let maxPreviewSize: Int64 = 200 * 1024 * 1024
 
     /// An empty, untitled file, e.g. "Untitled-1".
     init(untitledName name: String) {
         url = URL.untitled(name)
         isUntitled = true
-        isMarkdown = false
         encoding = .utf8
         let controller = TextController(text: "", language: nil)
         content = .text(controller)
@@ -90,22 +130,25 @@ final class EditorBuffer: Identifiable {
     init(url: URL) {
         self.url = url
         isUntitled = false
-        self.isMarkdown = SyntaxLanguage(url: url) == .markdown
+        previewFormat = PreviewFormat(url: url)
 
         // From the file system, not URL's resource cache, which can be stale when a
         // changed file is opened again.
         let attributes = Self.attributes(of: url)
         let size = Int64(attributes?.size ?? 0)
 
-        if Self.isImage(url) {
+        let isImage = Self.isImage(url)
+        if isImage || Self.isPDF(url) {
             encoding = .utf8
             diskSnapshot = attributes.map { DiskSnapshot(attributes: $0, digest: nil) }
-            if size > Self.maxImageSize {
+            if size > Self.maxPreviewSize {
                 content = .tooLarge(size)
-            } else if let image = Self.loadImage(url, byteCount: size) {
-                content = .image(image)
+            } else if isImage {
+                content = Self.loadImage(url, byteCount: size).map(Content.image)
+                    ?? .unreadable(String(localized: "“\(url.lastPathComponent)” couldn’t be decoded as an image."))
             } else {
-                content = .unreadable(String(localized: "“\(url.lastPathComponent)” couldn’t be decoded as an image."))
+                content = Self.loadPDF(url, byteCount: size).map(Content.pdf)
+                    ?? .unreadable(String(localized: "“\(url.lastPathComponent)” couldn’t be read as a PDF."))
             }
             return
         }
@@ -173,17 +216,18 @@ final class EditorBuffer: Identifiable {
     /// new location (and language, if the extension changed).
     func move(to newURL: URL) {
         url = newURL
-        let newLanguage = SyntaxLanguage(url: newURL)
-        isMarkdown = newLanguage == .markdown
-        // The preview resolves images relative to the old place; make a new one when needed.
-        isShowingPreview = isShowingPreview && isMarkdown
+        let newFormat = PreviewFormat(url: newURL)
+        previewFormat = newFormat
+        // The preview resolves images relative to the old place, and renders the old
+        // format; make a new one when needed.
+        isShowingPreview = isShowingPreview && newFormat != nil
         preview = nil
-        if isShowingPreview, let controller = textController {
-            let preview = makePreview(for: controller)
+        if isShowingPreview, let newFormat, let controller = textController {
+            let preview = makePreview(for: controller, format: newFormat)
             self.preview = preview
-            preview.show(markdown: controller.textView.string, line: controller.topVisibleLine())
+            preview.show(controller.textView.string, line: controller.topVisibleLine())
         }
-        textController?.setLanguage(newLanguage)
+        textController?.setLanguage(SyntaxLanguage(url: newURL))
     }
 
     /// Writes the text to another file (Save As), leaving this buffer as it is.
@@ -195,7 +239,7 @@ final class EditorBuffer: Identifiable {
         try data.write(to: destination.resolvingSymlinksInPath(), options: .atomic)
     }
 
-    // MARK: Markdown preview
+    // MARK: Preview
 
     func togglePreview() {
         setShowingPreview(!isShowingPreview)
@@ -204,11 +248,11 @@ final class EditorBuffer: Identifiable {
     /// Switches between source and preview, keeping roughly the same place in the
     /// document. `editLine` (from a double-click) puts the cursor on that source line.
     func setShowingPreview(_ show: Bool, editLine: Int? = nil) {
-        guard isMarkdown, let controller = textController, show != isShowingPreview else { return }
+        guard let format = previewFormat, let controller = textController, show != isShowingPreview else { return }
         if show {
-            let preview = self.preview ?? makePreview(for: controller)
+            let preview = self.preview ?? makePreview(for: controller, format: format)
             self.preview = preview
-            preview.show(markdown: controller.textView.string, line: controller.topVisibleLine())
+            preview.show(controller.textView.string, line: controller.topVisibleLine())
             isShowingPreview = true
         } else if let editLine {
             isShowingPreview = false
@@ -221,8 +265,8 @@ final class EditorBuffer: Identifiable {
         }
     }
 
-    private func makePreview(for controller: TextController) -> MarkdownPreview {
-        let preview = MarkdownPreview(fileURL: url)
+    private func makePreview(for controller: TextController, format: PreviewFormat) -> DocumentPreview {
+        let preview = DocumentPreview(fileURL: url, format: format)
         preview.onOpenFile = { [weak self] url in self?.openFile?(url) }
         preview.onEditLine = { [weak self] line in self?.setShowingPreview(false, editLine: line) }
         preview.onType = { [weak self] characters in
@@ -312,7 +356,7 @@ final class EditorBuffer: Identifiable {
         isMissingOnDisk = false
         if isShowingPreview, let preview {
             preview.topVisibleLine { line in
-                preview.show(markdown: controller.textView.string, line: line)
+                preview.show(controller.textView.string, line: line)
             }
         }
     }
@@ -378,6 +422,14 @@ final class EditorBuffer: Identifiable {
             }
         }
         return ImageFile(image: image, pixelSize: pixelSize, byteCount: byteCount, format: format)
+    }
+
+    private static func isPDF(_ url: URL) -> Bool {
+        UTType(filenameExtension: url.pathExtension)?.conforms(to: .pdf) == true
+    }
+
+    private static func loadPDF(_ url: URL, byteCount: Int64) -> PDFFile? {
+        PDFDocument(url: url).map { PDFFile(document: $0, byteCount: byteCount) }
     }
 
     private static func looksBinary(_ data: Data) -> Bool {

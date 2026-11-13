@@ -3,16 +3,16 @@ import SwiftUI
 import UniformTypeIdentifiers
 import WebKit
 
-/// The rendered view of one Markdown buffer, kept alive with its tab so switching
+/// The rendered view of one Markdown or CSV buffer, kept alive with its tab so switching
 /// back and forth is instant.
 ///
-/// The page is HTML from `MarkdownHTMLRenderer`, styled to match the editor and drawn
+/// The page is HTML from the format's renderer, styled to match the editor and drawn
 /// on a transparent background so the editor card shows through. Scripts in the
 /// document itself never run; Silica's own small script (scroll position, double-click)
 /// runs in a separate script world. Relative images load from disk through the
 /// `silica-preview:` scheme, links to project files open in Silica, and web links open
 /// in the browser.
-final class MarkdownPreview: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
     let webView: PreviewWebView
 
     /// Opens another file in the project (a link to it was clicked).
@@ -23,15 +23,18 @@ final class MarkdownPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
     var onType: ((String) -> Void)?
 
     private let fileURL: URL
+    private let format: PreviewFormat
     private var pendingLine: Int?
+    private var renderTask: Task<Void, Never>?
     private var baseURL: URL {
         URL(string: Self.scheme + "://local" + Self.encodedPath(fileURL.deletingLastPathComponent().path(percentEncoded: false)))!
     }
 
     static let scheme = "silica-preview"
 
-    init(fileURL: URL) {
+    init(fileURL: URL, format: PreviewFormat) {
         self.fileURL = fileURL
+        self.format = format
 
         let configuration = WKWebViewConfiguration()
         configuration.defaultWebpagePreferences.allowsContentJavaScript = false
@@ -60,11 +63,21 @@ final class MarkdownPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
         webView.evaluateJavaScript("{ const style = document.querySelector('head > style'); if (style) style.textContent = \(css); }", in: nil, in: .defaultClient) { _ in }
     }
 
-    /// Renders `markdown` and, once loaded, scrolls to the block nearest `line`.
-    func show(markdown: String, line: Int) {
-        pendingLine = line
-        let body = MarkdownHTMLRenderer.render(markdown)
-        webView.loadHTMLString(Self.page(body: body), baseURL: baseURL)
+    /// Renders the file's `text` and, once loaded, scrolls to the block nearest `line`.
+    func show(_ text: String, line: Int) {
+        // Off the main actor, as a large file takes a while to turn into HTML. A newer
+        // call takes over from one that is still rendering.
+        renderTask?.cancel()
+        renderTask = Task { [weak self, format] in
+            let body = await Task.detached(priority: .userInitiated) {
+                format.html(for: text)
+            }.value
+            guard let self, !Task.isCancelled else { return }
+            // Set with the load it belongs to, not before: a page still loading from
+            // an earlier call would take it when it finishes.
+            self.pendingLine = line
+            self.webView.loadHTMLString(Self.page(body: body, isTable: format.isTable), baseURL: self.baseURL)
+        }
     }
 
     /// The 1-based source line of the first block visible at the top.
@@ -130,11 +143,11 @@ final class MarkdownPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
         return directory.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? directory
     }
 
-    private static func page(body: String) -> String {
+    private static func page(body: String, isTable: Bool) -> String {
         """
         <!doctype html>
         <html><head><meta charset="utf-8"><style>\(css)</style></head>
-        <body><article>\(body)</article></body></html>
+        <body\(isTable ? " class=\"csv\"" : "")><article>\(body)</article></body></html>
         """
     }
 
@@ -193,12 +206,25 @@ final class MarkdownPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
         th, td { border: 1px solid rgba(128, 128, 128, 0.3); padding: 6px 12px; }
         th { font-weight: 600; background: rgba(128, 128, 128, 0.08); }
         img { max-width: 100%; }
+        /* CSV: a table as wide as its columns. The page scrolls both ways, under a
+           header row that stays at the top. Borders are drawn per cell, as collapsed
+           ones don't move with a sticky row. */
+        .csv article { max-width: none; width: max-content; margin: 0; padding: 16px 20px 40px; }
+        .csv table { display: table; overflow: visible; border-collapse: separate; border-spacing: 0; font-size: 0.92em; line-height: 1.45; }
+        .csv th, .csv td { border-width: 0 1px 1px 0; padding: 5px 12px; vertical-align: top; }
+        .csv th > div, .csv td > div { max-width: 32em; overflow: hidden; text-overflow: ellipsis; white-space: pre; }
+        .csv tr > :first-child { border-left-width: 1px; }
+        .csv th { position: sticky; top: 0; border-top-width: 1px; text-align: left; background: rgba(244, 244, 245, 0.94); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+        .csv .num { text-align: right; font-variant-numeric: tabular-nums; }
+        .note { color: rgba(0, 0, 0, 0.5); font-size: 0.92em; }
         ::selection { background: rgba(64, 120, 242, 0.25); }
         \(tokens.light)
         @media (prefers-color-scheme: dark) {
           body { color: rgba(255, 255, 255, 0.88); }
           a { color: \(hex(link.dark)); }
           blockquote { color: rgba(255, 255, 255, 0.6); }
+          .csv th { background: rgba(44, 44, 46, 0.94); }
+          .note { color: rgba(255, 255, 255, 0.5); }
           \(tokens.dark)
         }
         """
@@ -208,14 +234,25 @@ final class MarkdownPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
     private static let script = """
     window.silica = {
       blocks() { return Array.from(document.querySelectorAll('[data-line]')); },
+      // A CSV table's header row stays at the top, over the rows scrolled under it.
+      headerHeight() {
+        const header = document.querySelector('.csv thead');
+        return header ? header.getBoundingClientRect().height : 0;
+      },
       scrollToLine(line) {
         let target = null;
         const blocks = this.blocks();
         for (const el of blocks) { if (+el.dataset.line <= line) target = el; else break; }
-        if (target && target !== blocks[0]) target.scrollIntoView({ block: 'start' }); else window.scrollTo(0, 0);
+        const header = this.headerHeight();
+        if (!target || target === blocks[0]) window.scrollTo(0, 0);
+        else if (header) window.scrollTo(window.scrollX, window.scrollY + target.getBoundingClientRect().top - header);
+        else target.scrollIntoView({ block: 'start' });
       },
       topLine() {
-        for (const el of this.blocks()) { if (el.getBoundingClientRect().bottom > 1) return +el.dataset.line; }
+        // At the top, the source starts from its first line too, not the first block's.
+        if (window.scrollY < 1) return 1;
+        const top = this.headerHeight() + 1;
+        for (const el of this.blocks()) { if (el.getBoundingClientRect().bottom > top) return +el.dataset.line; }
         return 1;
       }
     };
@@ -272,8 +309,8 @@ private final class LocalFileSchemeHandler: NSObject, WKURLSchemeHandler {
 }
 
 /// Hosts a buffer's preview web view in the editor card.
-struct MarkdownPreviewHost: NSViewRepresentable {
-    let preview: MarkdownPreview
+struct PreviewHost: NSViewRepresentable {
+    let preview: DocumentPreview
 
     func makeNSView(context: Context) -> NSView {
         let container = NSView()
