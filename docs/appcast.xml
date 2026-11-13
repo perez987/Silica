@@ -13,7 +13,7 @@
             <description xml:lang="en"><![CDATA[
             <h3>What's new in Silica 0.3.6</h3>
 			<ul>
-					<li>Port latest commits from <a src="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Port latest commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
 					<li>Add PDF viewing with password support</li>
 					<li>Add CSV/TSV previews, and diff highlighting</li>
 					<li>Add sidebar hover effects and font sizing</li>
@@ -29,7 +29,7 @@
             <description xml:lang="es"><![CDATA[
             <h3>Novedades de Silica 0.3.6</h3>
 			<ul>
-					<li>Adaptar los últimos cambios desde <a src="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Adaptar los últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
 					<li>Puede mostrar PDF con soporte para contraseña</li>
 					<li>Añadir vista previa de CSV/TSV, y resaltado de sintaxis para diff</li>
 					<li>Ajustar tamaño de letra de la barra lateral</li>
