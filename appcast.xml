@@ -42,7 +42,7 @@
 					<li>El tipo de proyecto Xcode ha migrado al formato `pbxproj`</li>
 				</ul>
 			]]></description>
-            <enclosure url="https://github.com/perez987/Silica/releases/download/v0.3.6/Silica.0.3.6.dmg" length="7990199" type="application/octet-stream" sparkle:edSignature="ChA3oldYNTjXukln45WzU49063KGRdh/L4t7lCVqeepLJStYBJ6W3vEP+rLWYE6r4aWLJ2baz3WPrLXDKzN9CQ=="/>
+            <enclosure url="https://github.com/perez987/Silica/releases/download/0.3.6/Silica.0.3.6.dmg" length="7990199" type="application/octet-stream" sparkle:edSignature="ChA3oldYNTjXukln45WzU49063KGRdh/L4t7lCVqeepLJStYBJ6W3vEP+rLWYE6r4aWLJ2baz3WPrLXDKzN9CQ=="/>
         </item>
     </channel>
 </rss>
