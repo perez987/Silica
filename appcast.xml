@@ -12,11 +12,10 @@
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
             <description sparkle:format="markdown"><![CDATA[### What's new
 
-- **Localize the interface and alerts**: Two languages for now, English (default) and Spanish.
-- **Option to switch windows style**: Add glass and opaque window styles.
-- **Welcome window**: Make the welcome window optional at launch
-- **Change the Xcode project type**: Migrate the Xcode project to `pbxproj` format
-- **Update the release script**.
+- Localize the interface and alerts.
+- Option to switch windows style (glass / opaque).
+- Welcome window is optional at launch.
+- Migrate the Xcode project type to `pbxproj` format
 
 If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
 
@@ -24,104 +23,6 @@ Found a bug or have an idea? Please [open an issue](https://github.com/perez987/
 
 ]]></description>
             <enclosure url="https://github.com/perez987/Silica/releases/download/v0.3.5/Silica-0.3.5.dmg" length="7944014" type="application/octet-stream" sparkle:edSignature="fgF2KY/2D8g7iS71Hc4eRUsywGQpPXW76HArEsApGJ964RRokU5ENnBHpkYuWX+I9PSY2q3OpevZnFDmfT8jAg=="/>
-        </item>
-        <item>
-            <title>0.3.0</title>
-            <pubDate>Thu, 12 Nov 2026 18:58:59 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>5</sparkle:version>
-            <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Parent folders stay in view in the file tree.** Scrolled deep into a project, the open folders that contain the rows you're looking at now stay pinned at the top of the tree. Click a pinned folder to scroll back to it. It's on by default; turn it off in **Settings › General**.
-- **Switch tabs from the keyboard.** **⌃Tab** and **⌃⇧Tab** (or **⇧⌘]** and **⇧⌘[**) step through the open tabs, going round from either end to the other. The commands are also in the **View** menu as Select Next Tab and Select Previous Tab.
-- **Scroll the tab bar with a mouse wheel.** With the pointer over the tab bar, an ordinary mouse wheel now scrolls the tabs sideways, so tabs past the end of the bar can be reached without a trackpad.
-- **The tab bar keeps the active tab in view.** Resizing the window or the sidebar no longer scrolls the tab row back to its first tab.
-- **Tabs fade out at the ends of the tab bar.** A tab scrolled part of the way out now fades instead of being cut off flat.
-- **The minimap is hidden by default.** Turn it back on with **View › Minimap** or in **Settings › Editor**.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.3.0/Silica-0.3.0.dmg" length="7709093" type="application/octet-stream" sparkle:edSignature="giQNcGdK1G2GDwtFVXJxL8Wx8TAfMpyLwGFip2mnJOzC5ISVe7u2qHJE/ULYCl3axJIN/pfWR6Zl08d2MsmgDQ=="/>
-        </item>
-        <item>
-            <title>0.2.0</title>
-            <pubDate>Tue, 10 Nov 2026 22:48:32 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>4</sparkle:version>
-            <sparkle:shortVersionString>0.2.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Drag tabs to reorder them.** Drag an editor tab along the tab bar and the tabs it passes slide aside. With more tabs than fit, holding it near either end scrolls the bar.
-- **A steadier selection in the file tree.** The selected file or folder is now always highlighted in grey. It used to turn blue at times, such as after renaming a file.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.2.0/Silica-0.2.0.dmg" length="7652313" type="application/octet-stream" sparkle:edSignature="5CdceIvtjJmMhmE99HqrQ+KxcMx1TPO3/V8FGnqrcciLznfl9RrdKcGpnPvDd+E1U8K8iZqmtXpi+duVBK8dBQ=="/>
-        </item>
-        <item>
-            <title>0.1.1</title>
-            <pubDate>Mon, 09 Nov 2026 22:35:50 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>3</sparkle:version>
-            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Runs on macOS 26.** Silica now needs macOS 26 or later, down from macOS 27.
-- **A nicer installer.** The DMG opens to a window with Silica and your Applications folder side by side, so installing is one drag.
-
-If you already have 0.1.0, Silica will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.1.1/Silica-0.1.1.dmg" length="7611632" type="application/octet-stream" sparkle:edSignature="Te4UqkrpCuN5clid7H6aB80GAwzIIZqt80xd3m+xmziySCG/8AiEm6rkQrj3PWE2Y373bWg3iXau4idLb3v3Bg=="/>
-        </item>
-        <item>
-            <title>0.1.0</title>
-            <pubDate>Mon, 09 Nov 2026 22:17:30 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>2</sparkle:version>
-            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>27.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[The first release of Silica, a lightweight code editor for macOS, made of glass.
-
-### What's in it
-
-- **Projects.** Open a folder to get a window with a file tree that follows changes on disk and dims what your `.gitignore` excludes. Create, rename and trash files right in the tree, and filter it as you type.
-- **Quick Open (⌘P)** with fuzzy matching, and **Find in Project (⇧⌘F)**.
-- **Syntax highlighting** for 25 languages, including Swift, JavaScript, TypeScript, Python, Go, Rust, C, C++ and Markdown.
-- **Nine color themes**, each with a light and a dark palette: Atom One, GitHub, Xcode, Solarized, Catppuccin, Gruvbox, Tokyo Night, Rosé Pine and Dracula.
-- **Markdown preview (⇧⌘V)**, with highlighted code blocks.
-- **Editing tools**: tabs, line numbers, indent guides, a minimap, word wrap, Go to Line (⌘L), toggle comment (⌘/), and moving or duplicating lines (⌥↑ ⌥↓).
-- Projects **reopen their tabs** where you left them, and recent projects are on the welcome window.
-- **Open With** in Finder, the Dock icon and `open -a Silica` all open files and folders in Silica.
-
-### Installing
-
-Open the DMG and drag Silica to Applications. Silica needs macOS 27 or later.
-
-From now on, Silica checks for updates once a day and installs them for you. You can also use **Silica › Check for Updates…**, or turn automatic checks off in Settings › General.
-
-### Feedback
-
-This is an early release, so expect some rough edges. If you find a bug or have an idea, please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.1.0/Silica-0.1.0.dmg" length="5933975" type="application/octet-stream" sparkle:edSignature="6Wf8YXNZntlkDSFT0+EgUkJ9pfOLn64GM2sAmU26eJWM2DXvATKe6QK6qNhEntrV93hHYdAl+FN61cXzhyz3Aw=="/>
         </item>
     </channel>
 </rss>
