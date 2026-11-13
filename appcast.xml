@@ -10,37 +10,39 @@
             <sparkle:version>0036</sparkle:version>
             <sparkle:shortVersionString>0.3.6</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-            
-- Port latest commits from https://github.com/dqhieu/Silica.
-- Add PDF viewing with password support.
-- Add CSV/TSV previews, and diff highlighting.
-- Add sidebar hover effects and font sizing.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/perez987/Silica/issues).
-
-]]></description>
+            <description xml:lang="en"><![CDATA[
+            <h3>What's new in Silica 0.3.6</h3>
+			<ul>
+					<li>Port latest commits from <a src="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Add PDF viewing with password support</li>
+					<li>Add CSV/TSV previews, and diff highlighting</li>
+					<li>Add sidebar hover effects and font sizing</li>
+				</ul>
+            <h3>What's new in Silica 0.3.5</h3>
+			<ul>
+					<li>Localize the interface and alerts</li>
+					<li>Option to switch windows style (glass / opaque)</li>
+					<li>Welcome window is optional at launch</li>
+					<li>Migrate the Xcode project type to `pbxproj` format</li>
+				</ul>
+			]]></description>
+            <description xml:lang="es"><![CDATA[
+            <h3>Novedades de Silica 0.3.6</h3>
+			<ul>
+					<li>Adaptar los últimos cambios desde <a src="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Puede mostrar PDF con soporte para contraseña</li>
+					<li>Añadir vista previa de CSV/TSV, y resaltado de sintaxis para diff</li>
+					<li>Ajustar tamaño de letra de la barra lateral</li>
+				</ul>
+            <h3>Novedades de Silica 0.3.5</h3>
+			<ul>
+					<li>Traducción de interfaz y alertas</li>
+					<li>Opción para cambiar entre estilo de ventanas (translúcidas / opacas)</li>
+					<li>Pantalla de bienvenida es opcional al arrancar la app</li>
+					<li>EL tipo de proyecto Xcode ha migrado al formato `pbxproj`</li>
+				</ul>
+			]]></description>
             <enclosure url="https://github.com/perez987/Silica/releases/download/v0.3.6/Silica-0.3.6.dmg" length="7990445" type="application/octet-stream" sparkle:edSignature="qtpUK28rECCOEkcAgWaLk4TQPv2EKBqfWog7+ObFcNL5GqJTAwFzYTlt/pXrm8k1dSR5qW3Ofn6zLpnKR9zvCg=="/>
-        </item>
-        <item>
-            <title>0.3.5</title>
-            <pubDate>Thu, 12 Nov 2026 18:58:59 +0800</pubDate>
-            <link>https://github.com/perez987/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>0035</sparkle:version>
-            <sparkle:shortVersionString>0.3.5</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- Localize the interface and alerts.
-- Option to switch windows style (glass / opaque).
-- Welcome window is optional at launch.
-- Migrate the Xcode project type to `pbxproj` format
-
-]]></description>
-            <enclosure url="https://github.com/perez987/Silica/releases/download/v0.3.5/Silica-0.3.5.dmg" length="7944014" type="application/octet-stream" sparkle:edSignature="fgF2KY/2D8g7iS71Hc4eRUsywGQpPXW76HArEsApGJ964RRokU5ENnBHpkYuWX+I9PSY2q3OpevZnFDmfT8jAg=="/>
         </item>
     </channel>
 </rss>
