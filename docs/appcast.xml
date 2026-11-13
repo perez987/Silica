@@ -13,8 +13,9 @@
             <description sparkle:format="markdown"><![CDATA[### What's new
             
 - Ported latest commits from the <a src="https://github.com/dqhieu/Silica" target="_blank">source repository</a>.
-- Add PDF viewing with password support, CSV/TSV previews, and diff highlighting.
-- Add sidebar hover effects and font sizing, preserving Spanish localization.
+- Add PDF viewing with password support.
+- Add CSV/TSV previews, and diff highlighting.
+- Add sidebar hover effects and font sizing.
 
 If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
 
