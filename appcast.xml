@@ -21,7 +21,7 @@ If you already have Silica, it will offer this update on its own, or choose **Si
 Found a bug or have an idea? Please [open an issue](https://github.com/perez987/Silica/issues).
 
 ]]></description>
-            <enclosure url="https://github.com/perez987/Silica/releases/download/v0.3.5/Silica-0.3.5.dmg" length="7990445" type="application/octet-stream" sparkle:edSignature="qtpUK28rECCOEkcAgWaLk4TQPv2EKBqfWog7+ObFcNL5GqJTAwFzYTlt/pXrm8k1dSR5qW3Ofn6zLpnKR9zvCg=="/>
+            <enclosure url="https://github.com/perez987/Silica/releases/download/v0.3.6/Silica-0.3.6.dmg" length="7990445" type="application/octet-stream" sparkle:edSignature="qtpUK28rECCOEkcAgWaLk4TQPv2EKBqfWog7+ObFcNL5GqJTAwFzYTlt/pXrm8k1dSR5qW3Ofn6zLpnKR9zvCg=="/>
         </item>
         <item>
             <title>0.3.5</title>
@@ -37,10 +37,6 @@ Found a bug or have an idea? Please [open an issue](https://github.com/perez987/
 - Option to switch windows style (glass / opaque).
 - Welcome window is optional at launch.
 - Migrate the Xcode project type to `pbxproj` format
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/perez987/Silica/issues).
 
 ]]></description>
             <enclosure url="https://github.com/perez987/Silica/releases/download/v0.3.5/Silica-0.3.5.dmg" length="7944014" type="application/octet-stream" sparkle:edSignature="fgF2KY/2D8g7iS71Hc4eRUsywGQpPXW76HArEsApGJ964RRokU5ENnBHpkYuWX+I9PSY2q3OpevZnFDmfT8jAg=="/>
