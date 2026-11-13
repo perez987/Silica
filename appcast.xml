@@ -12,7 +12,7 @@
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
             <description sparkle:format="markdown"><![CDATA[### What's new
             
-- Ported latest commits from the <a src="https://github.com/dqhieu/Silica" target="_blank">source repository</a>.
+- Port latest commits from https://github.com/dqhieu/Silica.
 - Add PDF viewing with password support.
 - Add CSV/TSV previews, and diff highlighting.
 - Add sidebar hover effects and font sizing.
