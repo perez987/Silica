@@ -2,7 +2,7 @@
 
 A lightweight code editor for macOS, made of glass. Open a folder, find files fast, and edit with syntax highlighting, a minimap and a Markdown preview, all in a native SwiftUI and AppKit app.
 
-![Silica editing a Swift project, with the file tree on the left and the editor on a glass card](.github/assets/screenshot.jpg)
+![Silica editing a Swift project, with the file tree on the left and the editor on a glass card](.github/assets/screenshot.png)
 
 ## Personal motivation
 
@@ -16,8 +16,7 @@ I really like the original project and the Silica app, which works very well on 
 
 ## Download
 
-Get the latest DMG from [Releases](https://github.com/perez987/Silica/releases/latest),
-open it and drag Silica to Applications. Silica checks for updates once a day and installs them for you; you can turn that off in Settings › General.
+Get the latest DMG from [Releases](https://github.com/perez987/Silica/releases/latest), open it and drag Silica to Applications. Silica checks for updates once a day and installs them for you; you can turn that off in Settings › General.
 
 Silica needs macOS 26 or later.
 
@@ -39,19 +38,19 @@ Silica needs macOS 26 or later.
 
 ## Keyboard shortcuts
 
-| Shortcut | Action |
-|---|---|
-| ⇧⌘1 | Show welcome window |
-| ⌘P | Quick Open |
-| ⇧⌘F | Find in Project |
-| ⌥⌘J | Filter files in the tree |
-| ⌘L | Go to Line |
-| ⇧⌘V | Toggle Markdown or CSV preview |
-| ⌃⌘S | Show or hide the sidebar |
-| ⌘/ | Toggle comment |
-| ⌥↑ / ⌥↓ | Move lines up or down |
-| ⇧⌥↑ / ⇧⌥↓ | Duplicate lines up or down |
-| ⌥Z | Word wrap |
+| Shortcut     | Action                                    |
+| ------------ | ----------------------------------------- |
+| ⇧⌘1          | Show welcome window                       |
+| ⌘P           | Quick Open                                |
+| ⇧⌘F          | Find in Project                           |
+| ⌥⌘J          | Filter files in the tree                  |
+| ⌘L           | Go to Line                                |
+| ⇧⌘V          | Toggle Markdown or CSV preview            |
+| ⌃⌘S          | Show or hide the sidebar                  |
+| ⌘/           | Toggle comment                            |
+| ⌥↑ / ⌥↓      | Move lines up or down                     |
+| ⇧⌥↑ / ⇧⌥↓    | Duplicate lines up or down                |
+| ⌥Z           | Word wrap                                 |
 | ⌘+ / ⌘− / ⌘0 | Increase, decrease or reset the font size |
 
 ## Building from source
