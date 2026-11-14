@@ -3,6 +3,7 @@ import SwiftUI
 enum WindowID {
     static let welcome = "welcome"
     static let workspace = "workspace"
+    static let untitled = "untitled"
     static let settings = "settings"
 }
 
@@ -39,6 +40,20 @@ struct SilicaApp: App {
         .defaultSize(width: 1180, height: 760)
         .windowStyle(.hiddenTitleBar)
         .windowBackgroundDragBehavior(.enabled)
+        .handlesExternalEvents(matching: [])
+        .commands {
+            TextEditingCommands()
+            AppCommands()
+        }
+
+        WindowGroup("Untitled", id: WindowID.untitled, for: UUID.self) { _ in
+            WorkspaceWindow(projectID: nil, isStandalone: true)
+        }
+        .defaultSize(width: 1180, height: 760)
+        .windowStyle(.hiddenTitleBar)
+        .windowBackgroundDragBehavior(.enabled)
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
         .handlesExternalEvents(matching: [])
         .commands {
             TextEditingCommands()

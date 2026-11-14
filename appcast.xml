@@ -3,30 +3,32 @@
     <channel>
         <title>Silica</title>
        <item>
-            <title>0.4.0</title>
+            <title>0.4.1</title>
             <pubDate>Thu, 14 Nov 2026 18:58:59 +0800</pubDate>
             <link>https://github.com/perez987/Silica</link>
             <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>0040</sparkle:version>
-            <sparkle:shortVersionString>0.4.0</sparkle:shortVersionString>
+            <sparkle:version>0041</sparkle:version>
+            <sparkle:shortVersionString>0.4.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
             <description xml:lang="en"><![CDATA[
-            <h3>What's new in Silica 0.4.0</h3>
+            <h3>What's new in Silica 0.4.1</h3>
 			<ul>
-					<li>Port latest commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-					<li>Preview HTML with unsaved edits, project assets and scripts</li>
-					<li>Add Finder folder icons, external drag support and a tab action to reveal files in the explorer</li>
+					<li>Enable the menu option and keyboard shortcut for New File (⌘N) from the application launch</li>
+					<li>It opens a blank, untitled text file.</li>
 				</ul>
 			]]></description>
             <description xml:lang="es"><![CDATA[
-            <h3>Novedades de Silica 0.4.0</h3>
+            <h3>Novedades de Silica 0.4.1</h3>
 			<ul>
-					<li>Adaptar los últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-					<li>Puede mostrar la vista previa de archivos HTML</li>
-					<li>Añadir iconos de carpeta del Finder y soporte para arrastrar y soltar fuera de la app</li>
+					<li>Habilita el menú y el atajo de teclado Archivo Nuevo (⌘N) desde el inicio de la app</li>
+					<li>Abre un archivo de texto en blanco y sin título</li>
 				</ul>
 			]]></description>
-            <enclosure url="https://github.com/perez987/Silica/releases/download/0.4.0/Silica.0.4.0.dmg" length="8548850" type="application/octet-stream" sparkle:edSignature="MJYCP3zJKCiEIM48bx0jH3t0wrt2Hys6cbLxBhhCQQb4c/u2zK69f4PpXH2V3S4UuNS9PBuFb+tzZu5Ct5EqDQ=="/>
+            <enclosure 
+            url="https://github.com/perez987/Silica/releases/download/0.4.1/Silica.0.4.1.dmg" 
+            length="8034573" 
+            type="application/octet-stream" 
+            sparkle:edSignature="PT0cL9Nkk1O4ZsPfJVZT2d1I1eUXIokEsljSSl7tipxoMflbAbTBJd2Nw9/DtZk3Hn9xf8fmzbSW0bPthhy9BA=="/>
         </item>
     </channel>
 </rss>

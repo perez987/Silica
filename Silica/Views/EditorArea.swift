@@ -13,7 +13,9 @@ struct EditorArea: View {
             HStack(spacing: 8) {
                 if !workspace.isSidebarVisible {
                     Color.clear.frame(width: WorkspaceLayout.trafficLightsWidth)
-                    SidebarToggleButton(workspace: workspace)
+                    if !workspace.isStandalone {
+                        SidebarToggleButton(workspace: workspace)
+                    }
                 }
                 EditorTabBar(workspace: workspace)
                 Spacer(minLength: 0)
@@ -745,14 +747,22 @@ private struct EmptyEditorView: View {
             VStack(spacing: 6) {
                 Text(workspace.name)
                     .font(.title2.weight(.semibold))
-                Text("Select a file in the sidebar to start editing.")
-                    .foregroundStyle(.secondary)
+                if !workspace.isStandalone {
+                    Text("Select a file in the sidebar to start editing.")
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
-                shortcut("Quick Open", keys: "⌘P")
+                if workspace.isStandalone {
+                    shortcut("New File", keys: "⌘N")
+                } else {
+                    shortcut("Quick Open", keys: "⌘P")
+                }
                 shortcut("Open Another Project", keys: "⌘O")
-                shortcut("Toggle Sidebar", keys: "⌃⌘S")
+                if !workspace.isStandalone {
+                    shortcut("Toggle Sidebar", keys: "⌃⌘S")
+                }
             }
             .font(.callout)
         }

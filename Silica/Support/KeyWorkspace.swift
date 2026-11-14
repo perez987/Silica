@@ -36,8 +36,10 @@ final class KeyWorkspace: ObservableObject {
                 guard let buffer = workspace.activeBuffer, buffer.previewFormat != nil else { return event }
                 buffer.togglePreview()
             case "f":
+                guard !workspace.isStandalone else { return event }
                 workspace.showSearch()
             case "e":
+                guard !workspace.isStandalone else { return event }
                 workspace.showExplorer()
             case "s":
                 guard workspace.activeBuffer?.textController != nil else { return event }

@@ -42,13 +42,13 @@ final class QuickOpenModel {
         results.indices.contains(selectedIndex) ? results[selectedIndex] : nil
     }
 
-    /// Sets the query (usually empty, ":" for Go to Line) and rescans the project;
-    /// the previous index is shown meanwhile.
-    func prepareForPresentation(activeFile: URL?, query: String = "") {
+    /// Sets the query (usually empty, ":" for Go to Line) and optionally rescans
+    /// the project; the previous index is shown meanwhile.
+    func prepareForPresentation(activeFile: URL?, query: String = "", indexProject: Bool = true) {
         self.activeFile = activeFile
         self.query = query
         presentationCount += 1
-        reindex(activeFile: activeFile)
+        if indexProject { reindex(activeFile: activeFile) }
     }
 
     /// Follows renamed files in the recent list.

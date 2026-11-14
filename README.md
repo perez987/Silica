@@ -32,6 +32,7 @@ Silica needs macOS 26 or later.
 - **HTML preview**, including unsaved edits, project assets and page scripts.
 - **PDF viewing**, including password-protected files.
 - **Editing tools.** Tabs, line numbers, indent guides, a minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
+- **New files.** Press `⌘N` to start an empty plain-text file, even without an open project. Choose where to save it when ready.
 - **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. You can turn off the welcome window at launch in Settings › General and reopen it with File › Welcome Window or `⇧⌘1`.
 - **Appearance and language.** Choose glass or opaque windows in Settings › General. The opaque editor background is black in dark appearance and white in light appearance. Silica follows the macOS language preference, with English and Spanish available.
 - **Works with Finder.** Use Open With, drop files on the Dock icon, or run
@@ -42,6 +43,7 @@ Silica needs macOS 26 or later.
 | Shortcut     | Action                                    |
 | ------------ | ----------------------------------------- |
 | ⇧⌘1          | Show welcome window                       |
+| ⌘N           | New file                                  |
 | ⌘P           | Quick Open                                |
 | ⇧⌘F          | Find in Project                           |
 | ⌥⌘J          | Filter files in the tree                  |

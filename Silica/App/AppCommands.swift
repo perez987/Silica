@@ -43,16 +43,21 @@ struct AppCommands: Commands {
         }
 
         CommandGroup(replacing: .newItem) {
-            Button("New File") { workspace?.newUntitledFile() }
-                .keyboardShortcut("n")
-                .disabled(workspace == nil)
+            Button("New File") {
+                if let workspace {
+                    workspace.newUntitledFile()
+                } else {
+                    openWindow(id: WindowID.untitled, value: UUID())
+                }
+            }
+            .keyboardShortcut("n")
 
             Button("New File in Project…") { workspace?.beginNewItem(isDirectory: false) }
-                .disabled(workspace == nil)
+                .disabled(workspace?.isStandalone != false)
 
             Button("New Folder") { workspace?.beginNewItem(isDirectory: true) }
                 .keyboardShortcut("n", modifiers: [.command, .option])
-                .disabled(workspace == nil)
+                .disabled(workspace?.isStandalone != false)
 
             Divider()
 
@@ -72,7 +77,7 @@ struct AppCommands: Commands {
 
             Button("Quick Open…") { workspace?.toggleQuickOpen() }
                 .keyboardShortcut("p")
-                .disabled(workspace == nil)
+                .disabled(workspace?.isStandalone != false)
 
             Divider()
 
@@ -118,24 +123,24 @@ struct AppCommands: Commands {
                 workspace?.toggleSidebar()
             }
             .keyboardShortcut("s", modifiers: [.control, .command])
-            .disabled(workspace == nil)
+            .disabled(workspace?.isStandalone != false)
 
             // ⇧⌘E, ⇧⌘F and ⇧⌘S are also handled by KeyWorkspace.installKeyboardShortcuts().
             Button("Explorer") { workspace?.showExplorer() }
                 .keyboardShortcut("e", modifiers: [.command, .shift])
-                .disabled(workspace == nil)
+                .disabled(workspace?.isStandalone != false)
 
             Button("Find in Project") { workspace?.showSearch() }
                 .keyboardShortcut("f", modifiers: [.command, .shift])
-                .disabled(workspace == nil)
+                .disabled(workspace?.isStandalone != false)
 
             Button("Filter Files") { workspace?.focusTreeFilter() }
                 .keyboardShortcut("j", modifiers: [.command, .option])
-                .disabled(workspace == nil)
+                .disabled(workspace?.isStandalone != false)
 
             Button("Refresh Explorer") { workspace?.refresh() }
                 .keyboardShortcut("r", modifiers: [.command, .shift])
-                .disabled(workspace == nil)
+                .disabled(workspace?.isStandalone != false)
 
             Divider()
 

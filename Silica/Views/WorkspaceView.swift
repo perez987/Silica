@@ -1,9 +1,10 @@
 import AppKit
 import SwiftUI
 
-/// Window root for a workspace: resolves the project bookmark, then shows the editor.
+/// Window root for a workspace: resolves a project bookmark or opens an untitled editor.
 struct WorkspaceWindow: View {
     let projectID: RecentProject.ID?
+    var isStandalone = false
 
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
@@ -57,6 +58,12 @@ struct WorkspaceWindow: View {
 
     private func load() {
         guard workspace == nil else { return }
+        if isStandalone {
+            let workspace = WorkspaceModel()
+            workspace.newUntitledFile()
+            self.workspace = workspace
+            return
+        }
         guard let projectID else {
             // e.g. a restored window that never had a project: just close it.
             dismiss()

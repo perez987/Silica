@@ -3,11 +3,12 @@ import Foundation
 import Observation
 import SwiftUI
 
-/// State for one open project window: the explorer tree and the open editor tabs.
+/// State for an editor window, with an explorer tree when a project is open.
 @Observable
 final class WorkspaceModel {
     let rootURL: URL
     let root: FileNode
+    let isStandalone: Bool
 
     var selection: URL?
     /// The last file asked to be shown in the tree; `revealCount` changes on every
@@ -49,7 +50,7 @@ final class WorkspaceModel {
     @ObservationIgnored private var isRestoringSession = false
     @ObservationIgnored private var sessionSaveTask: Task<Void, Never>?
 
-    var name: String { root.name }
+    var name: String { isStandalone ? (activeBuffer?.name ?? String(localized: "Untitled")) : root.name }
 
     var activeBuffer: EditorBuffer? {
         activeTab.flatMap { buffers[$0] }
@@ -59,14 +60,22 @@ final class WorkspaceModel {
         buffers.values.contains { $0.needsSaving }
     }
 
-    init(rootURL: URL) {
+    convenience init() {
+        self.init(rootURL: FileManager.default.homeDirectoryForCurrentUser, isStandalone: true)
+    }
+
+    init(rootURL: URL, isStandalone: Bool = false) {
         self.rootURL = rootURL
-        self.isAccessingScope = rootURL.startAccessingSecurityScopedResource()
+        self.isStandalone = isStandalone
+        self.isAccessingScope = !isStandalone && rootURL.startAccessingSecurityScopedResource()
         self.root = FileNode(root: rootURL)
         self.quickOpen = QuickOpenModel(rootURL: rootURL)
         self.search = ProjectSearchModel(rootURL: rootURL)
-        root.isExpanded = true
-        root.loadChildrenIfNeeded()
+        isSidebarVisible = !isStandalone
+        if !isStandalone {
+            root.isExpanded = true
+            root.loadChildrenIfNeeded()
+        }
         search.unsavedTexts = { [weak self] in
             guard let self else { return [:] }
             var texts: [URL: String] = [:]
@@ -76,10 +85,12 @@ final class WorkspaceModel {
             return texts
         }
         // Keep the tree and open files in step with changes made by other apps.
-        watcher = ProjectWatcher(url: rootURL) { [weak self] in
-            self?.refresh()
+        if !isStandalone {
+            watcher = ProjectWatcher(url: rootURL) { [weak self] in
+                self?.refresh()
+            }
+            restoreSession()
         }
-        restoreSession()
         terminationObserver = NotificationCenter.default.addObserver(
             forName: NSApplication.willTerminateNotification, object: nil, queue: .main
         ) { [weak self] _ in
@@ -125,6 +136,7 @@ final class WorkspaceModel {
     }
 
     func toggleSidebar() {
+        guard !isStandalone else { return }
         withAnimation(.snappy) { isSidebarVisible.toggle() }
     }
 
@@ -135,12 +147,14 @@ final class WorkspaceModel {
     }
 
     func showExplorer() {
+        guard !isStandalone else { return }
         if !isSidebarVisible { toggleSidebar() }
         sidebarMode = .explorer
     }
 
     /// Find in Project: shows the search sidebar and focuses its field.
     func showSearch() {
+        guard !isStandalone else { return }
         if !isSidebarVisible { toggleSidebar() }
         sidebarMode = .search
         search.focusRequest += 1
@@ -160,6 +174,7 @@ final class WorkspaceModel {
     // MARK: Quick Open
 
     func toggleQuickOpen() {
+        guard !isStandalone else { return }
         if isQuickOpenVisible {
             hideQuickOpen()
         } else {
@@ -174,7 +189,7 @@ final class WorkspaceModel {
     }
 
     private func showQuickOpen(query: String) {
-        quickOpen.prepareForPresentation(activeFile: activeTab, query: query)
+        quickOpen.prepareForPresentation(activeFile: activeTab, query: query, indexProject: !isStandalone)
         if !isQuickOpenVisible {
             withAnimation(.snappy(duration: 0.18)) { isQuickOpenVisible = true }
         }
@@ -216,6 +231,7 @@ final class WorkspaceModel {
     /// Expands the folders above `url` so its row exists, selects it and asks the
     /// tree to scroll to it.
     func reveal(_ url: URL) {
+        guard !isStandalone else { return }
         let rootComponents = rootURL.standardizedFileURL.pathComponents
         let components = url.standardizedFileURL.pathComponents
         guard components.starts(with: rootComponents) else { return }
@@ -240,6 +256,7 @@ final class WorkspaceModel {
     }
 
     func contains(_ url: URL) -> Bool {
+        guard !isStandalone else { return false }
         let rootComponents = rootURL.standardizedFileURL.pathComponents
         let components = url.standardizedFileURL.pathComponents
         guard url.isFileURL, components.dropLast().starts(with: rootComponents) else { return false }
@@ -262,6 +279,10 @@ final class WorkspaceModel {
 
     /// Re-reads the tree and checks open files against the disk.
     func refresh() {
+        if isStandalone {
+            syncOpenFilesWithDisk()
+            return
+        }
         root.reload()
         FolderIcons.shared.reload()
         syncOpenFilesWithDisk()
@@ -369,7 +390,7 @@ final class WorkspaceModel {
 
     private func makeBuffer(for url: URL) -> EditorBuffer {
         let buffer = EditorBuffer(url: url)
-        buffer.projectURL = rootURL
+        buffer.projectURL = isStandalone ? nil : rootURL
         // Links in a preview open other project files here, like Quick Open.
         buffer.openFile = { [weak self] target in
             self?.open(target)
@@ -593,7 +614,7 @@ final class WorkspaceModel {
     /// Starts in the file's folder, or the project for an untitled file.
     private func savePanel(for buffer: EditorBuffer) -> NSSavePanel {
         let panel = NSSavePanel()
-        panel.directoryURL = buffer.isUntitled ? rootURL : buffer.url.deletingLastPathComponent()
+        panel.directoryURL = buffer.isUntitled ? (isStandalone ? nil : rootURL) : buffer.url.deletingLastPathComponent()
         panel.nameFieldStringValue = buffer.name
         panel.canCreateDirectories = true
         return panel
@@ -707,6 +728,7 @@ final class WorkspaceModel {
     func saveSession() {
         sessionSaveTask?.cancel()
         sessionSaveTask = nil
+        guard !isStandalone else { return }
         // Untitled tabs have nothing on disk to reopen.
         let tabs = openTabs.filter { !$0.isUntitled }.map { url in
             let controller = buffers[url]?.textController
@@ -726,7 +748,7 @@ final class WorkspaceModel {
     }
 
     private func scheduleSessionSave() {
-        guard !isRestoringSession else { return }
+        guard !isStandalone, !isRestoringSession else { return }
         sessionSaveTask?.cancel()
         sessionSaveTask = Task { [weak self] in
             try? await Task.sleep(for: .seconds(1))
