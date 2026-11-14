@@ -14,14 +14,14 @@
             <h3>What's new in Silica 0.4.1</h3>
 			<ul>
 					<li>Enable the menu option and keyboard shortcut for New File (⌘N) from the application launch</li>
-					<li>It opens a blank, untitled text file.</li>
+					<ul><li>It opens a blank, untitled text file.</li></ul>
 				</ul>
 			]]></description>
             <description xml:lang="es"><![CDATA[
             <h3>Novedades de Silica 0.4.1</h3>
 			<ul>
 					<li>Habilita el menú y el atajo de teclado Archivo Nuevo (⌘N) desde el inicio de la app</li>
-					<li>Abre un archivo de texto en blanco y sin título</li>
+					<ul><li>Abre un archivo de texto en blanco y sin título</li></ul>
 				</ul>
 			]]></description>
             <enclosure 
