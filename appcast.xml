@@ -19,7 +19,27 @@
 					<ul><li>Welcome window</li>
 					<li>Empty workspace</li>
 					<li>Blank text file.</li></ul>
-				</ul>
+			</ul>
+            <h3>What's new in Silica 0.4.0</h3>
+			<ul>
+					<li>Port latest commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Preview HTML with unsaved edits, project assets and scripts</li>
+					<li>Add Finder folder icons, external drag support and a tab action to reveal files in the explorer</li>
+			</ul>
+            <h3>What's new in Silica 0.3.6</h3>
+			<ul>
+					<li>Port latest commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Add PDF viewing with password support</li>
+					<li>Add CSV/TSV previews, and diff highlighting</li>
+					<li>Add sidebar hover effects and font sizing</li>
+			</ul>
+            <h3>What's new in Silica 0.3.5</h3>
+			<ul>
+					<li>Localize the interface and alerts</li>
+					<li>Option to switch windows style (glass / opaque)</li>
+					<li>Welcome window is optional at launch</li>
+					<li>Migrate the Xcode project type to `pbxproj` format</li>
+			</ul>
 			]]></description>
             <description xml:lang="es"><![CDATA[
             <h3>Novedades de Silica 0.4.1</h3>
@@ -31,6 +51,26 @@
 					<li>Espacio de trabajo vacío</li>
 					<li>Archivo de texto en blanco</li></ul>
 				</ul>
+            <h3>Novedades de Silica 0.4.0</h3>
+			<ul>
+					<li>Adaptar los últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Puede mostrar la vista previa de archivos HTML</li>
+					<li>Añadir iconos de carpeta del Finder y soporte para arrastrar y soltar fuera de la app</li>
+				</ul>
+			<h3>Novedades de Silica 0.3.6</h3>
+			<ul>
+					<li>Adaptar los últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Puede mostrar PDF con soporte para contraseña</li>
+					<li>Añadir vista previa de CSV/TSV, y resaltado de sintaxis para diff</li>
+					<li>Ajustar tamaño de letra de la barra lateral</li>
+			</ul>
+            <h3>Novedades de Silica 0.3.5</h3>
+			<ul>
+					<li>Traducción de interfaz y alertas</li>
+					<li>Opción para cambiar entre estilo de ventanas (translúcidas / opacas)</li>
+					<li>Pantalla de bienvenida es opcional al arrancar la app</li>
+					<li>El tipo de proyecto Xcode ha migrado al formato `pbxproj`</li>
+			</ul>
 			]]></description>
             <enclosure 
             url="https://github.com/perez987/Silica/releases/download/0.4.1/Silica.0.4.1.dmg" 
