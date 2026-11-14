@@ -2,7 +2,9 @@
 
 A lightweight code editor for macOS, made of glass. Open a folder, find files fast, and edit with syntax highlighting, a minimap and a Markdown preview, all in a native SwiftUI and AppKit app.
 
-![Silica editing a Swift project, with the file tree on the left and the editor on a glass card](.github/assets/screenshot.png)
+| Main window | Settings |
+|:----|:---:|
+| ![Window](.github/assets/screenshot.png) | ![Settings](.github/assets/settings.png) | 
 
 ## Personal motivation
 
@@ -11,6 +13,8 @@ I really like the original project and the Silica app, which works very well on 
 - Localize the interface and alerts, adding a simple language system with English (default) and Spanish
 - Add an option to switch between glass and opaque window styles, since I prefer opaque windows
 - Choose whether to start with the welcome window, an empty workspace, or a blank text file
+- Enable New File (⌘N) menu and keyboard shortcut from the app startup →
+open a blank text file without an associated project
 - Migrate the Xcode project to `pbxproj` format for compatibility
 - Update the release script, not actually used for the release available in this fork.
 
