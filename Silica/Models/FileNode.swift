@@ -72,7 +72,7 @@ final class FileNode: Identifiable {
         }
     }
 
-    private static let hiddenNames: Set<String> = [".DS_Store", ".git"]
+    static let hiddenNames: Set<String> = [".DS_Store", ".git"]
 
     private func rulesForChildren() -> GitIgnoreStack {
         if let childRules { return childRules }

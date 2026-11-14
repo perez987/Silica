@@ -22,13 +22,14 @@ Silica needs macOS 26 or later.
 
 ## Features
 
-- **Projects.** Open a folder to get a window with a file tree. Files and folder your `.gitignore` excludes are dimmed, and the tree updates as files change on disk. Create, rename and move files to the Trash right in the tree, and filter it as you type.
+- **Projects.** Open a folder to get a window with a file tree and Finder folder icons. Files and folders your `.gitignore` excludes are dimmed, and the tree updates as files change on disk. Create, rename and move files to the Trash, drag files and folders (including the project icon beside its name) to other apps, filter the tree as you type, and reveal a tab's file from its menu.
 - **Quick Open and project search.** Jump to any file with fuzzy matching, or search the text of every file in the project.
 - **Syntax highlighting** for 26 languages, including Swift, JavaScript, TypeScript, Python, Go, Rust, C, C++, Java, Kotlin, HTML, CSS, JSON, YAML, Markdown and diff files.
 - **Nine color themes**, each with a light and a dark palette: Atom One, GitHub,
   Xcode, Solarized, Catppuccin, Gruvbox, Tokyo Night, Rosé Pine and Dracula.
 - **Markdown preview**, with highlighted code blocks.
 - **CSV and TSV preview**, with a table view and double-click to edit a row.
+- **HTML preview**, including unsaved edits, project assets and page scripts.
 - **PDF viewing**, including password-protected files.
 - **Editing tools.** Tabs, line numbers, indent guides, a minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
 - **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. You can turn off the welcome window at launch in Settings › General and reopen it with File › Welcome Window or `⇧⌘1`.
@@ -45,7 +46,7 @@ Silica needs macOS 26 or later.
 | ⇧⌘F          | Find in Project                           |
 | ⌥⌘J          | Filter files in the tree                  |
 | ⌘L           | Go to Line                                |
-| ⇧⌘V          | Toggle Markdown or CSV preview            |
+| ⇧⌘V          | Toggle Markdown, CSV, TSV or HTML preview  |
 | ⌃⌘S          | Show or hide the sidebar                  |
 | ⌘/           | Toggle comment                            |
 | ⌥↑ / ⌥↓      | Move lines up or down                     |

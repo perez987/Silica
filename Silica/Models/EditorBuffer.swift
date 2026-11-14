@@ -43,7 +43,7 @@ final class EditorBuffer: Identifiable {
     var cursor = CursorStatus()
     var indentation = EditorTextView.Indentation(usesTabs: false, width: 4)
 
-    /// Markdown and CSV files can switch between their source and a rendered preview;
+    /// Markdown, CSV, TSV and HTML files can switch between source and preview;
     /// `nil` for every other kind of file.
     private(set) var previewFormat: PreviewFormat?
     private(set) var isShowingPreview = false
@@ -51,6 +51,7 @@ final class EditorBuffer: Identifiable {
     @ObservationIgnored private(set) var preview: DocumentPreview?
     /// Opens a project file a preview link points to.
     @ObservationIgnored var openFile: ((URL) -> Void)?
+    @ObservationIgnored var projectURL: URL?
 
     var id: URL { url }
     var name: String { url.lastPathComponent }
@@ -254,6 +255,9 @@ final class EditorBuffer: Identifiable {
             self.preview = preview
             preview.show(controller.textView.string, line: controller.topVisibleLine())
             isShowingPreview = true
+        } else if format == .html {
+            isShowingPreview = false
+            preview?.unloadPage()
         } else if let editLine {
             isShowingPreview = false
             DispatchQueue.main.async { controller.scroll(toLine: editLine, placingCursor: true) }
@@ -266,7 +270,10 @@ final class EditorBuffer: Identifiable {
     }
 
     private func makePreview(for controller: TextController, format: PreviewFormat) -> DocumentPreview {
-        let preview = DocumentPreview(fileURL: url, format: format)
+        let readAccessURL = projectURL.flatMap { project in
+            url.standardizedFileURL.pathComponents.dropLast().starts(with: project.standardizedFileURL.pathComponents) ? project : nil
+        }
+        let preview = DocumentPreview(fileURL: url, format: format, readAccessURL: readAccessURL)
         preview.onOpenFile = { [weak self] url in self?.openFile?(url) }
         preview.onEditLine = { [weak self] line in self?.setShowingPreview(false, editLine: line) }
         preview.onType = { [weak self] characters in
@@ -355,8 +362,13 @@ final class EditorBuffer: Identifiable {
         isDirty = false
         isMissingOnDisk = false
         if isShowingPreview, let preview {
-            preview.topVisibleLine { line in
-                preview.show(controller.textView.string, line: line)
+            if previewFormat == .html {
+                preview.show(controller.textView.string, line: 1)
+            } else {
+                preview.topVisibleLine { [weak self] line in
+                    guard let self, self.isShowingPreview, self.preview === preview else { return }
+                    preview.show(controller.textView.string, line: line)
+                }
             }
         }
     }

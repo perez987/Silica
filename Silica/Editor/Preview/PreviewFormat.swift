@@ -7,6 +7,7 @@ nonisolated enum PreviewFormat: Sendable {
     case csv
     /// Tab-separated values.
     case tsv
+    case html
 
     init?(url: URL) {
         if SyntaxLanguage(url: url) == .markdown {
@@ -16,6 +17,7 @@ nonisolated enum PreviewFormat: Sendable {
         switch url.pathExtension.lowercased() {
         case "csv": self = .csv
         case "tsv": self = .tsv
+        case "html", "htm", "xhtml": self = .html
         default: return nil
         }
     }
@@ -26,12 +28,13 @@ nonisolated enum PreviewFormat: Sendable {
         case .markdown: "Markdown"
         case .csv: "CSV"
         case .tsv: "TSV"
+        case .html: "HTML"
         }
     }
 
     /// Shown as a table that can be wider than the window, not as a column of text.
     var isTable: Bool {
-        self != .markdown
+        self == .csv || self == .tsv
     }
 
     /// The body of the preview page for the file's `text`.
@@ -40,6 +43,7 @@ nonisolated enum PreviewFormat: Sendable {
         case .markdown: MarkdownHTMLRenderer.render(text)
         case .csv: CSVHTMLRenderer.render(text)
         case .tsv: CSVHTMLRenderer.render(text, delimiter: "\t")
+        case .html: text
         }
     }
 }

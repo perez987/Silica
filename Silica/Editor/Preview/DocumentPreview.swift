@@ -3,15 +3,10 @@ import SwiftUI
 import UniformTypeIdentifiers
 import WebKit
 
-/// The rendered view of one Markdown or CSV buffer, kept alive with its tab so switching
-/// back and forth is instant.
+/// The rendered view of one Markdown, CSV, TSV or HTML buffer, kept alive with its tab.
 ///
-/// The page is HTML from the format's renderer, styled to match the editor and drawn
-/// on a transparent background so the editor card shows through. Scripts in the
-/// document itself never run; Silica's own small script (scroll position, double-click)
-/// runs in a separate script world. Relative images load from disk through the
-/// `silica-preview:` scheme, links to project files open in Silica, and web links open
-/// in the browser.
+/// Markdown and table previews use generated HTML without document scripts. HTML
+/// files use WebKit's file access rules and run their own scripts.
 final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
     let webView: PreviewWebView
 
@@ -24,30 +19,46 @@ final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
 
     private let fileURL: URL
     private let format: PreviewFormat
+    private let readAccessURL: URL
     private var pendingLine: Int?
     private var renderTask: Task<Void, Never>?
+    private var pendingHTML: String?
+    private var accessNavigation: WKNavigation?
+    private var hasReadAccess = false
+    private var pageNavigation: WKNavigation?
+    private var isStartingPage = false
+    private var pendingScroll: CGPoint?
+    private var savedScroll: CGPoint?
+    private var isUnloaded = false
+    private var pageRequest = 0
     private var baseURL: URL {
         URL(string: Self.scheme + "://local" + Self.encodedPath(fileURL.deletingLastPathComponent().path(percentEncoded: false)))!
     }
 
     static let scheme = "silica-preview"
 
-    init(fileURL: URL, format: PreviewFormat) {
+    init(fileURL: URL, format: PreviewFormat, readAccessURL: URL? = nil) {
         self.fileURL = fileURL
         self.format = format
+        self.readAccessURL = readAccessURL ?? fileURL.deletingLastPathComponent()
 
         let configuration = WKWebViewConfiguration()
-        configuration.defaultWebpagePreferences.allowsContentJavaScript = false
-        configuration.setURLSchemeHandler(LocalFileSchemeHandler(), forURLScheme: Self.scheme)
-        configuration.userContentController.addUserScript(WKUserScript(
-            source: Self.script, injectionTime: .atDocumentEnd, forMainFrameOnly: true, in: .defaultClient
-        ))
+        if format == .html {
+            configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+        } else {
+            configuration.defaultWebpagePreferences.allowsContentJavaScript = false
+            configuration.setURLSchemeHandler(LocalFileSchemeHandler(), forURLScheme: Self.scheme)
+            configuration.userContentController.addUserScript(WKUserScript(
+                source: Self.script, injectionTime: .atDocumentEnd, forMainFrameOnly: true, in: .defaultClient
+            ))
+        }
         webView = PreviewWebView(frame: .zero, configuration: configuration)
         super.init()
+        webView.navigationDelegate = self
 
+        guard format != .html else { return }
         // Through a weak proxy: the content controller retains its handlers.
         configuration.userContentController.add(WeakScriptHandler(self), contentWorld: .defaultClient, name: "silica")
-        webView.navigationDelegate = self
         webView.underPageBackgroundColor = .clear
         webView.setValue(false, forKey: "drawsBackground")
         webView.onType = { [weak self] characters in self?.onType?(characters) }
@@ -65,6 +76,10 @@ final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
 
     /// Renders the file's `text` and, once loaded, scrolls to the block nearest `line`.
     func show(_ text: String, line: Int) {
+        guard format != .html else {
+            show(html: text)
+            return
+        }
         // Off the main actor, as a large file takes a while to turn into HTML. A newer
         // call takes over from one that is still rendering.
         renderTask?.cancel()
@@ -80,6 +95,69 @@ final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
         }
     }
 
+    private func show(html: String) {
+        isUnloaded = false
+        pageRequest += 1
+        let request = pageRequest
+        scrollPosition { [weak self] position in
+            guard let self, !isUnloaded, pageRequest == request else { return }
+            pendingScroll = pendingScroll ?? savedScroll ?? position
+            savedScroll = nil
+            load(html: html)
+        }
+    }
+
+    /// Stop the page while source is showing, preserving its scroll position.
+    func unloadPage() {
+        guard format == .html, !isUnloaded else { return }
+        isUnloaded = true
+        pageRequest += 1
+        let request = pageRequest
+        scrollPosition { [weak self] position in
+            guard let self, isUnloaded, pageRequest == request else { return }
+            savedScroll = pendingScroll ?? savedScroll ?? position
+            pendingScroll = nil
+            load(html: "")
+        }
+    }
+
+    private func scrollPosition(_ completion: @escaping (CGPoint?) -> Void) {
+        webView.evaluateJavaScript("[window.scrollX, window.scrollY]", in: nil, in: .defaultClient) { result in
+            let offset = (try? result.get()) as? [Double]
+            completion(offset.flatMap { $0.count == 2 ? CGPoint(x: $0[0], y: $0[1]) : nil })
+        }
+    }
+
+    private func load(html: String) {
+        if pendingHTML != nil {
+            pendingHTML = html
+        } else if hasReadAccess {
+            loadPage(html)
+        } else {
+            hasReadAccess = true
+            pendingHTML = html
+            accessNavigation = webView.loadFileURL(fileURL, allowingReadAccessTo: readAccessURL)
+        }
+    }
+
+    private func loadPage(_ html: String) {
+        isStartingPage = true
+        pageNavigation = webView.loadHTMLString(html, baseURL: fileURL)
+    }
+
+    private func showPendingHTML() {
+        guard let html = pendingHTML else { return }
+        pendingHTML = nil
+        accessNavigation = nil
+        loadPage(html)
+    }
+
+    private func accessDidFail(_ navigation: WKNavigation?) {
+        guard let navigation, navigation === accessNavigation else { return }
+        hasReadAccess = false
+        showPendingHTML()
+    }
+
     /// The 1-based source line of the first block visible at the top.
     func topVisibleLine(_ completion: @escaping (Int) -> Void) {
         webView.evaluateJavaScript("silica.topLine()", in: nil, in: .defaultClient) { result in
@@ -90,25 +168,68 @@ final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
     // MARK: WKNavigationDelegate
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        if format == .html {
+            if let navigation, navigation === pageNavigation, let scroll = pendingScroll {
+                pendingScroll = nil
+                webView.evaluateJavaScript("window.scrollTo(\(scroll.x), \(scroll.y))", in: nil, in: .defaultClient) { _ in }
+            }
+            return
+        }
         guard let line = pendingLine else { return }
         pendingLine = nil
         webView.evaluateJavaScript("silica.scrollToLine(\(line))", in: nil, in: .defaultClient) { _ in }
     }
 
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        guard let navigation else { return }
+        if navigation === accessNavigation {
+            showPendingHTML()
+        } else if navigation === pageNavigation {
+            isStartingPage = false
+        }
+    }
+
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error) {
+        if navigation === pageNavigation { isStartingPage = false }
+        accessDidFail(navigation)
+    }
+
+    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: any Error) {
+        if navigation === pageNavigation { isStartingPage = false }
+        accessDidFail(navigation)
+    }
+
     func webView(
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
-        decisionHandler: @escaping @MainActor (WKNavigationActionPolicy) -> Void
+        preferences: WKWebpagePreferences,
+        decisionHandler: @escaping @MainActor (WKNavigationActionPolicy, WKWebpagePreferences) -> Void
     ) {
         // Only the page itself loads in place (and subframes, e.g. an embedded video);
         // every other navigation is a link and is handled here instead.
         guard let url = navigationAction.request.url,
               navigationAction.targetFrame?.isMainFrame != false,
-              url.absoluteString != baseURL.absoluteString, url.scheme != "about" else {
-            decisionHandler(.allow)
+              url.absoluteString != baseURL.absoluteString, url.scheme != "about",
+              !loadsInPlace(url, navigationAction.navigationType) else {
+            if pendingHTML != nil { preferences.allowsContentJavaScript = false }
+            decisionHandler(.allow, preferences)
             return
         }
-        decisionHandler(.cancel)
+        decisionHandler(.cancel, preferences)
+
+        if format == .html {
+            guard navigationAction.navigationType == .linkActivated else { return }
+            if url.isFileURL {
+                let target = URL(filePath: url.path(percentEncoded: false))
+                var isDirectory: ObjCBool = false
+                if FileManager.default.fileExists(atPath: target.path(percentEncoded: false), isDirectory: &isDirectory), !isDirectory.boolValue {
+                    onOpenFile?(target)
+                }
+            } else if ["http", "https", "mailto"].contains(url.scheme?.lowercased()) {
+                NSWorkspace.shared.open(url)
+            }
+            return
+        }
 
         if url.scheme == Self.scheme {
             let path = url.path(percentEncoded: false)
@@ -126,6 +247,20 @@ final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
         } else if ["http", "https", "mailto"].contains(url.scheme?.lowercased()) {
             NSWorkspace.shared.open(url)
         }
+    }
+
+    private func loadsInPlace(_ url: URL, _ type: WKNavigationType) -> Bool {
+        guard format == .html, url.isFileURL, url.query == nil,
+              url.standardizedFileURL.path(percentEncoded: false) == fileURL.standardizedFileURL.path(percentEncoded: false) else { return false }
+        if url.fragment != nil { return true }
+        return type == .other && (pendingHTML != nil || isStartingPage)
+    }
+
+    func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
+        hasReadAccess = false
+        pendingHTML = nil
+        accessNavigation = nil
+        isStartingPage = false
     }
 
     // MARK: WKScriptMessageHandler
@@ -269,9 +404,9 @@ final class PreviewWebView: WKWebView {
 
     override func keyDown(with event: NSEvent) {
         let modifiers = event.modifierFlags.intersection([.command, .control])
-        if modifiers.isEmpty, let characters = event.characters, !characters.isEmpty,
+        if let onType, modifiers.isEmpty, let characters = event.characters, !characters.isEmpty,
            characters.unicodeScalars.allSatisfy({ !CharacterSet.whitespacesAndNewlines.contains($0) && !CharacterSet.controlCharacters.contains($0) && $0.value < 0xF700 }) {
-            onType?(characters)
+            onType(characters)
             return
         }
         // Space, arrows and page keys keep scrolling the preview.

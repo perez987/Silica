@@ -1,6 +1,7 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
-/// SF Symbol + tint for a file, colored like Xcode's project navigator.
+/// Finder icons for folders and tinted SF Symbols for files.
 struct FileIcon: View {
     let url: URL
     var isDirectory = false
@@ -8,11 +9,17 @@ struct FileIcon: View {
     var width: CGFloat = 16
 
     var body: some View {
-        let (symbol, color) = Self.style(for: url, isDirectory: isDirectory, isExpanded: isExpanded)
-        Image(systemName: symbol)
-            .symbolVariant(isDirectory ? .fill : .none)
-            .foregroundStyle(color)
-            .frame(width: width)
+        if isDirectory {
+            Image(nsImage: FolderIcons.shared.icon(for: url))
+                .resizable()
+                .interpolation(.high)
+                .frame(width: width, height: width)
+        } else {
+            let (symbol, color) = Self.style(for: url, isDirectory: false, isExpanded: isExpanded)
+            Image(systemName: symbol)
+                .foregroundStyle(color)
+                .frame(width: width)
+        }
     }
 
     static func style(for url: URL, isDirectory: Bool, isExpanded: Bool) -> (String, Color) {
@@ -55,6 +62,30 @@ struct FileIcon: View {
         case "txt", "log": return ("doc.plaintext", C.neutral)
         default: return ("doc", C.neutral)
         }
+    }
+}
+
+@MainActor @Observable
+final class FolderIcons {
+    static let shared = FolderIcons()
+    private var generation = 0
+    @ObservationIgnored private var icons: [URL: NSImage] = [:]
+
+    func icon(for url: URL) -> NSImage {
+        _ = generation
+        if let icon = icons[url] { return icon }
+        let path = url.path(percentEncoded: false)
+        let icon = FileManager.default.fileExists(atPath: path)
+            ? NSWorkspace.shared.icon(forFile: path)
+            : NSWorkspace.shared.icon(for: .folder)
+        icons[url] = icon
+        return icon
+    }
+
+    func reload() {
+        guard !icons.isEmpty else { return }
+        icons.removeAll()
+        generation += 1
     }
 }
 

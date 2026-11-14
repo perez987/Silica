@@ -239,9 +239,31 @@ final class WorkspaceModel {
         revealCount += 1
     }
 
+    func contains(_ url: URL) -> Bool {
+        let rootComponents = rootURL.standardizedFileURL.pathComponents
+        let components = url.standardizedFileURL.pathComponents
+        guard url.isFileURL, components.dropLast().starts(with: rootComponents) else { return false }
+        return !components.dropFirst(rootComponents.count).contains { FileNode.hiddenNames.contains($0) }
+    }
+
+    func revealInTree(_ url: URL) {
+        activate(url)
+        showExplorer()
+        if isFilteringTree {
+            let path = relativePath(of: url)
+            let query = treeFilter.trimmingCharacters(in: .whitespaces).lowercased()
+            let matchesQuery = path.split(separator: "/").contains { $0.lowercased().contains(query) }
+            if !matchesQuery || treeFilterResult?.visiblePaths.contains(path) != true {
+                treeFilter = ""
+            }
+        }
+        reveal(url)
+    }
+
     /// Re-reads the tree and checks open files against the disk.
     func refresh() {
         root.reload()
+        FolderIcons.shared.reload()
         syncOpenFilesWithDisk()
         search.refresh()
         // Files may have come or gone: filter a fresh list.
@@ -347,6 +369,7 @@ final class WorkspaceModel {
 
     private func makeBuffer(for url: URL) -> EditorBuffer {
         let buffer = EditorBuffer(url: url)
+        buffer.projectURL = rootURL
         // Links in a preview open other project files here, like Quick Open.
         buffer.openFile = { [weak self] target in
             self?.open(target)

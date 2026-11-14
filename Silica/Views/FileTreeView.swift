@@ -5,6 +5,8 @@ import SwiftUI
 struct FileTreeView: View {
     @Bindable var workspace: WorkspaceModel
     @State private var pinnedFolders = PinnedFolderTracker()
+    @State private var draggedURL: URL?
+    @State private var isRestoringSelection = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -34,7 +36,19 @@ struct FileTreeView: View {
                 ProjectSearchView(workspace: workspace, model: workspace.search)
             }
         }
-        .onChange(of: workspace.selection) {
+        .onChange(of: workspace.selection) { old, new in
+            if let dragged = draggedURL {
+                draggedURL = nil
+                if new == dragged {
+                    isRestoringSelection = true
+                    workspace.selection = old
+                    return
+                }
+            }
+            if isRestoringSelection {
+                isRestoringSelection = false
+                return
+            }
             workspace.handleSelectionChange()
         }
         .onChange(of: EditorSettings.shared.sidebarFontSize) {
@@ -46,11 +60,12 @@ struct FileTreeView: View {
 
     private var header: some View {
         HStack(spacing: 0) {
-            Text(workspace.sidebarMode == .search ? String(localized: "Search") : workspace.name)
-                .lineLimit(1)
-                .truncationMode(.middle)
-                .font(.headline)
-                .help(workspace.rootURL.path(percentEncoded: false))
+            if workspace.sidebarMode == .search {
+                Text("Search")
+                    .font(.headline)
+            } else {
+                ProjectTitle(workspace: workspace)
+            }
 
             Spacer(minLength: 8)
 
@@ -159,6 +174,12 @@ struct FileTreeView: View {
                 tracker: pinnedFolders,
                 rows: EditorSettings.shared.pinsParentFolders ? rows.map(\.pinnedFolderRow) : []
             ))
+            .background(FileTreeDragSource(
+                rows: rows,
+                isEnabled: workspace.treeEdit == nil,
+                onInteraction: { draggedURL = nil },
+                onDragStart: { url in draggedURL = workspace.selection == url ? nil : url }
+            ))
             .overlay(alignment: .top) {
                 PinnedFolders(rows: rows, tracker: pinnedFolders, workspace: workspace)
             }
@@ -178,6 +199,10 @@ struct FileTreeView: View {
                 DispatchQueue.main.async {
                     proxy.scrollTo(url, anchor: .center)
                 }
+            }
+            .onDisappear {
+                draggedURL = nil
+                isRestoringSelection = false
             }
         }
     }
@@ -240,6 +265,88 @@ struct FileTreeView: View {
         }
         add(workspace.root.children ?? [], depth: 0, in: workspace.root.url)
         return rows
+    }
+}
+
+private struct ProjectTitle: View {
+    let workspace: WorkspaceModel
+    @State private var isHovering = false
+
+    var body: some View {
+        HStack(spacing: 4) {
+            if isHovering {
+                FolderProxyIcon(url: workspace.rootURL, icon: FolderIcons.shared.icon(for: workspace.rootURL))
+                    .frame(width: 16, height: 16)
+                    .transition(.opacity)
+            }
+            Text(workspace.name)
+                .lineLimit(1)
+                .truncationMode(.middle)
+                .font(.headline)
+                .help(workspace.rootURL.path(percentEncoded: false))
+        }
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.15)) { isHovering = hovering }
+        }
+    }
+}
+
+private struct FolderProxyIcon: NSViewRepresentable {
+    let url: URL
+    let icon: NSImage
+
+    func makeNSView(context: Context) -> ProxyIconView { ProxyIconView() }
+
+    func updateNSView(_ view: ProxyIconView, context: Context) {
+        view.url = url
+        if view.image !== icon { view.image = icon }
+    }
+
+    final class ProxyIconView: NSImageView, NSDraggingSource {
+        var url: URL?
+        private var holdsWindow = false
+
+        override func updateTrackingAreas() {
+            super.updateTrackingAreas()
+            if trackingAreas.isEmpty {
+                addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+            }
+            updateWindowMovability()
+        }
+
+        override func mouseEntered(with event: NSEvent) { updateWindowMovability() }
+        override func mouseExited(with event: NSEvent) { updateWindowMovability() }
+
+        override func viewWillMove(toWindow newWindow: NSWindow?) {
+            super.viewWillMove(toWindow: newWindow)
+            if holdsWindow { window?.isMovable = true }
+            holdsWindow = false
+        }
+
+        private func updateWindowMovability() {
+            guard let window else { return }
+            let isInside = bounds.contains(convert(window.mouseLocationOutsideOfEventStream, from: nil))
+            guard isInside != holdsWindow else { return }
+            holdsWindow = isInside
+            window.isMovable = !isInside
+        }
+
+        override func mouseDown(with event: NSEvent) {}
+
+        override func mouseDragged(with event: NSEvent) {
+            guard let url else { return }
+            let item = NSDraggingItem(pasteboardWriter: url as NSURL)
+            item.setDraggingFrame(bounds, contents: image)
+            beginDraggingSession(with: [item], event: event, source: self)
+        }
+
+        func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+            context == .outsideApplication ? [.copy, .link] : []
+        }
+
+        func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
+            updateWindowMovability()
+        }
     }
 }
 
@@ -372,6 +479,126 @@ private struct TreeFilterField: View {
         .padding(.vertical, 6)
         .glassEffect(.regular, in: .capsule)
         .onChange(of: workspace.treeFilterFocusRequest) { isFocused = true }
+    }
+}
+
+private struct FileTreeDragSource: NSViewRepresentable {
+    let rows: [FileTreeView.TreeRow]
+    let isEnabled: Bool
+    let onInteraction: () -> Void
+    let onDragStart: (URL) -> Void
+
+    func makeNSView(context: Context) -> SourceView { SourceView() }
+
+    func updateNSView(_ view: SourceView, context: Context) {
+        view.rows = rows
+        view.isEnabled = isEnabled
+        view.onInteraction = onInteraction
+        view.onDragStart = onDragStart
+    }
+
+    static func dismantleNSView(_ view: SourceView, coordinator: ()) {
+        view.stopWatching()
+    }
+
+    final class SourceView: NSView, NSDraggingSource {
+        var rows: [FileTreeView.TreeRow] = []
+        var isEnabled = true
+        var onInteraction: () -> Void = {}
+        var onDragStart: (URL) -> Void = { _ in }
+        private var monitor: Any?
+        private var press: Press?
+        private var draggedPress: Press?
+
+        private struct Press {
+            let row: Int
+            let url: URL
+            let table: NSTableView
+            let event: NSEvent
+        }
+
+        override func hitTest(_ point: NSPoint) -> NSView? { nil }
+
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            stopWatching()
+            guard window != nil else { return }
+            monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .keyDown]) { [weak self] event in
+                guard let self else { return event }
+                return self.handle(event)
+            }
+        }
+
+        func stopWatching() {
+            if let monitor { NSEvent.removeMonitor(monitor) }
+            monitor = nil
+            press = nil
+        }
+
+        private func handle(_ event: NSEvent) -> NSEvent? {
+            if event.window === window, event.type == .leftMouseDown || event.type == .keyDown {
+                onInteraction()
+            }
+            switch event.type {
+            case .leftMouseDown:
+                press = pressedRow(event)
+            case .leftMouseDragged:
+                guard let press else { break }
+                let location = event.locationInWindow
+                let dx = location.x - press.event.locationInWindow.x, dy = location.y - press.event.locationInWindow.y
+                guard dx * dx + dy * dy >= 9 else { break }
+                self.press = nil
+                startDrag(press, with: event)
+                return nil
+            default:
+                press = nil
+            }
+            return event
+        }
+
+        private func pressedRow(_ event: NSEvent) -> Press? {
+            guard isEnabled, !rows.isEmpty, event.clickCount == 1, !event.modifierFlags.contains(.control),
+                  let window, event.window === window, window.attachedSheet == nil, NSApp.modalWindow == nil,
+                  bounds.contains(convert(event.locationInWindow, from: nil))
+            else { return nil }
+            var view = window.contentView?.superview?.hitTest(event.locationInWindow)
+            while let current = view, !(current is NSTableView) { view = current.superview }
+            guard let table = view as? NSTableView else { return nil }
+            let row = table.row(at: table.convert(event.locationInWindow, from: nil))
+            guard rows.indices.contains(row), let url = rows[row].url else { return nil }
+            return Press(row: row, url: url, table: table, event: event)
+        }
+
+        private func startDrag(_ press: Press, with event: NSEvent) {
+            let item = NSDraggingItem(pasteboardWriter: press.url as NSURL)
+            item.setDraggingFrame(press.table.rect(ofRow: press.row), contents: image(ofRow: press.row, in: press.table))
+            draggedPress = press
+            onDragStart(press.url)
+            press.table.beginDraggingSession(with: [item], event: event, source: self)
+        }
+
+        private func image(ofRow row: Int, in table: NSTableView) -> NSImage? {
+            guard let view = table.rowView(atRow: row, makeIfNecessary: false),
+                  let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return nil }
+            view.cacheDisplay(in: view.bounds, to: rep)
+            let image = NSImage(size: view.bounds.size)
+            image.addRepresentation(rep)
+            return image
+        }
+
+        func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
+            guard let down = draggedPress?.event else { return }
+            draggedPress = nil
+            if let up = NSEvent.mouseEvent(with: .leftMouseUp, location: NSPoint(x: -10_000, y: -10_000), modifierFlags: [],
+                                           timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: down.windowNumber,
+                                           context: nil, eventNumber: down.eventNumber, clickCount: down.clickCount, pressure: 0) {
+                NSApp.postEvent(up, atStart: true)
+            }
+        }
+
+        func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+            context == .outsideApplication ? [.copy, .link] : []
+        }
     }
 }
 
