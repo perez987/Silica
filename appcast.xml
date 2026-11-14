@@ -13,22 +13,30 @@
             <description xml:lang="en"><![CDATA[
             <h3>What's new in Silica 0.4.1</h3>
 			<ul>
-					<li>Enable the menu option and keyboard shortcut for New File (⌘N) from the application launch</li>
+					<li>Enable the menu option and keyboard shortcut for New File (⌘N) from the application launch:</li>
 					<ul><li>It opens a blank, untitled text file.</li></ul>
+					<li>Add a General settings choice at launch:</li>
+					<ul><li>Welcome window</li>
+					<li>Empty workspace</li>
+					<li>Blank text file.</li></ul>
 				</ul>
 			]]></description>
             <description xml:lang="es"><![CDATA[
             <h3>Novedades de Silica 0.4.1</h3>
 			<ul>
-					<li>Habilita el menú y el atajo de teclado Archivo Nuevo (⌘N) desde el inicio de la app</li>
+					<li>Habilita el menú y el atajo de teclado Archivo Nuevo (⌘N) desde el inicio de la app:</li>
 					<ul><li>Abre un archivo de texto en blanco y sin título</li></ul>
+					<li>Añade una opción en Ajustes (General) para elegir al inicio:</li>
+					<ul><li>Ventana de bienvenida</li>
+					<li>Espacio de trabajo vacío</li>
+					<li>Archivo de texto en blanco</li></ul>
 				</ul>
 			]]></description>
             <enclosure 
             url="https://github.com/perez987/Silica/releases/download/0.4.1/Silica.0.4.1.dmg" 
-            length="8034573" 
+            length="8036373" 
             type="application/octet-stream" 
-            sparkle:edSignature="PT0cL9Nkk1O4ZsPfJVZT2d1I1eUXIokEsljSSl7tipxoMflbAbTBJd2Nw9/DtZk3Hn9xf8fmzbSW0bPthhy9BA=="/>
+            sparkle:edSignature="4hgv/1XhOY/0n44U7IDltbrxbSekGZ36JumBEdz94dNyBmtRzPbKYm8rEIE94gYjsxyBv4C6smpdxYfLRWx+CQ=="/>
         </item>
     </channel>
 </rss>

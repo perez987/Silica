@@ -55,7 +55,10 @@
 "Glass" = "Cristal";
 "Opaque" = "Opaco";
 "Startup" = "Inicio";
-"Show welcome window at launch" = "Mostrar la ventana de bienvenida al iniciar";
+"At launch" = "Al iniciar";
+"Welcome window" = "Ventana de bienvenida";
+"Empty workspace" = "Espacio de trabajo vacío";
+"Blank text file" = "Archivo de texto en blanco";
 "Projects" = "Proyectos";
 "Reopen a project’s tabs where you left them" = "Reabrir las pestañas de un proyecto donde las dejaste";
 "Keep parent folders in view while scrolling the file tree" = "Mantener visibles las carpetas superiores al desplazarse por el árbol de archivos";

@@ -62,7 +62,7 @@ struct SettingsView: View {
             WindowBackground()
         }
         .frame(minWidth: 620, idealWidth: 760, maxWidth: .infinity,
-               minHeight: 460, idealHeight: 560, maxHeight: .infinity)
+               minHeight: 510, idealHeight: 560, maxHeight: .infinity)
     }
 
     /// Height of the hidden title bar, which the traffic lights center in.
@@ -195,7 +195,11 @@ private struct GeneralSettingsPane: View {
             }
 
             SettingsGroup("Startup") {
-                SettingsToggle("Show welcome window at launch", isOn: $settings.showsWelcomeAtLaunch)
+                SettingsPicker("At launch", selection: $settings.startupBehavior) {
+                    Text("Welcome window").tag(EditorSettings.StartupBehavior.welcome)
+                    Text("Empty workspace").tag(EditorSettings.StartupBehavior.emptyWorkspace)
+                    Text("Blank text file").tag(EditorSettings.StartupBehavior.blankFile)
+                }
             }
 
             SettingsGroup("Projects") {

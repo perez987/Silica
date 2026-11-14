@@ -28,7 +28,7 @@ struct SilicaApp: App {
         .windowResizability(.contentSize)
         .windowBackgroundDragBehavior(.enabled)
         .defaultPosition(.center)
-        .defaultLaunchBehavior(EditorSettings.shared.showsWelcomeAtLaunch ? .automatic : .suppressed)
+        .defaultLaunchBehavior(EditorSettings.shared.startupBehavior == .welcome ? .automatic : .suppressed)
         .restorationBehavior(.disabled)
         // Files and folders from Finder go to AppDelegate/ExternalOpener; without
         // this, SwiftUI also brings up this window for each of them.
@@ -52,7 +52,7 @@ struct SilicaApp: App {
         .defaultSize(width: 1180, height: 760)
         .windowStyle(.hiddenTitleBar)
         .windowBackgroundDragBehavior(.enabled)
-        .defaultLaunchBehavior(.suppressed)
+        .defaultLaunchBehavior(EditorSettings.shared.startupBehavior == .blankFile ? .presented : .suppressed)
         .restorationBehavior(.disabled)
         .handlesExternalEvents(matching: [])
         .commands {

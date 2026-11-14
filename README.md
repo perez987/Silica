@@ -10,7 +10,7 @@ I really like the original project and the Silica app, which works very well on 
 
 - Localize the interface and alerts, adding a simple language system with English (default) and Spanish
 - Add an option to switch between glass and opaque window styles, since I prefer opaque windows
-- Make the welcome window optional at launch, so that it doesn't appear every time the app starts
+- Choose whether to start with the welcome window, an empty workspace, or a blank text file
 - Migrate the Xcode project to `pbxproj` format for compatibility
 - Update the release script, not actually used for the release available in this fork.
 
@@ -33,7 +33,7 @@ Silica needs macOS 26 or later.
 - **PDF viewing**, including password-protected files.
 - **Editing tools.** Tabs, line numbers, indent guides, a minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
 - **New files.** Press `⌘N` to start an empty plain-text file, even without an open project. Choose where to save it when ready.
-- **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. You can turn off the welcome window at launch in Settings › General and reopen it with File › Welcome Window or `⇧⌘1`.
+- **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. Choose the welcome window, an empty workspace, or a blank text file at launch in Settings › General. Reopen the welcome window with File › Welcome Window or `⇧⌘1`.
 - **Appearance and language.** Choose glass or opaque windows in Settings › General. The opaque editor background is black in dark appearance and white in light appearance. Silica follows the macOS language preference, with English and Spanish available.
 - **Works with Finder.** Use Open With, drop files on the Dock icon, or run
   `open -a Silica <path>`.

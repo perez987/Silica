@@ -35,6 +35,7 @@ final class EditorSettings {
         static let syntaxTheme = "syntaxTheme"
         static let appearance = "appearance"
         static let windowStyle = "windowStyle"
+        static let startupBehavior = "startupBehavior"
         static let showsWelcomeAtLaunch = "showsWelcomeAtLaunch"
         static let restoresTabs = "restoresOpenTabs"
         static let pinsParentFolders = "fileTreePinsParentFolders"
@@ -151,10 +152,15 @@ final class EditorSettings {
         }
     }
 
-    var showsWelcomeAtLaunch: Bool {
+    enum StartupBehavior: String {
+        case welcome, emptyWorkspace, blankFile
+    }
+
+    var startupBehavior: StartupBehavior {
         didSet {
-            guard showsWelcomeAtLaunch != oldValue else { return }
-            store(showsWelcomeAtLaunch, Key.showsWelcomeAtLaunch, isDefault: showsWelcomeAtLaunch)
+            guard startupBehavior != oldValue else { return }
+            UserDefaults.standard.removeObject(forKey: Key.showsWelcomeAtLaunch)
+            store(startupBehavior.rawValue, Key.startupBehavior, isDefault: startupBehavior == .welcome)
         }
     }
 
@@ -198,7 +204,8 @@ final class EditorSettings {
         syntaxTheme = defaults.string(forKey: Key.syntaxTheme).flatMap(SyntaxTheme.init(rawValue:)) ?? .default
         appearance = defaults.string(forKey: Key.appearance).flatMap(Appearance.init(rawValue:)) ?? .system
         windowStyle = defaults.string(forKey: Key.windowStyle).flatMap(WindowStyle.init(rawValue:)) ?? .glass
-        showsWelcomeAtLaunch = defaults.object(forKey: Key.showsWelcomeAtLaunch) as? Bool ?? true
+        startupBehavior = defaults.string(forKey: Key.startupBehavior).flatMap(StartupBehavior.init(rawValue:))
+            ?? ((defaults.object(forKey: Key.showsWelcomeAtLaunch) as? Bool ?? true) ? .welcome : .emptyWorkspace)
         restoresTabs = defaults.object(forKey: Key.restoresTabs) as? Bool ?? true
         pinsParentFolders = defaults.object(forKey: Key.pinsParentFolders) as? Bool ?? true
     }
