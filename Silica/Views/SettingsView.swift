@@ -67,7 +67,7 @@ struct SettingsView: View {
             WindowBackground()
         }
         .frame(minWidth: 620, idealWidth: 760, maxWidth: .infinity,
-               minHeight: 510, idealHeight: 560, maxHeight: .infinity)
+               minHeight: 532, idealHeight: 560, maxHeight: .infinity)
     }
 
     @ViewBuilder
@@ -271,11 +271,15 @@ private extension View {
     /// The capsule tabs treatment macOS 27 gives a picker, or plain segments on macOS 26.
     @ViewBuilder
     func tabsPickerStyle() -> some View {
+        #if !SILICA_MACOS_26_SDK
         if #available(macOS 27.0, *) {
             pickerStyle(.tabs)
                 .buttonBorderShape(.capsule)
         } else {
             pickerStyle(.segmented)
         }
+        #else
+        pickerStyle(.segmented)
+        #endif
     }
 }
