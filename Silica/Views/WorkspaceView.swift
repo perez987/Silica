@@ -44,8 +44,9 @@ struct WorkspaceWindow: View {
             load()
         }
         .onDisappear {
-            if let workspace, KeyWorkspace.shared.current === workspace {
-                KeyWorkspace.shared.current = nil
+            if let workspace {
+                workspace.window = nil
+                KeyWorkspace.shared.scheduleUpdate(for: workspace)
             }
             if let workspace { ExternalOpener.shared.workspaceDidClose(workspace) }
             workspace?.close()

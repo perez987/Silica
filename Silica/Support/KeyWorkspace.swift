@@ -10,6 +10,18 @@ final class KeyWorkspace: ObservableObject {
 
     private var keyMonitor: Any?
 
+    /// Reconcile after SwiftUI's view update, using the window's current state.
+    func scheduleUpdate(for workspace: WorkspaceModel) {
+        DispatchQueue.main.async { [weak workspace] in
+            guard let workspace else { return }
+            if workspace.window?.isKeyWindow == true {
+                if self.current !== workspace { self.current = workspace }
+            } else if self.current === workspace {
+                self.current = nil
+            }
+        }
+    }
+
     /// ⇧⌘ shortcuts for the key workspace, handled here as well as in the menus
     /// because menu items bound to ⇧⌘ + a letter didn't reliably win over the plain
     /// ⌘ + letter items (⇧⌘V lost to Paste, ⇧⌘F to Find).
@@ -68,11 +80,12 @@ struct KeyWindowTracker: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: TrackerView, context: Context) {
-        nsView.workspace = workspace
+        nsView.updateWorkspace(workspace)
     }
 
     final class TrackerView: NSView {
-        weak var workspace: WorkspaceModel?
+        private weak var workspace: WorkspaceModel?
+        private weak var trackedWindow: NSWindow?
 
         init(workspace: WorkspaceModel) {
             self.workspace = workspace
@@ -84,9 +97,25 @@ struct KeyWindowTracker: NSViewRepresentable {
             fatalError("init(coder:) has not been implemented")
         }
 
+        func updateWorkspace(_ workspace: WorkspaceModel) {
+            guard self.workspace !== workspace else { return }
+            if let previous = self.workspace {
+                if previous.window === trackedWindow { previous.window = nil }
+                KeyWorkspace.shared.scheduleUpdate(for: previous)
+            }
+            self.workspace = workspace
+            workspace.window = window
+            KeyWorkspace.shared.scheduleUpdate(for: workspace)
+        }
+
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
             NotificationCenter.default.removeObserver(self)
+            if let workspace, workspace.window === trackedWindow {
+                workspace.window = nil
+                KeyWorkspace.shared.scheduleUpdate(for: workspace)
+            }
+            trackedWindow = window
             guard let window else { return }
             workspace?.window = window
             NotificationCenter.default.addObserver(
@@ -97,17 +126,15 @@ struct KeyWindowTracker: NSViewRepresentable {
                 self, selector: #selector(windowDidResignKey),
                 name: NSWindow.didResignKeyNotification, object: window
             )
-            if window.isKeyWindow { windowDidBecomeKey() }
+            if let workspace { KeyWorkspace.shared.scheduleUpdate(for: workspace) }
         }
 
         @objc private func windowDidBecomeKey() {
-            KeyWorkspace.shared.current = workspace
+            if let workspace { KeyWorkspace.shared.scheduleUpdate(for: workspace) }
         }
 
         @objc private func windowDidResignKey() {
-            if KeyWorkspace.shared.current === workspace {
-                KeyWorkspace.shared.current = nil
-            }
+            if let workspace { KeyWorkspace.shared.scheduleUpdate(for: workspace) }
         }
     }
 }
