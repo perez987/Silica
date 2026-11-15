@@ -315,7 +315,7 @@ final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
           color: rgba(0, 0, 0, 0.86);
           -webkit-font-smoothing: antialiased;
         }
-        article { max-width: 860px; margin: 0 auto; padding: 24px 32px 48px; }
+        article { padding: 24px 32px 48px; }
         h1, h2, h3, h4, h5, h6 { line-height: 1.25; margin: 1.4em 0 0.6em; font-weight: 650; }
         h1 { font-size: 1.9em; } h2 { font-size: 1.45em; } h3 { font-size: 1.2em; }
         h1, h2 { padding-bottom: 0.3em; border-bottom: 1px solid rgba(128, 128, 128, 0.25); }
@@ -344,7 +344,7 @@ final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
         /* CSV: a table as wide as its columns. The page scrolls both ways, under a
            header row that stays at the top. Borders are drawn per cell, as collapsed
            ones don't move with a sticky row. */
-        .csv article { max-width: none; width: max-content; margin: 0; padding: 16px 20px 40px; }
+        .csv article { width: max-content; padding: 16px 20px 40px; }
         .csv table { display: table; overflow: visible; border-collapse: separate; border-spacing: 0; font-size: 0.92em; line-height: 1.45; }
         .csv th, .csv td { border-width: 0 1px 1px 0; padding: 5px 12px; vertical-align: top; }
         .csv th > div, .csv td > div { max-width: 32em; overflow: hidden; text-overflow: ellipsis; white-space: pre; }
