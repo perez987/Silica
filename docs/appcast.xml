@@ -62,7 +62,7 @@
 				<li>Portar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
    				<ul><li>Integrar Terminal (`libghostty-vt`) con sesiones de shell y pestañas</li>
    				<li>Eliminar límite de anchura en la vista previa de archivos markdown</li>
-   				<li>Usar estilo de cápsula en selectores macOS 27, manteniendo controlers segmentados en macOS 26</li>
+   				<li>Usar estilo de cápsula en selectores macOS 27, manteniendo controles segmentados en macOS 26</li>
    				<li>Reconstruir Settings como NavigationSplitView y Forms agrupados</li></ul>
 			</ul>
             <h3>Novedades de Silica 0.4.1</h3>
