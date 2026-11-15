@@ -3,14 +3,25 @@
     <channel>
         <title>Silica</title>
        <item>
-            <title>0.4.1</title>
+            <title>0.5.0</title>
             <pubDate>Thu, 14 Nov 2026 18:58:59 +0800</pubDate>
             <link>https://github.com/perez987/Silica</link>
             <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>0041</sparkle:version>
-            <sparkle:shortVersionString>0.4.1</sparkle:shortVersionString>
+            <sparkle:version>0050</sparkle:version>
+            <sparkle:shortVersionString>0.5.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
             <description xml:lang="en"><![CDATA[
+            <h3>What's new in Silica 0.5.0</h3>
+			<ul>
+				<li>Add vertical scrollbar for large files</li>
+				<li>Reconcile key workspace after view updates</li>
+				<li>Add Spanish translations and update documentation and licensing</li>
+				<li>Ported commits from the [source repository](https://github.com/dqhieu/Silica)</li>
+   				<ul><li>Integrate Terminal (`libghostty-vt`) with shell sessions, resizable terminal card and tabs</li>
+   				<li>Remove the preview markdown article width limit</li>
+   				<li>Use capsule-style picker tabs on macOS 27, retaining segmented controls on macOS 26</li>
+   				<li>Rebuild Settings on NavigationSplitView and grouped Forms</li></ul>
+			</ul>
             <h3>What's new in Silica 0.4.1</h3>
 			<ul>
 					<li>Enable the menu option and keyboard shortcut for New File (⌘N) from the application launch:</li>
@@ -42,6 +53,16 @@
 			</ul>
 			]]></description>
             <description xml:lang="es"><![CDATA[
+           <h3>Novedades de Silica 0.5.0</h3>
+			<ul>
+				<li>Barra vertical de scroll para archivos extensos</li>
+				<li>Añadir traducciones al español y actualizar documentación y licencias</li>
+				<li>Portar cambios desde el [repositorio original](https://github.com/dqhieu/Silica)</li>
+   				<ul><li>Integrar Terminal (`libghostty-vt`) con sesiones de shell y pestañas</li>
+   				<li>Eliminar límite de anchura en la vista previa de archivos markdown</li>
+   				<li>Usar estilo de cápsula en selectores macOS 27, manteniendo controlers segmentados en macOS 26</li>
+   				<li>Reconstruir Settings como NavigationSplitView y Forms agrupados</li></ul>
+			</ul>
             <h3>Novedades de Silica 0.4.1</h3>
 			<ul>
 					<li>Habilita el menú y el atajo de teclado Archivo Nuevo (⌘N) desde el inicio de la app:</li>
@@ -73,10 +94,10 @@
 			</ul>
 			]]></description>
             <enclosure 
-            url="https://github.com/perez987/Silica/releases/download/0.4.1/Silica.0.4.1.dmg" 
-            length="8036373" 
+            url="https://github.com/perez987/Silica/releases/download/0.5.0/Silica.0.5.0.dmg" 
+            length="9922117" 
             type="application/octet-stream" 
-            sparkle:edSignature="4hgv/1XhOY/0n44U7IDltbrxbSekGZ36JumBEdz94dNyBmtRzPbKYm8rEIE94gYjsxyBv4C6smpdxYfLRWx+CQ=="/>
+            sparkle:edSignature="QOsmvmywmQb2YIJ5dzTRIHpxWh8mdNJjghTKX35ZYf6oUb4cjZB3Am+UeaRYvtDVvUN96GzxUDgY1wYGQIDKAQ=="/>
         </item>
     </channel>
 </rss>
