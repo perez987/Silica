@@ -48,9 +48,9 @@ final class KeyWorkspace: ObservableObject {
                 event.window?.performClose(nil)
             // The other usual pair for stepping through tabs, next to ⌃Tab in the menu.
             case "}", "]":
-                workspace.activateTab(offsetBy: 1)
+                workspace.selectTab(offsetBy: 1)
             case "{", "[":
-                workspace.activateTab(offsetBy: -1)
+                workspace.selectTab(offsetBy: -1)
             default:
                 return event
             }

@@ -34,6 +34,7 @@ Silica needs macOS 26 or later.
 - **HTML preview**, including unsaved edits, project assets and page scripts.
 - **PDF viewing**, including password-protected files.
 - **Editing tools.** Tabs, line numbers, indent guides, a minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
+- **Integrated terminal.** Open a resizable terminal below the editor using the title bar or ⌃`. Shells start in the project folder (or home for a standalone window); add tabs, drag to reorder them, and hide the card without stopping them. Command-click links or file paths to open them.
 - **New files.** Press `⌘N` to start an empty plain-text file, even without an open project. Choose where to save it when ready.
 - **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. Choose the welcome window, an empty workspace, or a blank text file at launch in Settings › General. Reopen the welcome window with File › Welcome Window or `⇧⌘1`.
 - **Appearance and language.** Choose glass or opaque windows in Settings › General. The opaque editor background is black in dark appearance and white in light appearance. Silica follows the macOS language preference, with English and Spanish available.
@@ -52,6 +53,10 @@ Silica needs macOS 26 or later.
 | ⌘L           | Go to Line                                |
 | ⇧⌘V          | Toggle Markdown, CSV, TSV or HTML preview  |
 | ⌃⌘S          | Show or hide the sidebar                  |
+| ⌃`           | Show or focus the terminal; hide it when focused |
+| ⌃⇧`          | New terminal                              |
+| ⌘K           | Clear the focused terminal                |
+| ⌃Tab / ⌃⇧Tab | Select the next or previous file or terminal tab (also ⇧⌘] / ⇧⌘[) |
 | ⌘/           | Toggle comment                            |
 | ⌥↑ / ⌥↓      | Move lines up or down                     |
 | ⇧⌥↑ / ⇧⌥↓    | Duplicate lines up or down                |
@@ -76,6 +81,6 @@ Bug reports, ideas and pull requests are welcome. Read
 
 Silica is released under the [MIT License](LICENSE). It includes
 [swift-markdown](https://github.com/swiftlang/swift-markdown),
-[swift-cmark](https://github.com/swiftlang/swift-cmark) and
-[Sparkle](https://sparkle-project.org), whose licenses are in
+[swift-cmark](https://github.com/swiftlang/swift-cmark),
+[Sparkle](https://sparkle-project.org) and [libghostty-vt](https://lib.ghostty.org), whose licenses are in
 `Silica/Resources/Licenses` and in Settings › About.

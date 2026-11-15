@@ -42,6 +42,13 @@ final class WorkspaceModel {
     }
     private(set) var buffers: [URL: EditorBuffer] = [:]
 
+    /// The project's terminals, in the order of their tabs. They keep running while
+    /// their card is hidden.
+    private(set) var terminals: [TerminalSession] = []
+    /// The terminal the card shows: one of `terminals`, as long as there are any.
+    private(set) var terminal: TerminalSession?
+    private(set) var isTerminalVisible = false
+
     /// The project's window, to bring forward when a file is opened in it from outside.
     @ObservationIgnored weak var window: NSWindow?
     @ObservationIgnored private var isAccessingScope: Bool
@@ -106,6 +113,9 @@ final class WorkspaceModel {
         }
         watcher?.stop()
         watcher = nil
+        for terminal in terminals { terminal.close() }
+        terminals = []
+        terminal = nil
         if isAccessingScope {
             rootURL.stopAccessingSecurityScopedResource()
             isAccessingScope = false
@@ -138,6 +148,132 @@ final class WorkspaceModel {
     func toggleSidebar() {
         guard !isStandalone else { return }
         withAnimation(.snappy) { isSidebarVisible.toggle() }
+    }
+
+    // MARK: Terminal
+
+    /// ⌃`: shows the terminal and gives it the keyboard. From the terminal, hides it
+    /// and goes back to the editor.
+    func toggleTerminal() {
+        if isTerminalVisible, terminal?.isFocused == true {
+            hideTerminal()
+        } else {
+            showTerminal()
+        }
+    }
+
+    func showTerminal() {
+        guard let terminal = terminal ?? makeTerminal() else { return }
+        if !isTerminalVisible {
+            withAnimation(.snappy(duration: 0.2)) { isTerminalVisible = true }
+        }
+        terminal.view.focus()
+    }
+
+    /// Hides the card. The shells and whatever runs in them carry on.
+    func hideTerminal() {
+        guard isTerminalVisible else { return }
+        let hadFocus = terminal?.isFocused == true
+        withAnimation(.snappy(duration: 0.2)) { isTerminalVisible = false }
+        if hadFocus { focusEditor() }
+    }
+
+    /// New Terminal (⌃⇧`): another shell, in a tab after the ones there are.
+    func newTerminal() {
+        guard makeTerminal() != nil else { return }
+        showTerminal()
+    }
+
+    /// Brings a terminal's tab forward and gives it the keyboard.
+    func selectTerminal(_ terminal: TerminalSession) {
+        guard terminals.contains(where: { $0 === terminal }) else { return }
+        self.terminal = terminal
+        showTerminal()
+    }
+
+    /// The terminal `offset` tabs along from the one that's showing, going round
+    /// from either end to the other.
+    func selectTerminal(offsetBy offset: Int) {
+        let count = terminals.count
+        guard count > 1, let index = terminals.firstIndex(where: { $0 === terminal }) else { return }
+        selectTerminal(terminals[((index + offset) % count + count) % count])
+    }
+
+    /// Puts a terminal's tab at another place in the row (dragging it there).
+    func moveTerminal(_ terminal: TerminalSession, to index: Int) {
+        guard let current = terminals.firstIndex(where: { $0 === terminal }) else { return }
+        let target = min(max(index, 0), terminals.count - 1)
+        guard target != current else { return }
+        var moved = terminals
+        moved.remove(at: current)
+        moved.insert(terminal, at: target)
+        terminals = moved
+    }
+
+    /// Select Next Tab / Select Previous Tab: through the terminal's tabs when the
+    /// terminal has the keyboard and others beside it, and the editor's otherwise.
+    func selectTab(offsetBy offset: Int) {
+        if terminals.count > 1, isTerminalVisible, terminal?.isFocused == true {
+            selectTerminal(offsetBy: offset)
+        } else {
+            activateTab(offsetBy: offset)
+        }
+    }
+
+    /// Whether Select Next Tab and Select Previous Tab have another tab to go to.
+    var canSelectOtherTab: Bool {
+        openTabs.count > 1 || (terminals.count > 1 && isTerminalVisible && terminal?.isFocused == true)
+    }
+
+    /// Ends a terminal's shell and closes its tab: the one that's showing, unless
+    /// another is named. Its neighbor takes its place; without one the card goes,
+    /// and the next ⌃` starts a new shell.
+    func closeTerminal(_ closing: TerminalSession? = nil) {
+        guard let closing = closing ?? terminal,
+              let index = terminals.firstIndex(where: { $0 === closing }) else { return }
+        let hadFocus = closing.isFocused
+        terminals.remove(at: index)
+        if closing === terminal {
+            terminal = terminals.isEmpty ? nil : terminals[min(index, terminals.count - 1)]
+            if let terminal {
+                if hadFocus { terminal.view.focus() }
+            } else {
+                withAnimation(.snappy(duration: 0.2)) { isTerminalVisible = false }
+                if hadFocus { focusEditor() }
+            }
+        }
+        closing.close()
+    }
+
+    /// Starts a terminal in a new last tab, and makes it the one the card shows.
+    @discardableResult
+    private func makeTerminal() -> TerminalSession? {
+        guard let terminal = TerminalSession(directory: rootURL) else {
+            let alert = NSAlert()
+            alert.messageText = String(localized: "Can’t Open Terminal")
+            alert.informativeText = String(localized: "Silica couldn’t initialize the terminal emulator.")
+            alert.runModal()
+            return nil
+        }
+        // The shell was exited, with "exit" or ⌃D.
+        terminal.onExit = { [weak self, weak terminal] in
+            if let terminal { self?.closeTerminal(terminal) }
+        }
+        // Links to files open here, like Quick Open's results.
+        terminal.onOpenFile = { [weak self] url, line in
+            self?.open(url)
+            self?.reveal(url)
+            if let line { self?.goToLine(line) }
+        }
+        terminals.append(terminal)
+        self.terminal = terminal
+        return terminal
+    }
+
+    private func focusEditor() {
+        if let textView = activeBuffer?.textController?.textView {
+            textView.window?.makeFirstResponder(textView)
+        }
     }
 
     // MARK: Sidebar modes

@@ -122,6 +122,13 @@ struct Acknowledgement: Identifiable {
             website: URL(string: "https://sparkle-project.org")!,
             files: ["Sparkle-LICENSE"]
         ),
+        Acknowledgement(
+            name: "libghostty-vt",
+            license: "MIT License",
+            holder: "Mitchell Hashimoto and the Ghostty contributors",
+            website: URL(string: "https://ghostty.org")!,
+            files: ["ghostty-LICENSE"]
+        ),
     ]
 }
 

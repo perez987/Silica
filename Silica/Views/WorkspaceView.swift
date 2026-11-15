@@ -91,6 +91,9 @@ enum WorkspaceLayout {
     /// How much of the sidebar list's built-in top inset to hide.
     static let sidebarListTopTrim: CGFloat = 8
     static let sidebarWidthRange: ClosedRange<Double> = 220...480
+    static let terminalHeightRange: ClosedRange<Double> = 100...1200
+    /// What the terminal card leaves of the editor card at the least.
+    static let minimumEditorHeight: CGFloat = 120
 }
 
 struct WorkspaceView: View {
