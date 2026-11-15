@@ -14,6 +14,7 @@
             <h3>What's new in Silica 0.5.0</h3>
 			<ul>
 				<li>Add vertical scrollbar for large files</li>
+				<li>Localize numbered untitled file names</li>
 				<li>Reconcile key workspace after view updates</li>
 				<li>Add Spanish translations and update documentation and licensing</li>
 				<li>Ported commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
@@ -56,6 +57,7 @@
            <h3>Novedades de Silica 0.5.0</h3>
 			<ul>
 				<li>Barra vertical de scroll para archivos extensos</li>
+				<li>Traducir nombres secuenciales de archivos sin título</li>
 				<li>Añadir traducciones al español y actualizar documentación y licencias</li>
 				<li>Portar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
    				<ul><li>Integrar Terminal (`libghostty-vt`) con sesiones de shell y pestañas</li>
@@ -95,9 +97,9 @@
 			]]></description>
             <enclosure 
             url="https://github.com/perez987/Silica/releases/download/0.5.0/Silica.0.5.0.dmg" 
-            length="9922117" 
+            length="9419698" 
             type="application/octet-stream" 
-            sparkle:edSignature="QOsmvmywmQb2YIJ5dzTRIHpxWh8mdNJjghTKX35ZYf6oUb4cjZB3Am+UeaRYvtDVvUN96GzxUDgY1wYGQIDKAQ=="/>
+            sparkle:edSignature="IdaBbbpRtor4JWgrCq1EW7dgmUmq47VqWNPEFPgkJbCasp9Fgrg5bxjiuv5mYN6vbIxB1nz71GqvIAj/kV88Dg=="/>
         </item>
     </channel>
 </rss>
