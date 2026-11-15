@@ -6,7 +6,7 @@ A lightweight code editor for macOS, made of glass. Open a folder, find files fa
 
 ## Personal motivation
 
-I really like the original project and the Silica app, which works very well on macOS 26 and 27. It’s now my text and code editor in macOS. I have made a few changes to the project, tailored to my personal preferences. Without any intention of interfering with the original project—which I consider an excellent piece of work—here are the changes I have made in my fork:
+I really like the original project and the Silica app, which works very well. It’s now my text and code editor in macOS. I have made a few changes to the project, tailored to my personal preferences. Without any intention of interfering with the original project—which I consider an excellent piece of work—here are the changes I have made in my fork:
 
 - Localize the interface and alerts, adding a simple language system with English (default) and Spanish
 - Add an option to switch between glass and opaque window styles, since I prefer opaque windows
