@@ -21,17 +21,24 @@ struct WelcomeView: View {
         .ignoresSafeArea(.container, edges: .top)
         // Frosted, behind-window blur for the whole welcome window.
         .containerBackground(for: .window) {
-          WindowBackground(material: .hudWindow)
+            WindowBackground(material: .hudWindow)
         }
         .overlay {
             if isDropTargeted {
                 RoundedRectangle(cornerRadius: 26)
-                    .strokeBorder(Color.accentColor, style: StrokeStyle(lineWidth: 3, dash: [10, 6]))
+                    .strokeBorder(
+                        Color.accentColor,
+                        style: StrokeStyle(lineWidth: 3, dash: [10, 6])
+                    )
                     .padding(8)
                     .allowsHitTesting(false)
             }
         }
-        .onDrop(of: [.fileURL], isTargeted: $isDropTargeted, perform: handleDrop)
+        .onDrop(
+            of: [.fileURL],
+            isTargeted: $isDropTargeted,
+            perform: handleDrop
+        )
         .onAppear { ExternalOpener.shared.openWindow = openWindow }
     }
 
@@ -73,9 +80,12 @@ struct WelcomeView: View {
                         Button {
                             opener.open(last)
                         } label: {
-                            Label("Reopen “\(last.name)”", systemImage: "arrow.uturn.backward")
-                                .lineLimit(1)
-                                .frame(maxWidth: .infinity)
+                            Label(
+                                "Reopen “\(last.name)”",
+                                systemImage: "arrow.uturn.backward"
+                            )
+                            .lineLimit(1)
+                            .frame(maxWidth: .infinity)
                         }
                         .buttonStyle(.glass)
                     }
@@ -140,7 +150,11 @@ struct WelcomeView: View {
     // MARK: Drop
 
     private func handleDrop(_ providers: [NSItemProvider]) -> Bool {
-        guard let provider = providers.first(where: { $0.canLoadObject(ofClass: URL.self) }) else { return false }
+        guard
+            let provider = providers.first(where: {
+                $0.canLoadObject(ofClass: URL.self)
+            })
+        else { return false }
         _ = provider.loadObject(ofClass: URL.self) { url, _ in
             guard let url else { return }
             Task { @MainActor in
@@ -162,10 +176,12 @@ private struct RecentProjectRow: View {
     var body: some View {
         Button(action: open) {
             HStack(spacing: 12) {
-                Image(systemName: "folder.fill")
-                    .font(.title2)
-                    .foregroundStyle(FileIconPalette.folder)
-                    .frame(width: 30)
+                // The icon Finder shows for the folder, as in the file tree.
+                FileIcon(
+                    url: URL(filePath: project.path),
+                    isDirectory: true,
+                    width: 30
+                )
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(project.name)
@@ -188,21 +204,30 @@ private struct RecentProjectRow: View {
                     .buttonStyle(.plain)
                     .help("Remove from Recents")
                 } else {
-                    Text(project.lastOpened.formatted(.relative(presentation: .named)))
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                    Text(
+                        project.lastOpened.formatted(
+                            .relative(presentation: .named)
+                        )
+                    )
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
                 }
             }
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
-            .background(isHovering ? Color.primary.opacity(0.07) : .clear, in: .rect(cornerRadius: 12))
+            .background(
+                isHovering ? Color.primary.opacity(0.07) : .clear,
+                in: .rect(cornerRadius: 12)
+            )
             .contentShape(.rect(cornerRadius: 12))
         }
         .buttonStyle(.plain)
         .onHover { isHovering = $0 }
         .contextMenu {
             Button("Open", action: open)
-            Button("Show in Finder") { Finder.reveal(URL(filePath: project.path)) }
+            Button("Show in Finder") {
+                Finder.reveal(URL(filePath: project.path))
+            }
             Button("Copy Path") { Finder.copyPath(URL(filePath: project.path)) }
             Divider()
             Button("Remove from Recents", role: .destructive, action: remove)
@@ -212,6 +237,7 @@ private struct RecentProjectRow: View {
 
 extension Bundle {
     var shortVersion: String {
-        object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+            ?? "1.0"
     }
 }
