@@ -33,7 +33,7 @@ Silica needs macOS 26 or later.
 - **CSV and TSV preview**, with a table view and double-click to edit a row.
 - **HTML preview**, including unsaved edits, project assets and page scripts.
 - **PDF viewing**, including password-protected files.
-- **Editing tools.** Tabs, line numbers, indent guides, a minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
+- **Editing tools.** Tabs, line numbers, indent guides, a vertical scrollbar (following macOS scroll bar preferences), an optional minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
 - **Integrated terminal.** Open a resizable terminal below the editor using the title bar or ⌃`. Shells start in the project folder (or home for a standalone window); add tabs, drag to reorder them, and hide the card without stopping them. Command-click links or file paths to open them.
 - **New files.** Press `⌘N` to start an empty plain-text file, even without an open project. Choose where to save it when ready.
 - **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. Choose the welcome window, an empty workspace, or a blank text file at launch in Settings › General. Reopen the welcome window with File › Welcome Window or `⇧⌘1`.

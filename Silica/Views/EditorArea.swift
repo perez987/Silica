@@ -1,3 +1,4 @@
+import AppKit
 import PDFKit
 import SwiftUI
 
@@ -617,13 +618,16 @@ private struct BufferView: View {
             if buffer.isShowingPreview, let preview = buffer.preview {
                 PreviewHost(preview: preview)
             } else {
-                // The status bar floats over the text's bottom corner rather than
-                // taking a strip of the card, left of the minimap when it's shown.
+                // Keep the floating status bar clear of the scrollbar and minimap.
                 TextViewHost(controller: controller)
                     .overlay(alignment: .bottomTrailing) {
                         StatusBar(buffer: buffer, workspace: workspace)
                             .padding(4)
-                            .padding(.trailing, EditorSettings.shared.showsMinimap ? MinimapView.width : 0)
+                            .padding(
+                                .trailing,
+                                (EditorSettings.shared.showsMinimap ? MinimapView.width : 0)
+                                    + NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
+                            )
                     }
             }
         case .image(let file):

@@ -29,8 +29,7 @@ final class TextController: NSObject, NSTextViewDelegate {
         scrollView.documentView = textView
 
         scrollView.drawsBackground = false
-        // Trackpad and wheel scrolling still work; the bars are just never drawn.
-        scrollView.hasVerticalScroller = false
+        scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
 
         textView.drawsBackground = false
