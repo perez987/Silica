@@ -6,6 +6,7 @@
 "Settings…" = "Ajustes…";
 "New File" = "Nuevo archivo";
 "Untitled" = "Sin título";
+"Untitled-%lld" = "Sin título-%lld";
 "New File in Project…" = "Nuevo archivo en el proyecto…";
 "New Folder" = "Nueva carpeta";
 "Open…" = "Abrir…";

@@ -560,8 +560,12 @@ final class WorkspaceModel {
     func newUntitledFile() {
         let taken = Set(openTabs.filter(\.isUntitled).map(\.lastPathComponent))
         var number = 1
-        while taken.contains("Untitled-\(number)") { number += 1 }
-        let buffer = EditorBuffer(untitledName: "Untitled-\(number)")
+        var name = String(localized: "Untitled-\(number)")
+        while taken.contains(name) {
+            number += 1
+            name = String(localized: "Untitled-\(number)")
+        }
+        let buffer = EditorBuffer(untitledName: name)
         buffers[buffer.url] = buffer
         if let active = activeTab, let index = openTabs.firstIndex(of: active) {
             openTabs.insert(buffer.url, at: index + 1)
