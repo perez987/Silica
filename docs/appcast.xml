@@ -3,14 +3,26 @@
     <channel>
         <title>Silica</title>
        <item>
-            <title>0.5.0</title>
-            <pubDate>Thu, 14 Nov 2026 18:58:59 +0800</pubDate>
+            <title>0.6.0</title>
+            <pubDate>Thu, 16 Nov 2026 18:58:59 +0800</pubDate>
             <link>https://github.com/perez987/Silica</link>
             <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>0050</sparkle:version>
-            <sparkle:shortVersionString>0.5.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
+            <sparkle:version>0060</sparkle:version>
+            <sparkle:shortVersionString>0.6.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <description xml:lang="en"><![CDATA[
+            <h3>What's new in Silica 0.6.0</h3>
+			<ul>
+				<li>Ported commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+   				<ul><li>Lower the deployment target to macOS 15</li>
+   				<li>Add Dart highlighting for files and Markdown fences</li></ul>
+			</ul>			
+            <h3>What's new in Silica 0.6.0</h3>
+			<ul>
+				<li>Adaptar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+   				<ul><li>Bajar el mínimo macOS macOS 15</li>
+   				<li>Añadir coloreado de sintaxis para archivos Dart</li></ul>
+			</ul>
             <h3>What's new in Silica 0.5.0</h3>
 			<ul>
 				<li>Set .txt as the default extension for untitled files when saving them</li>
@@ -55,6 +67,12 @@
 			</ul>
 			]]></description>
             <description xml:lang="es"><![CDATA[
+            <h3>Novedades de Silica 0.6.0</h3>
+			<ul>
+				<li>Adaptar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+   				<ul><li>Bajar el mínimo macOS a macOS 15 Sequoia</li>
+   				<li>Añadir coloreado de sintaxis para archivos Dart</li></ul>
+			</ul>
            <h3>Novedades de Silica 0.5.0</h3>
 			<ul>
 				<li>Usar .txt como extensión por defecto al guardar archivos sin título</li>
@@ -98,10 +116,10 @@
 			</ul>
 			]]></description>
             <enclosure 
-            url="https://github.com/perez987/Silica/releases/download/0.5.0/Silica.0.5.0.dmg" 
-            length="9918576" 
+            url="https://github.com/perez987/Silica/releases/download/0.6.0/Silica.0.6.0.dmg" 
+            length="9966082" 
             type="application/octet-stream" 
-            sparkle:edSignature="w6Dqd2AWCF6lltH9eNBLYBmFNdZEQHYOJn1UNzxxzbNwZfy3rHKD5plQ2DXWzwtDoCJDU4P+LLvwM86+5nmUBQ=="/>
+            sparkle:edSignature="d9plcJLEJw90l5/TSLcCnF7l11xxt3rFaxyl7uvVuOcWxMVVdsEtwh/uMTVMjDe0bHl3Z0C/40e5/x1LnRXCCQ=="/>
         </item>
     </channel>
 </rss>
