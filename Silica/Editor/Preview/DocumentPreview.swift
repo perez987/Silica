@@ -7,13 +7,11 @@ import WebKit
 ///
 /// Markdown and table previews use generated HTML without document scripts. HTML
 /// files use WebKit's file access rules and run their own scripts.
-final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
+final class DocumentPreview: NSObject, WKNavigationDelegate {
     let webView: PreviewWebView
 
     /// Opens another file in the project (a link to it was clicked).
     var onOpenFile: ((URL) -> Void)?
-    /// Double-click: edit the source at this 1-based line.
-    var onEditLine: ((Int) -> Void)?
     /// A character was typed; switch to the source and insert it.
     var onType: ((String) -> Void)?
 
@@ -57,8 +55,6 @@ final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
         webView.navigationDelegate = self
 
         guard format != .html else { return }
-        // Through a weak proxy: the content controller retains its handlers.
-        configuration.userContentController.add(WeakScriptHandler(self), contentWorld: .defaultClient, name: "silica")
         webView.underPageBackgroundColor = .clear
         webView.setValue(false, forKey: "drawsBackground")
         webView.onType = { [weak self] characters in self?.onType?(characters) }
@@ -263,14 +259,6 @@ final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
         isStartingPage = false
     }
 
-    // MARK: WKScriptMessageHandler
-
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if let line = message.body as? Int {
-            onEditLine?(line)
-        }
-    }
-
     // MARK: Page
 
     private static func encodedPath(_ path: String) -> String {
@@ -391,10 +379,6 @@ final class DocumentPreview: NSObject, WKNavigationDelegate, WKScriptMessageHand
         return 1;
       }
     };
-    document.addEventListener('dblclick', (event) => {
-      const block = event.target.closest('[data-line]');
-      window.webkit.messageHandlers.silica.postMessage(block ? +block.dataset.line : 1);
-    });
     """
 }
 
@@ -411,18 +395,6 @@ final class PreviewWebView: WKWebView {
         }
         // Space, arrows and page keys keep scrolling the preview.
         super.keyDown(with: event)
-    }
-}
-
-private final class WeakScriptHandler: NSObject, WKScriptMessageHandler {
-    weak var target: WKScriptMessageHandler?
-
-    init(_ target: WKScriptMessageHandler) {
-        self.target = target
-    }
-
-    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        target?.userContentController(userContentController, didReceive: message)
     }
 }
 

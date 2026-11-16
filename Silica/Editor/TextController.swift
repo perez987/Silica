@@ -435,18 +435,14 @@ final class TextController: NSObject, NSTextViewDelegate {
         return line
     }
 
-    /// Scrolls so `line` (1-based) is at the top; with `placingCursor`, also puts the
-    /// insertion point at its start.
-    func scroll(toLine line: Int, placingCursor: Bool = false) {
+    /// Scrolls so `line` (1-based) is at the top.
+    func scroll(toLine line: Int) {
         let text = textView.string as NSString
         var offset = 0
         var current = 1
         while current < line, offset < text.length {
             offset = NSMaxRange(text.lineRange(for: NSRange(location: offset, length: 0)))
             current += 1
-        }
-        if placingCursor {
-            textView.setSelectedRange(NSRange(location: offset, length: 0))
         }
         guard let layoutManager = textView.textLayoutManager,
               let contentManager = layoutManager.textContentManager,

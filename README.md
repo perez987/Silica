@@ -30,12 +30,12 @@ Silica needs macOS 26 or later.
 - **Nine color themes**, each with a light and a dark palette: Atom One, GitHub,
   Xcode, Solarized, Catppuccin, Gruvbox, Tokyo Night, Rosé Pine and Dracula.
 - **Markdown preview**, with highlighted code blocks.
-- **CSV and TSV preview**, with a table view and double-click to edit a row.
+- **CSV and TSV preview**, with a table view.
 - **HTML preview**, including unsaved edits, project assets and page scripts.
 - **PDF viewing**, including password-protected files.
 - **Editing tools.** Tabs, line numbers, indent guides, a vertical scrollbar (following macOS scroll bar preferences), an optional minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
 - **Integrated terminal.** Open a resizable terminal below the editor using the title bar or ⌃`. Shells start in the project folder (or home for a standalone window); add tabs, drag to reorder them, and hide the card without stopping them. Command-click links or file paths to open them.
-- **New files.** Press `⌘N` to start an empty plain-text file, even without an open project. Choose where to save it when ready.
+- **New files.** Press `⌘N` to start an empty plain-text file, even without an open project. Choose where to save it when ready; the suggested filename uses `.txt`, which you can change.
 - **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. Choose the welcome window, an empty workspace, or a blank text file at launch in Settings › General. Reopen the welcome window with File › Welcome Window or `⇧⌘1`.
 - **Appearance and language.** Choose glass or opaque windows in Settings › General. The opaque editor background is black in dark appearance and white in light appearance. Silica follows the macOS language preference, with English and Spanish available.
 - **Works with Finder.** Use Open With, drop files on the Dock icon, or run

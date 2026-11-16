@@ -755,7 +755,7 @@ final class WorkspaceModel {
     private func savePanel(for buffer: EditorBuffer) -> NSSavePanel {
         let panel = NSSavePanel()
         panel.directoryURL = buffer.isUntitled ? (isStandalone ? nil : rootURL) : buffer.url.deletingLastPathComponent()
-        panel.nameFieldStringValue = buffer.name
+        panel.nameFieldStringValue = buffer.isUntitled ? buffer.name + ".txt" : buffer.name
         panel.canCreateDirectories = true
         return panel
     }

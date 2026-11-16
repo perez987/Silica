@@ -246,9 +246,8 @@ final class EditorBuffer: Identifiable {
         setShowingPreview(!isShowingPreview)
     }
 
-    /// Switches between source and preview, keeping roughly the same place in the
-    /// document. `editLine` (from a double-click) puts the cursor on that source line.
-    func setShowingPreview(_ show: Bool, editLine: Int? = nil) {
+    /// Switches between source and preview, keeping roughly the same place in the document.
+    func setShowingPreview(_ show: Bool) {
         guard let format = previewFormat, let controller = textController, show != isShowingPreview else { return }
         if show {
             let preview = self.preview ?? makePreview(for: controller, format: format)
@@ -258,9 +257,6 @@ final class EditorBuffer: Identifiable {
         } else if format == .html {
             isShowingPreview = false
             preview?.unloadPage()
-        } else if let editLine {
-            isShowingPreview = false
-            DispatchQueue.main.async { controller.scroll(toLine: editLine, placingCursor: true) }
         } else {
             preview?.topVisibleLine { [weak self] line in
                 self?.isShowingPreview = false
@@ -275,7 +271,6 @@ final class EditorBuffer: Identifiable {
         }
         let preview = DocumentPreview(fileURL: url, format: format, readAccessURL: readAccessURL)
         preview.onOpenFile = { [weak self] url in self?.openFile?(url) }
-        preview.onEditLine = { [weak self] line in self?.setShowingPreview(false, editLine: line) }
         preview.onType = { [weak self] characters in
             guard let self else { return }
             self.isShowingPreview = false
