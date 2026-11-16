@@ -113,11 +113,13 @@ private struct GeneralSettingsPane: View {
                     Text("Dark").tag(EditorSettings.Appearance.dark)
                 }
                 .tabsPickerStyle()
-                Picker("Window Style", selection: $settings.windowStyle) {
-                    Text("Glass").tag(EditorSettings.WindowStyle.glass)
-                    Text("Opaque").tag(EditorSettings.WindowStyle.opaque)
+                if #available(macOS 26.0, *) {
+                    Picker("Window Style", selection: $settings.windowStyle) {
+                        Text("Glass").tag(EditorSettings.WindowStyle.glass)
+                        Text("Opaque").tag(EditorSettings.WindowStyle.opaque)
+                    }
+                    .tabsPickerStyle()
                 }
-                .tabsPickerStyle()
             }
 
             Section("Startup") {
@@ -268,7 +270,7 @@ private struct EditorSettingsPane: View {
 }
 
 private extension View {
-    /// The capsule tabs treatment macOS 27 gives a picker, or plain segments on macOS 26.
+    /// The capsule tabs treatment macOS 27 gives a picker, or plain segments before it.
     @ViewBuilder
     func tabsPickerStyle() -> some View {
         #if !SILICA_MACOS_26_SDK

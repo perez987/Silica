@@ -477,7 +477,7 @@ private struct TreeFilterField: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 6)
-        .glassEffect(.regular, in: .capsule)
+        .glassSurface(in: .capsule)
         .onChange(of: workspace.treeFilterFocusRequest) { isFocused = true }
     }
 }

@@ -81,10 +81,7 @@ struct EditorArea: View {
     }
 
     private var editorCard: some View {
-        // Corners next to the window's corners follow its radius minus the inset;
-        // the others (under the tab bar) fall back to the minimum.
-        let shape = ConcentricRectangle(corners: .concentric(minimum: .fixed(WorkspaceLayout.cardCornerRadius)))
-        return Group {
+        Group {
             if let buffer = workspace.activeBuffer {
                 BufferView(buffer: buffer, workspace: workspace)
             } else {
@@ -93,15 +90,11 @@ struct EditorArea: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
-            if settings.windowStyle == .opaque {
+            if !settings.usesGlassEffect {
                 colorScheme == .dark ? Color.black : Color.white
             }
         }
-        .clipShape(shape)
-        .glassEffect(
-            settings.windowStyle == .glass ? .regular : .identity,
-            in: shape
-        )
+        .workspaceCard()
     }
 }
 
@@ -574,8 +567,7 @@ private struct EditorTab: View {
         .padding(.trailing, 6)
         .padding(.vertical, 6)
         .foregroundStyle(isActive ? .primary : .secondary)
-        // Only the active tab sits on glass; `.identity` renders no effect.
-        .glassEffect(isActive ? .regular : .identity, in: .rect(cornerRadius: 8, style: .continuous))
+        .glassSurface(isActive, in: .rect(cornerRadius: 8, style: .continuous))
         .contentShape(.rect(cornerRadius: 8, style: .continuous))
         .onTapGesture(perform: select)
         // Measured in the bar, as the tab moves with the drag. The tab bar keeps the
@@ -682,7 +674,7 @@ private struct StatusBar: View {
         .lineLimit(1)
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
-        .glassEffect(.regular, in: .capsule)
+        .glassSurface(in: .capsule)
         .fixedSize()
     }
 
@@ -802,7 +794,7 @@ private struct PDFPreview: View {
                         .lineLimit(1)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 4)
-                        .glassEffect(.regular, in: .capsule)
+                        .glassSurface(in: .capsule)
                         .fixedSize()
                         .padding(4)
                 }
@@ -926,7 +918,7 @@ private struct EmptyEditorView: View {
                 .monospaced()
                 .padding(.horizontal, 8)
                 .padding(.vertical, 2)
-                .glassEffect(.regular, in: .capsule)
+                .glassSurface(in: .capsule)
         }
     }
 }

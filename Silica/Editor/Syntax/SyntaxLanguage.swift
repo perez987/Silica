@@ -3,7 +3,7 @@ import Foundation
 /// Languages the editor can highlight, detected from the file name.
 nonisolated enum SyntaxLanguage: String, Sendable, CaseIterable {
     case swift, javascript, typescript, json, python, ruby, go, rust
-    case c, cpp, objectiveC, java, kotlin, csharp, php
+    case c, cpp, objectiveC, java, kotlin, dart, csharp, php
     case shell, yaml, toml, html, xml, css, markdown, sql, dockerfile, makefile, diff
 
     init?(url: URL) {
@@ -32,6 +32,7 @@ nonisolated enum SyntaxLanguage: String, Sendable, CaseIterable {
         case "m", "mm": self = .objectiveC
         case "java": self = .java
         case "kt", "kts": self = .kotlin
+        case "dart": self = .dart
         case "cs": self = .csharp
         case "php": self = .php
         case "sh", "bash", "zsh", "fish", "command": self = .shell
@@ -85,6 +86,7 @@ nonisolated enum SyntaxLanguage: String, Sendable, CaseIterable {
         case .objectiveC: "Objective-C"
         case .java: "Java"
         case .kotlin: "Kotlin"
+        case .dart: "Dart"
         case .csharp: "C#"
         case .php: "PHP"
         case .shell: "Shell"
@@ -105,7 +107,7 @@ nonisolated enum SyntaxLanguage: String, Sendable, CaseIterable {
     var lineComment: String? {
         switch self {
         case .swift, .javascript, .typescript, .json, .go, .rust, .c, .cpp, .objectiveC,
-             .java, .kotlin, .csharp, .php:
+             .java, .kotlin, .dart, .csharp, .php:
             "//"
         case .python, .ruby, .shell, .yaml, .toml, .dockerfile, .makefile:
             "#"
@@ -142,6 +144,7 @@ nonisolated enum SyntaxLanguage: String, Sendable, CaseIterable {
         case .c, .cpp, .objectiveC: Grammars.cFamily
         case .java: Grammars.java
         case .kotlin: Grammars.kotlin
+        case .dart: Grammars.dart
         case .csharp: Grammars.csharp
         case .php: Grammars.php
         case .shell: Grammars.shell
@@ -412,6 +415,35 @@ private nonisolated enum Grammars {
             SyntaxPattern(.string, P.tripleDouble),
             SyntaxPattern(.string, P.doubleString),
             SyntaxPattern(.string, ##"'(?:\\.|[^'\\\n])+'"##),
+        ]
+    )
+
+    static let dart = SyntaxGrammar(
+        rules: [
+            SyntaxPattern(.function, P.call, group: 1),
+            SyntaxPattern(.type, P.capitalized),
+            SyntaxPattern(.type, P.words("int double num bool")),
+            SyntaxPattern(.number, P.number),
+            SyntaxPattern(.attribute, ##"@\w+"##),
+            SyntaxPattern(.keyword, P.words("""
+                abstract as assert async await base break case catch class const continue covariant default \
+                deferred do dynamic else enum export extends extension external factory false final finally \
+                for get hide if implements import in interface is late library mixin new null of on operator \
+                part required rethrow return sealed set show static super switch sync this throw true try \
+                typedef var void when while with yield
+                """)),
+        ],
+        spans: [
+            SyntaxPattern(.comment, P.blockComment),
+            SyntaxPattern(.comment, P.lineComment),
+            SyntaxPattern(.string, ##"\br"""[\s\S]*?(?:"""|\z)"##),
+            SyntaxPattern(.string, ##"\br'''[\s\S]*?(?:'''|\z)"##),
+            SyntaxPattern(.string, ##"\br"[^"\n]*""##),
+            SyntaxPattern(.string, ##"\br'[^'\n]*'"##),
+            SyntaxPattern(.string, ##""""(?:\\[\s\S]|(?!"{3})[^\\])*(?:"""|\z)"##),
+            SyntaxPattern(.string, ##"'''(?:\\[\s\S]|(?!'{3})[^\\])*(?:'''|\z)"##),
+            SyntaxPattern(.string, P.doubleString),
+            SyntaxPattern(.string, P.singleString),
         ]
     )
 

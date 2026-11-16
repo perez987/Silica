@@ -35,7 +35,7 @@ private struct QuickOpenPanel: View {
             resultList
         }
         .frame(maxWidth: 640)
-        .glassEffect(.regular, in: .rect(cornerRadius: 16))
+        .glassSurface(in: .rect(cornerRadius: 16))
         .onAppear {
             isSearchFocused = true
             placeCursorAtEnd()

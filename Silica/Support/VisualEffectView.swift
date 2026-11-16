@@ -36,7 +36,7 @@ struct WindowBackground: View {
     private var settings: EditorSettings { .shared }
 
     var body: some View {
-        if settings.windowStyle == .glass {
+        if settings.usesGlassEffect {
             VisualEffectView(material)
         } else {
             Color(nsColor: .windowBackgroundColor)

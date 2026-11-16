@@ -46,7 +46,7 @@ struct FileIcon: View {
         case "html", "htm", "xml", "svg", "vue": return (code, C.pink)
         case "css", "scss", "sass", "less": return ("paintbrush", C.purple)
         case "py": return (code, C.teal)
-        case "go": return (code, C.cyan)
+        case "go", "dart": return (code, C.cyan)
         case "rb", "java": return (code, C.red)
         case "rs": return (code, C.brown)
         case "kt", "cs": return (code, C.purple)

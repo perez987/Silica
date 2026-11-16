@@ -152,6 +152,13 @@ final class EditorSettings {
         }
     }
 
+    var usesGlassEffect: Bool {
+        if #available(macOS 26.0, *) {
+            return windowStyle == .glass
+        }
+        return false
+    }
+
     enum StartupBehavior: String {
         case welcome, emptyWorkspace, blankFile
     }

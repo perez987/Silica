@@ -25,7 +25,7 @@ struct WorkspaceWindow: View {
                     Text(errorMessage)
                 } actions: {
                     Button("Open Project…") { ProjectOpener(openWindow: openWindow).chooseAndOpen() }
-                        .buttonStyle(.glassProminent)
+                        .glassButtonStyle(prominent: true)
                 }
                 .frame(minWidth: 500, minHeight: 360)
             } else {
