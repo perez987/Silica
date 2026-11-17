@@ -3,14 +3,18 @@
     <channel>
         <title>Silica</title>
        <item>
-            <title>0.6.0</title>
+            <title>0.6.1</title>
             <pubDate>Thu, 16 Nov 2026 18:58:59 +0800</pubDate>
             <link>https://github.com/perez987/Silica</link>
             <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>0060</sparkle:version>
-            <sparkle:shortVersionString>0.6.0</sparkle:shortVersionString>
+            <sparkle:version>0061</sparkle:version>
+            <sparkle:shortVersionString>0.6.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <description xml:lang="en"><![CDATA[
+           <h3>What's new in Silica 0.6.1</h3>
+			<ul>
+				<li>Add glass mode to the Settings window</li>
+			</ul>
             <h3>What's new in Silica 0.6.0</h3>
 			<ul>
 				<li>Ported commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
@@ -67,6 +71,10 @@
 			</ul>
 			]]></description>
             <description xml:lang="es"><![CDATA[
+           <h3>Novedades de Silica 0.6.1</h3>
+			<ul>
+				<li>Añadir estilo transparente a la ventana de Ajustes</li>
+			</ul>
             <h3>Novedades de Silica 0.6.0</h3>
 			<ul>
 				<li>Adaptar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
@@ -116,10 +124,10 @@
 			</ul>
 			]]></description>
             <enclosure 
-            url="https://github.com/perez987/Silica/releases/download/0.6.0/Silica.0.6.0.dmg" 
-            length="9966082" 
+            url="https://github.com/perez987/Silica/releases/download/0.6.1/Silica.0.6.1.dmg" 
+            length="9967440" 
             type="application/octet-stream" 
-            sparkle:edSignature="d9plcJLEJw90l5/TSLcCnF7l11xxt3rFaxyl7uvVuOcWxMVVdsEtwh/uMTVMjDe0bHl3Z0C/40e5/x1LnRXCCQ=="/>
+            sparkle:edSignature="V/+9QgeodQsUkIVDU+lSJA7rfNLCWJ1LBwBocutvWHsnJptbnchSP51Hv+2kdu7PAKnL9WqLUaRuhrWzyXVgCw=="/>
         </item>
     </channel>
 </rss>

@@ -40,6 +40,7 @@ struct SettingsView: View {
     static let paneKey = "settingsTab"
 
     private static let sections: [[Pane]] = [[.general, .fontsAndColors, .editor], [.about]]
+    private var settings: EditorSettings { .shared }
 
     var body: some View {
         NavigationSplitView(columnVisibility: .constant(.all)) {
@@ -57,10 +58,12 @@ struct SettingsView: View {
                     }
                 }
             }
+            .scrollContentBackground(settings.usesGlassEffect ? .hidden : .automatic)
             .toolbar(removing: .sidebarToggle)
             .navigationSplitViewColumnWidth(min: 215, ideal: 215, max: 215)
         } detail: {
             detail
+                .scrollContentBackground(settings.usesGlassEffect ? .hidden : .automatic)
                 .formStyle(.grouped)
         }
         .containerBackground(for: .window) {
