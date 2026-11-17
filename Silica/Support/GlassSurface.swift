@@ -9,33 +9,17 @@ extension View {
         modifier(GlassButtonStyle(isProminent: prominent))
     }
 
-    @ViewBuilder
     func workspaceCard() -> some View {
-        if #available(macOS 26.0, *) {
-            let shape = ConcentricRectangle(corners: .concentric(minimum: .fixed(WorkspaceLayout.cardCornerRadius)))
-            clipShape(shape).glassSurface(in: shape)
-        } else {
-            let shape = RoundedRectangle(cornerRadius: WorkspaceLayout.cardCornerRadius, style: .continuous)
-            clipShape(shape).glassSurface(in: shape)
-        }
+        let shape = ConcentricRectangle(corners: .concentric(minimum: .fixed(WorkspaceLayout.cardCornerRadius)))
+        return clipShape(shape).glassSurface(in: shape)
     }
 
-    @ViewBuilder
     func glassContainer(spacing: CGFloat) -> some View {
-        if #available(macOS 26.0, *) {
-            GlassEffectContainer(spacing: spacing) { self }
-        } else {
-            self
-        }
+        GlassEffectContainer(spacing: spacing) { self }
     }
 
-    @ViewBuilder
     func softVerticalScrollEdges() -> some View {
-        if #available(macOS 26.0, *) {
-            scrollEdgeEffectStyle(.soft, for: .vertical)
-        } else {
-            self
-        }
+        scrollEdgeEffectStyle(.soft, for: .vertical)
     }
 }
 
@@ -45,7 +29,7 @@ private struct GlassSurface<S: Shape>: ViewModifier {
     private var settings: EditorSettings { .shared }
 
     func body(content: Content) -> some View {
-        if #available(macOS 26.0, *), settings.usesGlassEffect {
+        if settings.usesGlassEffect {
             content.glassEffect(isOn ? .regular : .identity, in: shape)
         } else {
             content
@@ -72,7 +56,7 @@ private struct GlassButtonStyle: ViewModifier {
     private var settings: EditorSettings { .shared }
 
     func body(content: Content) -> some View {
-        if #available(macOS 26.0, *), settings.usesGlassEffect {
+        if settings.usesGlassEffect {
             if isProminent {
                 content.buttonStyle(.glassProminent)
             } else {

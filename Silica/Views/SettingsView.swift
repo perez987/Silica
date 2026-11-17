@@ -63,8 +63,8 @@ struct SettingsView: View {
             .navigationSplitViewColumnWidth(min: 215, ideal: 215, max: 215)
         } detail: {
             detail
-                .scrollContentBackground(settings.usesGlassEffect ? .hidden : .automatic)
                 .formStyle(.grouped)
+                .scrollContentBackground(settings.usesGlassEffect ? .hidden : .automatic)
         }
         .containerBackground(for: .window) {
             WindowBackground()
@@ -116,13 +116,11 @@ private struct GeneralSettingsPane: View {
                     Text("Dark").tag(EditorSettings.Appearance.dark)
                 }
                 .tabsPickerStyle()
-                if #available(macOS 26.0, *) {
-                    Picker("Window Style", selection: $settings.windowStyle) {
-                        Text("Glass").tag(EditorSettings.WindowStyle.glass)
-                        Text("Opaque").tag(EditorSettings.WindowStyle.opaque)
-                    }
-                    .tabsPickerStyle()
+                Picker("Window Style", selection: $settings.windowStyle) {
+                    Text("Glass").tag(EditorSettings.WindowStyle.glass)
+                    Text("Opaque").tag(EditorSettings.WindowStyle.opaque)
                 }
+                .tabsPickerStyle()
             }
 
             Section("Startup") {

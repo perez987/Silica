@@ -4,7 +4,7 @@ Thanks for helping make Silica better. Bug reports, feature ideas and pull reque
 
 ## Reporting bugs and asking for features
 
-[Open an issue](https://github.com/dqhieu/Silica/issues/new). For a bug, include:
+[Open an issue](https://github.com/perez987/Silica/issues/new). For a bug, include:
 
 - your Silica version (Settings › About) and macOS version
 - what you did, what you expected, and what happened instead
@@ -18,7 +18,7 @@ For anything bigger than a small fix, open an issue (or comment on an existing o
 
 ## Setting up
 
-You need Xcode 27 or later. Silica runs on macOS 15 and later.
+You need Xcode 26 or later. Silica runs on macOS 26 and later.
 
 1. Fork the repository and clone your fork.
 2. Open `Silica.xcodeproj`.
@@ -44,7 +44,7 @@ The app uses SwiftUI for windows and layout and AppKit (`NSTextView`) for the ed
 
 - **Match the code around you**: its naming, its structure, its use of SwiftUI and AppKit. Prefer platform APIs to new dependencies; ask in an issue before adding a package.
 - **Comment the why, not the what.** If something is done in a non-obvious way
-  (a workaround for a SwiftUI behavior, say), leave a short comment explaining 	  why.
+  (a workaround for a SwiftUI behavior, say), leave a short comment explaining why.
 - **Keep pull requests focused** on one change. Unrelated cleanups go in their own PR.
 - **Check it by hand.** There's no automated app test suite yet, so run the app and try your change, in both light and dark appearance if it touches the UI. Include a screenshot or recording in the PR for visual changes.
 - **Build without new warnings.**
@@ -68,11 +68,6 @@ Write the subject in the imperative, describing the change as the user sees it
 3. Open a pull request against `main`. Describe what it changes and how you tested it, and link the issue it addresses.
 
 A maintainer will review it, and may ask for changes before merging.
-
-## Releases
-
-Releases are made by the maintainer with `scripts/release.sh`; see
-[RELEASING.md](RELEASING.md). Pull requests shouldn't change the version number.
 
 ## License
 

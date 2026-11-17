@@ -20,7 +20,7 @@ open a blank text file without an associated project
 
 Get the latest DMG from [Releases](https://github.com/perez987/Silica/releases/latest), open it and drag Silica to Applications. Silica checks for updates once a day and installs them for you; you can turn that off in Settings › General.
 
-Silica needs macOS 15 or later. Liquid Glass requires macOS 26; earlier versions use opaque, bordered surfaces.
+Silica needs macOS 26 or later.
 
 ## Features
 
@@ -33,11 +33,11 @@ Silica needs macOS 15 or later. Liquid Glass requires macOS 26; earlier versions
 - **CSV and TSV preview**, with a table view.
 - **HTML preview**, including unsaved edits, project assets and page scripts.
 - **PDF viewing**, including password-protected files.
-- **Editing tools.** Tabs, line numbers, indent guides, a vertical scrollbar (following macOS scroll bar preferences), an optional minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
+- **Editing tools.** Tabs, in-file search with highlighted matches, line numbers, indent guides, a vertical scrollbar (following macOS scroll bar preferences), an optional minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
 - **Integrated terminal.** Open a resizable terminal below the editor using the title bar or ⌃`. Shells start in the project folder (or home for a standalone window); add tabs, drag to reorder them, and hide the card without stopping them. Command-click links or file paths to open them.
 - **New files.** Press `⌘N` to start an empty plain-text file, even without an open project. Choose where to save it when ready; the suggested filename uses `.txt`, which you can change.
 - **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. Choose the welcome window, an empty workspace, or a blank text file at launch in Settings › General. Reopen the welcome window with File › Welcome Window or `⇧⌘1`.
-- **Appearance and language.** On macOS 26 or later, choose glass or opaque windows in Settings › General. The opaque editor background is black in dark appearance and white in light appearance. Silica follows the macOS language preference, with English and Spanish available.
+- **Appearance and language.** Choose glass or opaque windows in Settings › General. The opaque editor background is black in dark appearance and white in light appearance. Silica follows the macOS language preference, with English and Spanish available.
 - **Works with Finder.** Use Open With, drop files on the Dock icon, or run
   `open -a Silica <path>`.
 
@@ -65,7 +65,7 @@ Silica needs macOS 15 or later. Liquid Glass requires macOS 26; earlier versions
 
 ## Building from source
 
-You need Xcode 27 or later.
+You need Xcode 26 or later.
 
 1. Clone the repository and open `Silica.xcodeproj`.
 2. In the Silica target's Signing & Capabilities, choose your own team (or "Sign to
