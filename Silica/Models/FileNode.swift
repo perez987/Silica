@@ -12,6 +12,9 @@ final class FileNode: Identifiable {
 
     /// Matched by a .gitignore rule, itself or through an ignored parent folder.
     private(set) var isIgnored: Bool
+    /// Dims dotfiles. Off in a git repository, where its ignore rules decide what's
+    /// dimmed and tracked dotfolders such as `.github` are part of the project.
+    private let dimsDotfiles: Bool
     /// Ignore rules in effect for this node's parent folder.
     @ObservationIgnored private var inheritedRules: GitIgnoreStack
     /// Ignore rules for this folder's children: inherited ones plus its own .gitignore.
@@ -25,22 +28,31 @@ final class FileNode: Identifiable {
 
     var id: URL { url }
 
-    /// Shown dimmed in the tree: dotfiles (which Finder hides) and gitignored items.
-    var isDimmed: Bool { isIgnored || name.hasPrefix(".") }
+    /// Shown dimmed in the tree: gitignored items, and outside a git repository,
+    /// dotfiles (which Finder hides).
+    var isDimmed: Bool { isIgnored || (dimsDotfiles && name.hasPrefix(".")) }
 
     /// The project root, with the repository's `.git/info/exclude` rules.
     convenience init(root url: URL) {
         let rules = GitIgnoreStack()
             .adding(GitIgnoreFile(base: "", url: url.appending(path: ".git/info/exclude")))
-        self.init(url: url, isDirectory: true, relativePath: "", isIgnored: false, inheritedRules: rules)
+        let isRepository = FileManager.default.fileExists(atPath: url.appending(path: ".git").path(percentEncoded: false))
+        self.init(
+            url: url, isDirectory: true, relativePath: "", isIgnored: false,
+            dimsDotfiles: !isRepository, inheritedRules: rules
+        )
     }
 
-    private init(url: URL, isDirectory: Bool, relativePath: String, isIgnored: Bool, inheritedRules: GitIgnoreStack) {
+    private init(
+         url: URL, isDirectory: Bool, relativePath: String, isIgnored: Bool,
+         dimsDotfiles: Bool, inheritedRules: GitIgnoreStack
+     ) {
         self.url = url
         self.name = url.lastPathComponent
         self.isDirectory = isDirectory
         self.relativePath = relativePath
         self.isIgnored = isIgnored
+        self.dimsDotfiles = dimsDotfiles
         self.inheritedRules = inheritedRules
     }
 
@@ -105,6 +117,7 @@ final class FileNode: Identifiable {
                     isDirectory: isDir,
                     relativePath: path,
                     isIgnored: isIgnored || rules.isIgnored(path, isDirectory: isDir),
+                    dimsDotfiles: dimsDotfiles,
                     inheritedRules: rules
                 )
             }
