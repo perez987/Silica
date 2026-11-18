@@ -88,7 +88,7 @@
 			<ul>
 				<li>Adaptados últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
 				<ul><li>Primeras líneas visibles al abrir la barra de búsqueda</li>
-				<li>Las coincidencias del texto buscado son realtadas correctamente</li>
+				<li>Las coincidencias del texto buscado son resaltadas correctamente</li>
 				<li>Archivos ocultos ya no se muestran atenuados si están dentro del repositorio</li>
 				<li>La barra lateral mantiene la vista cuando la ventana del editor reduce su anchura al mínimo</li></ul>
 			</ul>
