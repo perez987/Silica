@@ -52,6 +52,15 @@ final class EditorTextView: NSTextView {
         // Guides follow the text, so any edit can move them.
         setNeedsDisplay(visibleRect)
     }
+    
+     /// TextKit 2 can move its viewport toward `range` without scrolling the view when
+     /// the range is already on screen, and nothing lays the viewport out again. The
+     /// text view then reports no visible text, so the find bar counts matches but
+     /// highlights none. Laying the viewport out puts it back where the view is.
+     override func scrollRangeToVisible(_ range: NSRange) {
+         super.scrollRangeToVisible(range)
+         textLayoutManager?.textViewportLayoutController.layoutViewport()
+     }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)

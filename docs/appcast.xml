@@ -3,14 +3,22 @@
     <channel>
         <title>Silica</title>
        <item>
-            <title>0.6.2</title>
+            <title>0.7.0</title>
             <pubDate>Thu, 17 Nov 2026 18:58:59 +0800</pubDate>
             <link>https://github.com/perez987/Silica</link>
             <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>0062</sparkle:version>
-            <sparkle:shortVersionString>0.6.2</sparkle:shortVersionString>
+            <sparkle:version>0070</sparkle:version>
+            <sparkle:shortVersionString>0.7.0</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
             <description xml:lang="en"><![CDATA[
+           <h3>What's new in Silica 0.7.0</h3>
+			<ul>
+				<li>Ported commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+				<ul><li>Keep top lines visible when the find bar appears</li>
+				<li>Relayout the TextKit 2 viewport after scrolling so find results highlight correctly</li>
+				<li>Dotfiles are no longer dimmed inside git repositories, they are still dimmed outside a repository</li>
+				<li>The sidebar narrows when the window is too small to give the editor its minimum width</li></ul>
+			</ul>
           <h3>What's new in Silica 0.6.2</h3>
 			<ul>
 				<li>Raise the deployment target to macOS 26 </li>
@@ -76,6 +84,14 @@
 			</ul>
 			]]></description>
             <description xml:lang="es"><![CDATA[
+           <h3>Lo nuevo de 0.7.0</h3>
+			<ul>
+				<li>Adaptados últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+				<ul><li>Primeras líneas visibles al abrir la barra de búsqueda</li>
+				<li>Las coincidencias del texto buscado son realtadas correctamente</li>
+				<li>Archivos ocultos ya no se muestran atenuados si están dentro del repositorio</li>
+				<li>La barra lateral mantiene la vista cuando la ventana del editor reduce su anchura al mínimo</li></ul>
+			</ul>
            <h3>Lo nuevo de Silica 0.6.2</h3>
 			<ul>
 				<li>Subir el macOS mínimo a macOS 26 </li>
@@ -134,10 +150,10 @@
 			</ul>
 			]]></description>
             <enclosure 
-            url="https://github.com/perez987/Silica/releases/download/0.6.2/Silica.0.6.2.dmg" 
-            length="9425783" 
+            url="https://github.com/perez987/Silica/releases/download/0.7.0/Silica.0.7.0.dmg" 
+            length="9936221" 
             type="application/octet-stream" 
-            sparkle:edSignature="aq84JUP7efTGlu0esQ78H7Kaw6KRzRInkmCUCTXc3AFO+2F7fMfsxokeH1GjzBJdnhFvFbC0TA5KF/dYCdp6AQ=="/>
+            sparkle:edSignature="J9wD+i7OrQPNQkcS2D0lLtJzj76COwYV+trmr2NeJAg75a7vcYmZjSZPM6HZPlDXG/ixjVAARCdcDC1Fy1k6Dw=="/>
         </item>
     </channel>
 </rss>

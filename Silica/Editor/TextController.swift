@@ -16,7 +16,7 @@ final class TextController: NSObject, NSTextViewDelegate {
     init(text: String, language: SyntaxLanguage?) {
         // Built by hand: `EditorTextView.scrollableTextView()` returned a TextKit 1 view,
         // and the gutter and indent guides draw through TextKit 2.
-        scrollView = NSScrollView()
+        scrollView = EditorScrollView()
         textView = EditorTextView(usingTextLayoutManager: true)
         view = EditorContainerView(scrollView: scrollView)
         super.init()
@@ -486,6 +486,35 @@ struct TextViewHost: NSViewRepresentable {
                 controller.didAppear()
             }
         }
+    }
+}
+
+/// The editor's scroll view. The find bar floats over the top of the text and insets
+/// it, but AppKit leaves the scroll position alone, so opening the bar at the top of a
+/// file would cover the first line. Text within a bar's height of the top moves with
+/// the bar instead; further down, the view stays where it is.
+final class EditorScrollView: NSScrollView {
+    /// Runs `change`, which shows, hides or resizes the find bar.
+    private func keepingTopLinesInView(_ change: () -> Void) {
+        let oldInset = contentView.contentInsets.top
+        let distanceFromTop = contentView.bounds.minY + oldInset
+        change()
+        let newInset = contentView.contentInsets.top
+        guard newInset != oldInset, distanceFromTop < max(oldInset, newInset) else { return }
+        let y = distanceFromTop - newInset
+        guard contentView.bounds.minY != y else { return }
+        contentView.scroll(to: NSPoint(x: contentView.bounds.minX, y: y))
+        reflectScrolledClipView(contentView)
+    }
+
+    override var isFindBarVisible: Bool {
+        get { super.isFindBarVisible }
+        set { keepingTopLinesInView { super.isFindBarVisible = newValue } }
+    }
+
+    /// Showing the replace field makes the bar taller.
+    override func findBarViewDidChangeHeight() {
+        keepingTopLinesInView { super.findBarViewDidChangeHeight() }
     }
 }
 
