@@ -161,9 +161,9 @@
 			]]></description>
             <enclosure 
             url="https://github.com/perez987/Silica/releases/download/0.7.2/Silica.0.7.2.dmg" 
-            length="9449634" 
+            length="9451430" 
             type="application/octet-stream" 
-            sparkle:edSignature="SNdBZVofsxB/NqE6XPaUTuLifX9o1wJZ2rI0Bi/jzeHBQFdwaWbci1IKpPuuvj3vFQVZOpIS/sPO/k70ZcEuAw=="/>
+            sparkle:edSignature="mxFhzsS5GGYS1X4G1mu1+3I3kj8gnWFybhjOt4CBmsAqd7fCRq1OppLYClYXELs1Tc5j+LH9gUbfk74FQl5cDA=="/>
         </item>
     </channel>
 </rss>
