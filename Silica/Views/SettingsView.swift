@@ -39,7 +39,9 @@ struct SettingsView: View {
     @AppStorage(SettingsView.paneKey) private var pane: Pane = .general
     static let paneKey = "settingsTab"
 
-    private static let sections: [[Pane]] = [[.general, .fontsAndColors, .editor], [.about]]
+    private static let sections: [[Pane]] = [
+        [.general, .fontsAndColors, .editor], [.about],
+    ]
     private var settings: EditorSettings { .shared }
 
     var body: some View {
@@ -58,19 +60,29 @@ struct SettingsView: View {
                     }
                 }
             }
-            .scrollContentBackground(settings.usesGlassEffect ? .hidden : .automatic)
+            .scrollContentBackground(
+                settings.usesGlassEffect ? .hidden : .automatic
+            )
             .toolbar(removing: .sidebarToggle)
             .navigationSplitViewColumnWidth(min: 215, ideal: 215, max: 215)
         } detail: {
             detail
                 .formStyle(.grouped)
-                .scrollContentBackground(settings.usesGlassEffect ? .hidden : .automatic)
+                .scrollContentBackground(
+                    settings.usesGlassEffect ? .hidden : .automatic
+                )
         }
         .containerBackground(for: .window) {
             WindowBackground()
         }
-        .frame(minWidth: 620, idealWidth: 760, maxWidth: .infinity,
-               minHeight: 532, idealHeight: 560, maxHeight: .infinity)
+        .frame(
+            minWidth: 620,
+            idealWidth: 760,
+            maxWidth: .infinity,
+            minHeight: 532,
+            idealHeight: 560,
+            maxHeight: .infinity
+        )
     }
 
     @ViewBuilder
@@ -106,7 +118,13 @@ struct SettingsIcon: View {
 private struct GeneralSettingsPane: View {
     @Bindable private var settings = EditorSettings.shared
     @ObservedObject private var updater = AppUpdater.shared
+    /// The link on PATH that runs this copy's `silica` script, once installed.
+    @State private var commandPath = CommandLineTool.installedPath
+    /// While the password prompt is up, so a second click doesn't raise another.
+    @State private var isInstallingCommand = false
 
+    private let commandHint =
+        "Open a project from the terminal with “silica .”, or a file with “silica <file>”."
     var body: some View {
         Form {
             Section("Appearance") {
@@ -125,20 +143,75 @@ private struct GeneralSettingsPane: View {
 
             Section("Startup") {
                 Picker("At launch", selection: $settings.startupBehavior) {
-                    Text("Welcome window").tag(EditorSettings.StartupBehavior.welcome)
-                    Text("Empty workspace").tag(EditorSettings.StartupBehavior.emptyWorkspace)
-                    Text("Blank text file").tag(EditorSettings.StartupBehavior.blankFile)
+                    Text("Welcome window").tag(
+                        EditorSettings.StartupBehavior.welcome
+                    )
+                    Text("Empty workspace").tag(
+                        EditorSettings.StartupBehavior.emptyWorkspace
+                    )
+                    Text("Blank text file").tag(
+                        EditorSettings.StartupBehavior.blankFile
+                    )
                 }
             }
 
             Section("Projects") {
-                Toggle("Reopen a project’s tabs where you left them", isOn: $settings.restoresTabs)
-                Toggle("Keep parent folders in view while scrolling the file tree", isOn: $settings.pinsParentFolders)
+                Toggle(
+                    "Reopen a project’s tabs where you left them",
+                    isOn: $settings.restoresTabs
+                )
+                Toggle(
+                    "Keep parent folders in view while scrolling the file tree",
+                    isOn: $settings.pinsParentFolders
+                )
+            }
+
+            Section {
+                LabeledContent("“\(CommandLineTool.name)” command") {
+                    if let commandPath {
+                        Text(
+                            "Installed in \((commandPath as NSString).deletingLastPathComponent)"
+                        )
+                    } else {
+                        Button("Install") {
+                            isInstallingCommand = true
+                            Task {
+                                await CommandLineTool.install()
+                                commandPath = CommandLineTool.installedPath
+                                isInstallingCommand = false
+                            }
+                        }
+                        .disabled(
+                            isInstallingCommand
+                                || CommandLineTool.unavailableReason != nil
+                        )
+                    }
+                }
+            } header: {
+                Text("Command Line")
+            } footer: {
+                Text(
+                    commandPath == nil
+                        ? CommandLineTool.unavailableReason ?? commandHint
+                        : commandHint
+                )
+            }
+            // Coming back from Terminal, where the command may just have been installed.
+            .onReceive(
+                NotificationCenter.default.publisher(
+                    for: NSApplication.didBecomeActiveNotification
+                )
+            ) { _ in
+                commandPath = CommandLineTool.installedPath
             }
 
             Section("Updates") {
-                Toggle("Check for updates automatically", isOn: $updater.automaticallyChecksForUpdates)
-                LabeledContent("Version \(AppInfo.version) (\(AppInfo.build))") {
+                Toggle(
+                    "Check for updates automatically",
+                    isOn: $updater.automaticallyChecksForUpdates
+                )
+                LabeledContent("Version \(AppInfo.version) (\(AppInfo.build))")
+                {
                     Button("Check Now") { updater.checkForUpdates() }
                         .disabled(!updater.canCheckForUpdates)
                 }
@@ -160,13 +233,20 @@ private struct FontsAndColorsSettingsPane: View {
                     .lineLimit(5)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color(nsColor: .textBackgroundColor)))
-                    .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(.primary.opacity(0.06)))
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color(nsColor: .textBackgroundColor))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(.primary.opacity(0.06))
+                    )
                     .padding(.vertical, 3)
                 Picker("Font", selection: fontFamily) {
                     Text("SF Mono (System)").tag("")
                     Divider()
-                    ForEach(EditorSettings.monospacedFamilies, id: \.self) { family in
+                    ForEach(EditorSettings.monospacedFamilies, id: \.self) {
+                        family in
                         Text(family).tag(family)
                     }
                 }
@@ -175,8 +255,13 @@ private struct FontsAndColorsSettingsPane: View {
                     HStack(spacing: 8) {
                         Text("\(Int(settings.fontSize)) pt")
                             .monospacedDigit()
-                        Stepper("Size", value: fontSize, in: EditorSettings.fontSizeRange, step: 1)
-                            .labelsHidden()
+                        Stepper(
+                            "Size",
+                            value: fontSize,
+                            in: EditorSettings.fontSizeRange,
+                            step: 1
+                        )
+                        .labelsHidden()
                     }
                 }
             }
@@ -186,9 +271,13 @@ private struct FontsAndColorsSettingsPane: View {
                     HStack(spacing: 8) {
                         Text("\(Int(settings.sidebarFontSize)) pt")
                             .monospacedDigit()
-                        Stepper("Sidebar size", value: $settings.sidebarFontSize,
-                                in: EditorSettings.sidebarFontSizeRange, step: 1)
-                            .labelsHidden()
+                        Stepper(
+                            "Sidebar size",
+                            value: $settings.sidebarFontSize,
+                            in: EditorSettings.sidebarFontSizeRange,
+                            step: 1
+                        )
+                        .labelsHidden()
                     }
                 }
             }
@@ -217,7 +306,9 @@ private struct FontsAndColorsSettingsPane: View {
         let theme = settings.syntaxTheme
         for token in SyntaxLanguage.swift.tokenizer.tokenize(text as NSString) {
             guard let range = Range(token.range, in: result) else { continue }
-            result[range].foregroundColor = Color(nsColor: theme.color(for: token.kind))
+            result[range].foregroundColor = Color(
+                nsColor: theme.color(for: token.kind)
+            )
         }
         return result
     }
@@ -257,7 +348,10 @@ private struct EditorSettingsPane: View {
                         Text("\(width) spaces").tag(width)
                     }
                 }
-                Picker("Indent new files with", selection: $settings.indentsWithTabs) {
+                Picker(
+                    "Indent new files with",
+                    selection: $settings.indentsWithTabs
+                ) {
                     Text("Spaces").tag(false)
                     Text("Tabs").tag(true)
                 }
@@ -270,19 +364,19 @@ private struct EditorSettingsPane: View {
     }
 }
 
-private extension View {
+extension View {
     /// The capsule tabs treatment macOS 27 gives a picker, or plain segments before it.
     @ViewBuilder
-    func tabsPickerStyle() -> some View {
+    fileprivate func tabsPickerStyle() -> some View {
         #if !SILICA_MACOS_26_SDK
-        if #available(macOS 27.0, *) {
-            pickerStyle(.tabs)
-                .buttonBorderShape(.capsule)
-        } else {
-            pickerStyle(.segmented)
-        }
+            if #available(macOS 27.0, *) {
+                pickerStyle(.tabs)
+                    .buttonBorderShape(.capsule)
+            } else {
+                pickerStyle(.segmented)
+            }
         #else
-        pickerStyle(.segmented)
+            pickerStyle(.segmented)
         #endif
     }
 }

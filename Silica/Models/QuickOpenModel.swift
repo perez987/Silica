@@ -20,7 +20,10 @@ final class QuickOpenModel {
     let rootURL: URL
 
     var query = "" {
-        didSet { updateResults() }
+        didSet {
+             guard query != oldValue else { return }
+             updateResults()
+         }
     }
     private(set) var results: [QuickOpenResult] = []
     var selectedIndex = 0
@@ -46,7 +49,11 @@ final class QuickOpenModel {
     /// the project; the previous index is shown meanwhile.
     func prepareForPresentation(activeFile: URL?, query: String = "", indexProject: Bool = true) {
         self.activeFile = activeFile
-        self.query = query
+        if self.query == query {
+             updateResults()
+         } else {
+             self.query = query
+         }
         presentationCount += 1
         if indexProject { reindex(activeFile: activeFile) }
     }

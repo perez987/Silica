@@ -44,8 +44,8 @@ Silica needs macOS 26 or later.
 - **New files.** Press `⌘N` to start an empty plain-text file, even without an open project. Choose where to save it when ready; the suggested filename uses `.txt`, which you can change.
 - **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. Choose the welcome window, an empty workspace, or a blank text file at launch in Settings › General. Reopen the welcome window with File › Welcome Window or `⇧⌘1`.
 - **Appearance and language.** Choose glass or opaque windows in Settings › General. The opaque editor background is black in dark appearance and white in light appearance. Silica follows the macOS language preference, with English and Spanish available.
-- **Works with Finder.** Use Open With, drop files on the Dock icon, or run
-  `open -a Silica <path>`.
+- **Works with Finder.** Use Open With or drop files on the Dock icon. Drag a file or folder out of the sidebar, or the project's folder icon from beside its name, to hand it to Terminal, Finder or another app.
+- **Opens from the terminal.** `silica .` opens the current folder as a project, and `silica <file>` opens a file in the project it belongs to. Homebrew installs the command with the app; otherwise install it from Settings › General.
 
 ## Keyboard shortcuts
 

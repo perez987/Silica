@@ -1,0 +1,66 @@
+#!/bin/sh
+# silica: opens folders and files in Silica from the terminal.
+#
+# This script ships in Silica.app/Contents/Resources and is meant to be symlinked
+# into a folder on PATH: Settings › General does that, and so does the Homebrew cask.
+
+usage() {
+    cat <<'USAGE'
+Usage: silica [path ...]
+
+  silica .         Open the current folder as a project
+  silica <folder>  Open a folder as a project
+  silica <file>    Open a file in the project it belongs to
+  silica           Bring Silica to the front
+
+Options:
+  -h, --help       Show this help
+  -v, --version    Show Silica's version
+USAGE
+}
+
+# Follow the symlink back to the app this script ships in, so the command opens the
+# copy of Silica it was installed from, whatever else is on the Mac.
+script=$0
+while [ -L "$script" ]; do
+    target=$(readlink "$script")
+    case $target in
+        /*) script=$target ;;
+        *) script=$(dirname "$script")/$target ;;
+    esac
+done
+app=$(cd "$(dirname "$script")/../.." && pwd -P) || exit 1
+
+case ${1-} in
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    -v | --version)
+        version=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$app/Contents/Info.plist") || exit 1
+        echo "Silica $version"
+        exit 0
+        ;;
+    --)
+        shift
+        ;;
+    -*)
+        # Anything else would reach `open` as one of its own options.
+        echo "silica: unknown option $1" >&2
+        usage >&2
+        exit 64
+        ;;
+esac
+
+[ $# -gt 0 ] || exec /usr/bin/open -a "$app"
+
+# `open` resolves relative paths itself and reports the ones that don't exist. A
+# leading "./" keeps a name that starts with a dash from being read as an option.
+for path in "$@"; do
+    shift
+    case $path in
+        -*) path=./$path ;;
+    esac
+    set -- "$@" "$path"
+done
+exec /usr/bin/open -a "$app" "$@"
