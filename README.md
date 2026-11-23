@@ -2,7 +2,7 @@
 
 ![Platform](https://img.shields.io/badge/macOS-26+-orange.svg)
 ![Swift](https://img.shields.io/badge/Swift-5+-lavender.svg)
-![Xcode](https://img.shields.io/badge/Xcode-27+-blue.svg)
+![Xcode](https://img.shields.io/badge/Xcode-26+-blue.svg)
 
 A lightweight code editor for macOS, made of glass. Open a folder, find files fast, and edit with syntax highlighting, a minimap and a Markdown preview, all in a native SwiftUI and AppKit app.
 
@@ -67,7 +67,7 @@ Silica needs macOS 26 or later.
 
 ## Building from source
 
-You need Xcode 27.
+You need Xcode 26.
 
 1. Clone the repository and open `Silica.xcodeproj`.
 2. In the Silica target's Signing & Capabilities, choose your own team (or "Sign to
