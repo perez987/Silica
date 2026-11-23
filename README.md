@@ -14,11 +14,12 @@ I really like the original project and the Silica app, which works very well. It
 
 - Migrate the Xcode project from the JSON `xcproj` format (introduced in Xcode 27) to the older `pbxproj` format to ensure compatibility (this change allows me to work on the project using Xcode 26 on macOS Tahoe)
 - Fix a crash when building Release in Xcode 26 on macOS Tahoe
+- Lower the minimum macOS version to 15 (ported from the original project); Liquid Glass stays exclusive to macOS 26 and later.
 - Localize the interface and alerts, adding a simple language system with English (default) and Spanish
 - Add an option to switch between glass and opaque window styles, since I prefer opaque windows
 - Enable New File (⌘N) menu and keyboard shortcut from the app startup → open a blank text file without an associated project
-- Choose whether to start with the welcome window, an empty workspace, or a blank text file.
-- Lower the minimum macOS version to 15 (ported from the original project); Liquid Glass stays exclusive to macOS 26 and later.
+- Choose whether to start with the welcome window, an empty workspace, or a blank text file
+- Add "Open in Silica" to the Finder's Services menu for folders
 
 ## Download
 
