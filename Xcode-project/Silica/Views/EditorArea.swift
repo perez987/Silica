@@ -328,52 +328,59 @@ struct MiddleClickClosesTab<Tab: Hashable>: NSViewRepresentable {
     let tab: (CGFloat) -> Tab?
     let close: (Tab) -> Void
 
-    func makeNSView(context: Context) -> AnchorView { AnchorView() }
+    func makeNSView(context: Context) -> MiddleClickAnchorView { MiddleClickAnchorView() }
 
-    func updateNSView(_ nsView: AnchorView, context: Context) {
-        nsView.tab = tab
-        nsView.close = close
+    func updateNSView(_ nsView: MiddleClickAnchorView, context: Context) {
+        let tab = self.tab
+        let close = self.close
+        nsView.tab = { x in tab(x).map(AnyHashable.init) }
+        nsView.close = { hit in
+            if let hit = hit.base as? Tab { close(hit) }
+        }
     }
 
-    static func dismantleNSView(_ nsView: AnchorView, coordinator: ()) {
+    static func dismantleNSView(_ nsView: MiddleClickAnchorView, coordinator: ()) {
         nsView.stopWatching()
     }
+}
 
-    final class AnchorView: NSView {
-        var tab: (CGFloat) -> Tab? = { _ in nil }
-        var close: (Tab) -> Void = { _ in }
-        private var monitor: Any?
-        private var pressed: Tab?
+/// The view behind `MiddleClickClosesTab`. It is kept out of the generic struct and
+/// works with `AnyHashable`, because the Swift 6.3 optimizer (Xcode 26) crashes while
+/// inlining into the deinit of a class nested in a generic type in Release builds.
+final class MiddleClickAnchorView: NSView {
+    var tab: (CGFloat) -> AnyHashable? = { _ in nil }
+    var close: (AnyHashable) -> Void = { _ in }
+    private var monitor: Any?
+    private var pressed: AnyHashable?
 
-        override func viewDidMoveToWindow() {
-            super.viewDidMoveToWindow()
-            stopWatching()
-            guard window != nil else { return }
-            monitor = NSEvent.addLocalMonitorForEvents(matching: [.otherMouseDown, .otherMouseUp]) { [weak self] event in
-                self?.handle(event)
-                return event
-            }
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        stopWatching()
+        guard window != nil else { return }
+        monitor = NSEvent.addLocalMonitorForEvents(matching: [.otherMouseDown, .otherMouseUp]) { [weak self] event in
+            self?.handle(event)
+            return event
         }
+    }
 
-        func stopWatching() {
-            if let monitor { NSEvent.removeMonitor(monitor) }
-            monitor = nil
-            pressed = nil
-        }
+    func stopWatching() {
+        if let monitor { NSEvent.removeMonitor(monitor) }
+        monitor = nil
+        pressed = nil
+    }
 
-        private func handle(_ event: NSEvent) {
-            guard event.buttonNumber == 2 else { return }
-            let point = convert(event.locationInWindow, from: nil)
-            let isBlocked = window?.attachedSheet != nil || NSApp.modalWindow != nil
-            let hit = event.window === window && !isBlocked && bounds.contains(point) ? tab(point.x) : nil
-            if event.type == .otherMouseDown {
-                pressed = hit
-                return
-            }
-            defer { pressed = nil }
-            guard let hit, hit == pressed else { return }
-            DispatchQueue.main.async { [weak self] in self?.close(hit) }
+    private func handle(_ event: NSEvent) {
+        guard event.buttonNumber == 2 else { return }
+        let point = convert(event.locationInWindow, from: nil)
+        let isBlocked = window?.attachedSheet != nil || NSApp.modalWindow != nil
+        let hit = event.window === window && !isBlocked && bounds.contains(point) ? tab(point.x) : nil
+        if event.type == .otherMouseDown {
+            pressed = hit
+            return
         }
+        defer { pressed = nil }
+        guard let hit, hit == pressed else { return }
+        DispatchQueue.main.async { [weak self] in self?.close(hit) }
     }
 }
 
