@@ -27,16 +27,16 @@ You need Xcode 26 or later. Silica runs on macOS 15 and later; Liquid Glass need
 
 ## How the code is organized
 
-| Folder              | What's in it                                                                                       |
-| ------------------- | -------------------------------------------------------------------------------------------------- |
-| `Silica/App`        | The app entry point, the app delegate and the menu commands                                        |
-| `Silica/Views`      | SwiftUI views: the welcome window, the workspace, the file tree, Settings                          |
-| `Silica/Editor`     | The AppKit text view, line numbers, minimap, syntax highlighting and the Markdown and CSV previews |
-| `Silica/Terminal`   | The integrated terminal, shell process and emulator view                                           |
-| `Silica/Models`     | Workspace state, open buffers, settings, recent projects, search                                   |
-| `Silica/Support`    | Glue for AppKit, Finder, file watching and updates                                                 |
-| `Config/Info.plist` | Keys merged into the generated Info.plist                                                          |
-| `Vendor/GhosttyVt`  | Swift package for the prebuilt libghostty-vt library                                               |
+| Folder | What's in it |
+| --- | --- |
+| `Silica/App` | The app entry point, the app delegate and the menu commands |
+| `Silica/Views` | SwiftUI views: the welcome window, the workspace, the file tree, Settings |
+| `Silica/Editor` | The AppKit text view, line numbers, minimap, syntax highlighting and the Markdown and CSV previews |
+| `Silica/Terminal` | The integrated terminal, shell process and emulator view |
+| `Silica/Models` | Workspace state, open buffers, settings, recent projects, search |
+| `Silica/Support` | Glue for AppKit, Finder, file watching and updates |
+| `Config/Info.plist` | Keys merged into the generated Info.plist |
+| `Vendor/GhosttyVt` | Swift package for the prebuilt libghostty-vt library |
 
 The app uses SwiftUI for windows and layout and AppKit (`NSTextView`) for the editor itself. Code is main-actor isolated by default.
 

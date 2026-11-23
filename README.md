@@ -13,6 +13,7 @@ A lightweight code editor for macOS, made of glass. Open a folder, find files fa
 I really like the original project and the Silica app, which works very well. It’s now my text and code editor in macOS. I have made a few changes to the project, tailored to my personal preferences. Without any intention of interfering with the original project—which I consider an excellent piece of work—here are the changes I have made in my fork:
 
 - Migrate the Xcode project from the JSON `xcproj` format (introduced in Xcode 27) to the older `pbxproj` format to ensure compatibility (this change allows me to work on the project using Xcode 26 on macOS Tahoe)
+- Fix a crash when building Release in Xcode 26 on macOS Tahoe
 - Localize the interface and alerts, adding a simple language system with English (default) and Spanish
 - Add an option to switch between glass and opaque window styles, since I prefer opaque windows
 - Enable New File (⌘N) menu and keyboard shortcut from the app startup → open a blank text file without an associated project
