@@ -18,7 +18,7 @@ For anything bigger than a small fix, open an issue (or comment on an existing o
 
 ## Setting up
 
-You need Xcode 26 or later. Silica runs on macOS 26 and later.
+You need Xcode 26 or later. Silica runs on macOS 15 and later; Liquid Glass needs macOS 26, so wrap glass APIs in `#available(macOS 26.0, *)` with an opaque fallback.
 
 1. Fork the repository and clone your fork.
 2. Open `Silica.xcodeproj`.

@@ -1,6 +1,6 @@
 # Silica
 
-![Platform](https://img.shields.io/badge/macOS-26+-orange.svg)
+![Platform](https://img.shields.io/badge/macOS-15+-orange.svg)
 ![Swift](https://img.shields.io/badge/Swift-5+-lavender.svg)
 ![Xcode](https://img.shields.io/badge/Xcode-26+-blue.svg)
 
@@ -17,12 +17,13 @@ I really like the original project and the Silica app, which works very well. It
 - Add an option to switch between glass and opaque window styles, since I prefer opaque windows
 - Enable New File (⌘N) menu and keyboard shortcut from the app startup → open a blank text file without an associated project
 - Choose whether to start with the welcome window, an empty workspace, or a blank text file.
+- Lower the minimum macOS version to 15 (ported from the original project); Liquid Glass stays exclusive to macOS 26 and later.
 
 ## Download
 
 Get the latest DMG from [Releases](https://github.com/perez987/Silica/releases/latest), open it and drag Silica to Applications. Silica checks for updates once a day and installs them for you; you can turn that off in Settings › General.
 
-Silica needs macOS 26 or later.
+Silica needs macOS 15 or later. The Liquid Glass look needs macOS 26; earlier versions always use the opaque window style with plain bordered cards.
 
 ## Features
 

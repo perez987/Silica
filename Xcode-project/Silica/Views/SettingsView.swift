@@ -134,11 +134,14 @@ private struct GeneralSettingsPane: View {
                     Text("Dark").tag(EditorSettings.Appearance.dark)
                 }
                 .tabsPickerStyle()
-                Picker("Window Style", selection: $settings.windowStyle) {
-                    Text("Glass").tag(EditorSettings.WindowStyle.glass)
-                    Text("Opaque").tag(EditorSettings.WindowStyle.opaque)
+                // Liquid Glass came with macOS 26; earlier versions always get the opaque style.
+                if #available(macOS 26.0, *) {
+                    Picker("Window Style", selection: $settings.windowStyle) {
+                        Text("Glass").tag(EditorSettings.WindowStyle.glass)
+                        Text("Opaque").tag(EditorSettings.WindowStyle.opaque)
+                    }
+                    .tabsPickerStyle()
                 }
-                .tabsPickerStyle()
             }
 
             Section("Startup") {

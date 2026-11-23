@@ -152,7 +152,13 @@ final class EditorSettings {
         }
     }
 
-    var usesGlassEffect: Bool { windowStyle == .glass }
+    /// Liquid Glass came with macOS 26; earlier versions always get the opaque style.
+    var usesGlassEffect: Bool {
+        if #available(macOS 26.0, *) {
+            return windowStyle == .glass
+        }
+        return false
+    }
 
     enum StartupBehavior: String {
         case welcome, emptyWorkspace, blankFile

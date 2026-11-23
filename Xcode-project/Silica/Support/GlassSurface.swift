@@ -9,17 +9,40 @@ extension View {
         modifier(GlassButtonStyle(isProminent: prominent))
     }
 
+    /// Clips the view to the shape of the editor and terminal cards and puts the
+    /// card's surface behind it. Corners next to the window's corners follow its
+    /// radius minus the inset, and the others fall back to the minimum; before
+    /// macOS 26 every corner has the minimum.
+    @ViewBuilder
     func workspaceCard() -> some View {
-        let shape = ConcentricRectangle(corners: .concentric(minimum: .fixed(WorkspaceLayout.cardCornerRadius)))
-        return clipShape(shape).glassSurface(in: shape)
+        if #available(macOS 26.0, *) {
+            let shape = ConcentricRectangle(corners: .concentric(minimum: .fixed(WorkspaceLayout.cardCornerRadius)))
+            clipShape(shape).glassSurface(in: shape)
+        } else {
+            let shape = RoundedRectangle(cornerRadius: WorkspaceLayout.cardCornerRadius, style: .continuous)
+            clipShape(shape).glassSurface(in: shape)
+        }
     }
 
+    /// Lets the glass shapes inside blend into each other. Before macOS 26 there's
+    /// no glass to blend.
+    @ViewBuilder
     func glassContainer(spacing: CGFloat) -> some View {
-        GlassEffectContainer(spacing: spacing) { self }
+        if #available(macOS 26.0, *) {
+            GlassEffectContainer(spacing: spacing) { self }
+        } else {
+            self
+        }
     }
 
+    /// Fades what scrolls under the top and bottom edges, on macOS 26 and later.
+    @ViewBuilder
     func softVerticalScrollEdges() -> some View {
-        scrollEdgeEffectStyle(.soft, for: .vertical)
+        if #available(macOS 26.0, *) {
+            scrollEdgeEffectStyle(.soft, for: .vertical)
+        } else {
+            self
+        }
     }
 }
 
@@ -29,7 +52,7 @@ private struct GlassSurface<S: Shape>: ViewModifier {
     private var settings: EditorSettings { .shared }
 
     func body(content: Content) -> some View {
-        if settings.usesGlassEffect {
+        if #available(macOS 26.0, *), settings.usesGlassEffect {
             content.glassEffect(isOn ? .regular : .identity, in: shape)
         } else {
             content
@@ -56,7 +79,7 @@ private struct GlassButtonStyle: ViewModifier {
     private var settings: EditorSettings { .shared }
 
     func body(content: Content) -> some View {
-        if settings.usesGlassEffect {
+        if #available(macOS 26.0, *), settings.usesGlassEffect {
             if isProminent {
                 content.buttonStyle(.glassProminent)
             } else {
