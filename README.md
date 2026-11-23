@@ -1,115 +1,73 @@
 # Silica
 
-A lightweight code editor for macOS, made of glass. Open a folder, find files fast,
-and edit with syntax highlighting and a Markdown, HTML and CSV preview. Images, PDFs
-and video open beside your code, all in a native SwiftUI and AppKit app.
+![Platform](https://img.shields.io/badge/macOS-26+-orange.svg)
+![Swift](https://img.shields.io/badge/Swift-5+-lavender.svg)
+![Xcode](https://img.shields.io/badge/Xcode-27+-blue.svg)
 
-![Silica editing a Swift project, with the file tree on the left and the editor on a glass card](.github/assets/screenshot.jpg)
+A lightweight code editor for macOS, made of glass. Open a folder, find files fast, and edit with syntax highlighting, a minimap and a Markdown preview, all in a native SwiftUI and AppKit app.
+
+![Window](Images/screenshot.png)
+
+## Personal motivation
+
+I really like the original project and the Silica app, which works very well. It’s now my text and code editor in macOS. I have made a few changes to the project, tailored to my personal preferences. Without any intention of interfering with the original project—which I consider an excellent piece of work—here are the changes I have made in my fork:
+
+- Migrate the Xcode project from the JSON `xcproj` format (introduced in Xcode 27) to the older `pbxproj` format to ensure compatibility (this change allows me to work on the project using Xcode 26 on macOS Tahoe)
+- Localize the interface and alerts, adding a simple language system with English (default) and Spanish
+- Add an option to switch between glass and opaque window styles, since I prefer opaque windows
+- Enable New File (⌘N) menu and keyboard shortcut from the app startup → open a blank text file without an associated project
+- Choose whether to start with the welcome window, an empty workspace, or a blank text file.
 
 ## Download
 
-Get the latest DMG from [Releases](https://github.com/dqhieu/Silica/releases/latest),
-open it and drag Silica to Applications. Or install it with [Homebrew](https://brew.sh):
+Get the latest DMG from [Releases](https://github.com/perez987/Silica/releases/latest), open it and drag Silica to Applications. Silica checks for updates once a day and installs them for you; you can turn that off in Settings › General.
 
-```
-brew install --cask dqhieu/tap/silica
-```
-
-Silica checks for updates once a day and installs them for you; you can turn that
-off in Settings › General.
-
-Silica needs macOS 15 or later. The Liquid Glass look needs macOS 26; earlier versions get plain bordered cards.
+Silica needs macOS 26 or later.
 
 ## Features
 
-- **Projects.** Open a folder to get a window with a file tree. Files and folders
-  your `.gitignore` excludes are dimmed, and the tree updates as files change on disk.
-  Create, rename and move files to the Trash right in the tree, and filter it as you type.
-- **Git.** In a git repository, changed files carry a letter in the tree
-  (M for modified, U for untracked and so on) and the status bar names the branch.
-  The Source Control panel lists every changed file; select one to see its changes
-  inline or side by side, with the words that changed marked. Stage whole files or
-  single changes, write a message and commit (or amend or undo the last commit),
-  then fetch, pull and push. The branch name opens a list you can search to switch,
-  create, merge, rename or delete branches, and changes can be discarded or stashed.
-  When a merge or rebase stops for conflicts, the panel offers to continue or abort
-  and the editor offers to accept either side. Below the changes is the branch's
-  history, or one file's: open a commit to see its files and what it did to each.
-  Line Blame in the View menu shows who last changed the line you're on.
-- **A file tree that keeps its bearings.** Scrolled deep into a project, the folders
-  that contain the rows you're looking at stay pinned at the top. Folders show their
-  Finder icons, so custom icons and packages such as `.xcodeproj` look like what they are.
-- **Quick Open and project search.** Jump to any file with fuzzy matching, or search
-  the text of every file in the project.
-- **Tabs.** Drag tabs to reorder them, step through them with ⌃Tab, and close one with
-  a middle click. With more tabs than fit, a mouse wheel scrolls the tab bar.
-  Right-click a tab to reveal its file in the explorer or in Finder, or to copy its path.
-- **Split panes.** Split the editor to the right or downwards, as often as you like, to
-  see files side by side, or two places in one file: a new pane opens on the file you're
-  in, and an edit in one pane shows in the other. ⌥-click a file in the explorer to
-  open it in a new pane. Each pane has its own tabs: drag a tab onto another pane to
-  move it there, and drag the line between two panes to resize them. Preview a
-  Markdown file in one pane while you write it in the other.
-- **Syntax highlighting** for 27 languages, including Swift, JavaScript, TypeScript,
-  Python, Go, Rust, C, C++, Java, Kotlin, Dart, HTML, CSS, JSON, YAML and Markdown. Diff and
-  patch files show added lines in green and removed lines in red.
+- **Projects.** Open a folder to get a window with a file tree and Finder folder icons. Files and folders your `.gitignore` excludes are dimmed, and the tree updates as files change on disk. Create, rename and move files to the Trash, drag files and folders (including the project icon beside its name) to other apps, filter the tree as you type, and reveal a tab's file from its menu.
+- **Quick Open and project search.** Jump to any file with fuzzy matching, or search the text of every file in the project.
+- **Syntax highlighting** for 27 languages, including Swift, JavaScript, TypeScript, Python, Go, Rust, C, C++, Java, Kotlin, Dart, HTML, CSS, JSON, YAML, Markdown and diff files.
 - **Nine color themes**, each with a light and a dark palette: Atom One, GitHub,
   Xcode, Solarized, Catppuccin, Gruvbox, Tokyo Night, Rosé Pine and Dracula.
-- **Your fonts.** Choose the editor's font and size, and set the sidebar's text size
-  on its own, in Settings › Fonts & Colors.
 - **Markdown preview**, with highlighted code blocks.
-- **CSV preview.** See `.csv` and `.tsv` files as a table.
-- **HTML preview.** `.html` files render as in a browser, with their styles, images
-  and scripts, and with your unsaved changes.
-- **Images, PDFs and video.** Images, PDF files and videos open in their own tabs
-  instead of as binary files. Animated GIFs, PNGs and WebPs play, a password-protected
-  PDF asks for its password, and each tab keeps its place in its video.
-- **Editing tools.** Line numbers, indent guides, an optional minimap, word wrap, go to
-  line, toggle comment, and moving or duplicating lines.
-- **A terminal under the editor.** ⌃`, or the button at the end of the tab bar,
-  opens your shell in the project's folder, in a card of its own below the editor.
-  Open as many as you need with ⌃⇧` or the card's + button: each gets a tab in the
-  card's header, which you can drag to another place in the row. It runs on
-  [libghostty](https://lib.ghostty.org), the terminal emulator inside Ghostty, so
-  full-screen programs, true color and the mouse work as they do there. It follows
-  the editor's font, and light and dark mode. ⌘-click a web address to open it, or
-  a file's path to open the file in a tab, at the line a compiler or a search
-  printed after it.
-- **Picks up where you left off.** Projects reopen their tabs, and recent projects
-  are on the welcome window.
-- **Works with Finder.** Use Open With or drop files on the Dock icon. Drag a file or
-  folder out of the sidebar, or the project's folder icon from beside its name, to
-  hand it to Terminal, Finder or another app.
-- **Opens from the terminal.** `silica .` opens the current folder as a project, and
-  `silica <file>` opens a file in the project it belongs to. Homebrew installs the
-  command with the app; otherwise install it from Settings › General.
+- **CSV and TSV preview**, with a table view.
+- **HTML preview**, including unsaved edits, project assets and page scripts.
+- **PDF viewing**, including password-protected files.
+- **Editing tools.** Tabs, in-file search with highlighted matches, line numbers, indent guides, a vertical scrollbar (following macOS scroll bar preferences), an optional minimap, word wrap, go to line, toggle comment, and moving or duplicating lines.
+- **Integrated terminal.** Open a resizable terminal below the editor using the title bar or ⌃`. Shells start in the project folder (or home for a standalone window); add tabs, drag to reorder them, and hide the card without stopping them. Command-click links or file paths to open them.
+- **New files.** Press `⌘N` to start an empty plain-text file, even without an open project. Choose where to save it when ready; the suggested filename uses `.txt`, which you can change.
+- **Picks up where you left off.** Projects reopen their tabs, and recent projects are on the welcome window. Choose the welcome window, an empty workspace, or a blank text file at launch in Settings › General. Reopen the welcome window with File › Welcome Window or `⇧⌘1`.
+- **Appearance and language.** Choose glass or opaque windows in Settings › General. The opaque editor background is black in dark appearance and white in light appearance. Silica follows the macOS language preference, with English and Spanish available.
+- **Works with Finder.** Use Open With or drop files on the Dock icon. Drag a file or folder out of the sidebar, or the project's folder icon from beside its name, to hand it to Terminal, Finder or another app.
+- **Opens from the terminal.** `silica .` opens the current folder as a project, and `silica <file>` opens a file in the project it belongs to. Homebrew installs the command with the app; otherwise install it from Settings › General.
 
 ## Keyboard shortcuts
 
-| Shortcut | Action |
-|---|---|
-| ⌘P | Quick Open |
-| ⇧⌘F | Find in Project |
-| ⌥⌘J | Filter files in the tree |
-| ⌘L | Go to Line |
-| ⇧⌘V | Toggle Markdown, CSV or HTML preview |
-| ⌃⌘S | Show or hide the sidebar |
-| ⌃` | Show the terminal, or hide it from there |
-| ⌃⇧` | New terminal |
-| ⌘K | Clear the terminal |
-| ⌃Tab / ⌃⇧Tab | Select the next or previous tab (also ⇧⌘] / ⇧⌘[); from a terminal, the terminals' tabs |
-| ⌘D / ⇧⌘D | Split the editor to the right or downwards |
-| ⌥⌘→ / ⌥⌘← | Go to the next or previous pane |
-| ⌃⌘W | Close the pane, keeping its tabs |
-| ⌘/ | Toggle comment |
-| ⌥↑ / ⌥↓ | Move lines up or down |
-| ⇧⌥↑ / ⇧⌥↓ | Duplicate lines up or down |
-| ⌥Z | Word wrap |
+| Shortcut     | Action                                    |
+| ------------ | ----------------------------------------- |
+| ⇧⌘1          | Show welcome window                       |
+| ⌘N           | New file                                  |
+| ⌘P           | Quick Open                                |
+| ⇧⌘F          | Find in Project                           |
+| ⌥⌘J          | Filter files in the tree                  |
+| ⌘L           | Go to Line                                |
+| ⇧⌘V          | Toggle Markdown, CSV, TSV or HTML preview  |
+| ⌃⌘S          | Show or hide the sidebar                  |
+| ⌃`           | Show or focus the terminal; hide it when focused |
+| ⌃⇧`          | New terminal                              |
+| ⌘K           | Clear the focused terminal                |
+| ⌃Tab / ⌃⇧Tab | Select the next or previous file or terminal tab (also ⇧⌘] / ⇧⌘[) |
+| ⌘/           | Toggle comment                            |
+| ⌥↑ / ⌥↓      | Move lines up or down                     |
+| ⇧⌥↑ / ⇧⌥↓    | Duplicate lines up or down                |
+| ⌥Z           | Word wrap                                 |
 | ⌘+ / ⌘− / ⌘0 | Increase, decrease or reset the font size |
 
 ## Building from source
 
-You need Xcode 27 or later.
+You need Xcode 27.
 
 1. Clone the repository and open `Silica.xcodeproj`.
 2. In the Silica target's Signing & Capabilities, choose your own team (or "Sign to
@@ -121,21 +79,10 @@ You need Xcode 27 or later.
 Bug reports, ideas and pull requests are welcome. Read
 [CONTRIBUTING.md](CONTRIBUTING.md) before you start on a change.
 
-## Star History
-
-<a href="https://www.star-history.com/?repos=dqhieu%2Fsilica&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=dqhieu/silica&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=dqhieu/silica&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=dqhieu/silica&type=date&legend=top-left" />
- </picture>
-</a>
-
 ## License
 
 Silica is released under the [MIT License](LICENSE). It includes
 [swift-markdown](https://github.com/swiftlang/swift-markdown),
 [swift-cmark](https://github.com/swiftlang/swift-cmark),
-[Sparkle](https://sparkle-project.org) and
-[libghostty-vt](https://lib.ghostty.org), whose licenses are in
+[Sparkle](https://sparkle-project.org) and [libghostty-vt](https://lib.ghostty.org), whose licenses are in
 `Silica/Resources/Licenses` and in Settings › About.

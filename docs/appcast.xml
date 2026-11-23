@@ -2,250 +2,176 @@
 <rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
     <channel>
         <title>Silica</title>
-        <item>
-            <title>0.9.0</title>
-            <pubDate>Mon, 23 Nov 2026 20:08:29 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>11</sparkle:version>
-            <sparkle:shortVersionString>0.9.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Split view.** **View › Split Right** (⌘D) and **View › Split Down** (⇧⌘D) divide the editor into panes, as many as you want, each with its own tabs. Drag the line between two panes to resize them, drag a tab onto another pane to move it there, and ⌥-click a file in the Explorer, or choose **Open in New Pane** from its menu, to open it in a pane of its own. A file can be open in several panes, each with its own cursor and scroll position, so you can write Markdown in one pane and watch its preview in the other. **View › Focus Next Pane** (⌥⌘→) and **View › Focus Previous Pane** (⌥⌘←) move between panes, and **View › Close Pane** (⌃⌘W) closes one and moves its tabs to the pane beside it. The status bar has buttons for both splits, the layout comes back when you reopen the project, and the keybinds can be changed in **Settings › Keybinds**.
-- **A warning when a file with unsaved edits changes on disk.** When another app changes a file you are editing (a branch switch, a formatter), a bar over the editor says so and the tab's dot turns orange. **Revert** shows the file as it is on disk, and **Keep My Edits** keeps your version, so saving writes it over the one on disk. Before, you only found out when you saved.
-- **The view stays still when you type in a long file.** After jumping far into a file, typing could shift the text by a line or more, and Return could leave the top lines of the view blank.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.9.0/Silica-0.9.0.dmg" length="10264402" type="application/octet-stream" sparkle:edSignature="Csj8ZQ1giGRF5FAJpyPSY0x/uqMETb9lZof61+DBsos7rtim+N79Na9sML4x8qsJrAZguq9h+suSDiYBGEjKBg=="/>
-        </item>
-        <item>
-            <title>0.8.0</title>
-            <pubDate>Sat, 21 Nov 2026 21:10:44 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>10</sparkle:version>
-            <sparkle:shortVersionString>0.8.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Git support.** In a git repository, the file tree marks changed files and the status bar names the branch. **View › Source Control** (⌃⇧G) lists staged and unstaged changes: select one to see its diff in the file's tab, inline or side by side, and stage, unstage or discard whole files or single changes. From the panel you can commit, amend or undo the last commit, fetch, pull and push, switch, create, merge, rename and delete branches, and work with stashes. **View › Show File History** lists a file's commits, and **View › Line Blame** shows who last changed the current line. A merge or rebase that stops for conflicts gets a banner to continue or abort, and a bar in the editor accepts either side. It uses the git you have installed and stays hidden without it.
-- **Configurable keybinds.** **Settings › Keybinds** has Silica, VS Code and Xcode presets, and you can record your own keybind for any command there. Keybinds work on any keyboard layout, Settings warns when one would clash with another command, and menus, tooltips and hints show your current keys. Contributed by Mitch Treece.
-- **A `silica` command for the terminal.** `silica .` opens the current folder as a project, and `silica <file>` opens a file in its project. Install it from **Settings › General › Command Line**; installing Silica with Homebrew sets it up for you.
-- **Quick Open opens the file you picked.** Pressing Return opened the top result instead of the row selected with the arrow keys. Contributed by Hernan Fernandez.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.8.0/Silica-0.8.0.dmg" length="10106126" type="application/octet-stream" sparkle:edSignature="xVEh27mTU/zsp4fUuKBFNzzI4Kj+e+XDU8OFojEtWc6LOeX7SM2dY5Tk2/yDSOZs/s2dzUwG3qg+bQ9jWQLkDw=="/>
-        </item>
-        <item>
-            <title>0.7.0</title>
-            <pubDate>Wed, 18 Nov 2026 22:27:07 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>9</sparkle:version>
-            <sparkle:shortVersionString>0.7.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Copy Relative Path on editor tabs.** Right-click a tab and choose **Copy Relative Path** to copy the file's path from the workspace folder, as the file tree already offers. It shows for files inside the workspace.
-- **Find highlights the matches on every search.** After the first search in a tab, later searches showed the match count and dimmed the text but highlighted nothing. Every search now highlights its matches.
-- **The find bar no longer covers the first lines.** Opening it at the top of a file used to hide line 1, even when the first match was there. The text now moves down with the bar, and back up when it closes.
-- **Project dotfiles aren't dimmed.** In a git repository, the file tree used to dim every dotfile, so folders like `.github` looked hidden. Now it dims only what is gitignored. In a folder that isn't a repository, dotfiles are still dimmed.
-- **A narrow window no longer cuts off the sidebar and editor.** Shrinking a workspace window could clip the left of the file tree and the right of the editor. The sidebar now gives up width so both fit, and grows back when the window does.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.7.0/Silica-0.7.0.dmg" length="9292831" type="application/octet-stream" sparkle:edSignature="aoCi174NXmdZAO1qR1s4kIGW5UdtXACFIoOZDpx0sAPORfrTYIbXOORkKgbnAhJfVpvW04QqE9jbrze6KUsECg=="/>
-        </item>
-        <item>
-            <title>0.6.0</title>
-            <pubDate>Mon, 16 Nov 2026 21:33:11 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>8</sparkle:version>
-            <sparkle:shortVersionString>0.6.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Runs on macOS 15.** Silica now needs macOS 15 or later, down from macOS 26. Liquid Glass came with macOS 26, so on earlier versions the cards, tabs and buttons are plain, with a border and a shadow.
-- **Syntax highlighting for Dart.** `.dart` files are highlighted, and so are `dart` code blocks in the Markdown preview. That makes 27 languages.
-- **Choose a translucent or opaque window.** **Background** in **Settings › General** is **Translucent**, a frosted blur of what's behind the window, or **Opaque**, the solid window color.
-- **Turn the glass effect off.** With **Glass effect** off in **Settings › General**, the cards, tabs and buttons sit on plain bordered cards instead of Liquid Glass.
-- **The Markdown preview fills its pane.** The text used to stop at a narrow column in the middle. It now runs the full width of the pane.
-- **A double-click in a preview selects a word.** In a Markdown or CSV preview it used to switch to the source and put the cursor on that line, which made it impossible to select a word there.
-- **Settings looks like other Mac settings windows.** It is rebuilt on the system's own sidebar and grouped lists, and on macOS 27 its pickers show as capsule tabs.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.6.0/Silica-0.6.0.dmg" length="9301574" type="application/octet-stream" sparkle:edSignature="j9WKebKdPQngOqF+R0EGEwiBGvdI6NkGUmM3y/DLt5qeBu6ISLK721n81U/kpggGZzksFkRkQkNl0DmbcjJaCg=="/>
-        </item>
-        <item>
-            <title>0.5.0</title>
-            <pubDate>Sun, 15 Nov 2026 13:52:28 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>7</sparkle:version>
-            <sparkle:shortVersionString>0.5.0</sparkle:shortVersionString>
+       <item>
+            <title>0.7.5</title>
+            <pubDate>Thu, 20 Nov 2026 18:58:59 +0800</pubDate>
+            <link>https://github.com/perez987/Silica</link>
+            <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
+            <sparkle:version>0075</sparkle:version>
+            <sparkle:shortVersionString>0.7.5</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **A terminal under the editor.** **View › Terminal** (**⌃`**) opens your shell in the project's folder, in a glass card below the editor. Drag the gap between the two to resize it. The arrow in the card's header hides the terminal while the shell carries on, and the trash, **Kill Terminal**, ends it. **View › Clear Terminal** (**⌘K**) clears it.
-- **Several terminals, each in a tab.** The **+** button in the terminal's header, or **View › New Terminal** (**⌃⇧`**), starts another shell, and from the second on each gets a tab in the header. Click a tab to bring its terminal forward, drag it to reorder, and middle-click it or right-click and choose **Kill Terminal** to end it. While a terminal has the keyboard, **⌃Tab**, **⌃⇧Tab**, **⇧⌘]** and **⇧⌘[** step through the terminals; from the editor they still step through the file tabs.
-- **Follow links in the terminal with a ⌘ click.** Hold ⌘ over a web address or a file path to underline it and see where it goes in the card's header. A path to a file that exists opens in a Silica tab, at the line printed after it.
-- **Show and hide the terminal from the title bar.** A terminal button sits at the end of the title bar, whatever is open and whether or not the sidebar is showing. It is tinted while the terminal is showing.
-- **Recent projects show their Finder icons.** The **Recent Projects** list in the welcome window now shows each folder as Finder does, with custom folder icons and packages looking like what they are.
-- **A dragged tab stays in view.** Dropping a tab after a drag that scrolled the tab bar could leave the tab out of sight. The bar now scrolls to where the tab landed.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.5.0/Silica-0.5.0.dmg" length="9259275" type="application/octet-stream" sparkle:edSignature="VfOq8/lrZp0cdiSFhFTPjdLvuHZxwX+2+6pV/zbFzGkRnGpIzAyRLeEk01VkJPdIg67l3eTgOhceRHNDMc24AA=="/>
-        </item>
-        <item>
-            <title>0.4.0</title>
-            <pubDate>Fri, 13 Nov 2026 21:32:18 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>6</sparkle:version>
-            <sparkle:shortVersionString>0.4.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Preview HTML files.** **View › Show Preview** (**⇧⌘V**) and the title bar toggle now work for .html, .htm and .xhtml files as they do for Markdown. The page is shown as a browser would show it, with its styles, images and scripts, and with your unsaved changes. Web links open in your browser and links to project files open in a Silica tab.
-- **Preview CSV and TSV files as a table.** The same toggle shows a .csv or .tsv file as a table with a header row that stays at the top and numeric columns aligned right. Double-click a row to go to its line in the source. Very large files are cut off at 100,000 cells, with a note saying how many rows there are.
-- **PDFs open in the editor.** A PDF file now opens in its own tab instead of showing as a binary file. A password-protected PDF asks for its password.
-- **Video files play in the editor.** Videos open in a player, with the picture's size, length and file size beneath it. Each tab keeps its place in its video, and a video pauses when you switch away from its tab.
-- **Animated GIFs play in the image viewer.** A GIF, animated PNG or animated WebP now plays in its tab, where only its first frame was shown.
-- **Diff and patch files are highlighted.** .diff, .patch and .rej files, and diff code blocks in the Markdown preview, show added lines in green and removed lines in red in every theme.
-- **Drag files and folders out of the sidebar.** Drag a row from the file tree to another app as you would from Finder: Terminal inserts its path, and Finder or the Desktop gets a copy. The file is never moved.
-- **Drag the project folder from its name.** Hovering the project name at the top of the sidebar shows the folder's Finder icon. Drag it to Terminal to insert the project's path, or to Finder to copy the folder.
-- **Reveal a tab's file in the explorer.** Right-click a tab and choose **Reveal in Explorer** to open the folders above the file and select it in the file tree.
-- **Close a tab with a middle click.**
-- **Set the sidebar's font size.** **Settings › Fonts & Colors** has a new **Sidebar** group with a size from 9 to 20 pt, separate from the editor font. The file tree and the Find in Project results follow it.
-- **Folders show their Finder icons in the file tree.** Custom folder icons appear, and packages such as .xcodeproj look like what they are.
-- **Sidebar buttons highlight under the pointer.** The Collapse Folders, Search and sidebar toggle buttons now show a soft fill on hover, like toolbar buttons in system apps.
-- **Large Markdown previews no longer hold up the window.** The preview is now prepared in the background.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.4.0/Silica-0.4.0.dmg" length="7856899" type="application/octet-stream" sparkle:edSignature="qGCNdfIyD9Oz+YkrnvpBch/Kk57Lty4BkGPNwLN5Uvmq6bzP7zRQhmQszH2sT2L1GU8U7uw82b7//6OsaKEmDw=="/>
-        </item>
-        <item>
-            <title>0.3.0</title>
-            <pubDate>Thu, 12 Nov 2026 18:58:59 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>5</sparkle:version>
-            <sparkle:shortVersionString>0.3.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Parent folders stay in view in the file tree.** Scrolled deep into a project, the open folders that contain the rows you're looking at now stay pinned at the top of the tree. Click a pinned folder to scroll back to it. It's on by default; turn it off in **Settings › General**.
-- **Switch tabs from the keyboard.** **⌃Tab** and **⌃⇧Tab** (or **⇧⌘]** and **⇧⌘[**) step through the open tabs, going round from either end to the other. The commands are also in the **View** menu as Select Next Tab and Select Previous Tab.
-- **Scroll the tab bar with a mouse wheel.** With the pointer over the tab bar, an ordinary mouse wheel now scrolls the tabs sideways, so tabs past the end of the bar can be reached without a trackpad.
-- **The tab bar keeps the active tab in view.** Resizing the window or the sidebar no longer scrolls the tab row back to its first tab.
-- **Tabs fade out at the ends of the tab bar.** A tab scrolled part of the way out now fades instead of being cut off flat.
-- **The minimap is hidden by default.** Turn it back on with **View › Minimap** or in **Settings › Editor**.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.3.0/Silica-0.3.0.dmg" length="7709093" type="application/octet-stream" sparkle:edSignature="giQNcGdK1G2GDwtFVXJxL8Wx8TAfMpyLwGFip2mnJOzC5ISVe7u2qHJE/ULYCl3axJIN/pfWR6Zl08d2MsmgDQ=="/>
-        </item>
-        <item>
-            <title>0.2.0</title>
-            <pubDate>Tue, 10 Nov 2026 22:48:32 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>4</sparkle:version>
-            <sparkle:shortVersionString>0.2.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Drag tabs to reorder them.** Drag an editor tab along the tab bar and the tabs it passes slide aside. With more tabs than fit, holding it near either end scrolls the bar.
-- **A steadier selection in the file tree.** The selected file or folder is now always highlighted in grey. It used to turn blue at times, such as after renaming a file.
-
-If you already have Silica, it will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.2.0/Silica-0.2.0.dmg" length="7652313" type="application/octet-stream" sparkle:edSignature="5CdceIvtjJmMhmE99HqrQ+KxcMx1TPO3/V8FGnqrcciLznfl9RrdKcGpnPvDd+E1U8K8iZqmtXpi+duVBK8dBQ=="/>
-        </item>
-        <item>
-            <title>0.1.1</title>
-            <pubDate>Mon, 09 Nov 2026 22:35:50 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>3</sparkle:version>
-            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>26.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[### What's new
-
-- **Runs on macOS 26.** Silica now needs macOS 26 or later, down from macOS 27.
-- **A nicer installer.** The DMG opens to a window with Silica and your Applications folder side by side, so installing is one drag.
-
-If you already have 0.1.0, Silica will offer this update on its own, or choose **Silica › Check for Updates…**.
-
-Found a bug or have an idea? Please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.1.1/Silica-0.1.1.dmg" length="7611632" type="application/octet-stream" sparkle:edSignature="Te4UqkrpCuN5clid7H6aB80GAwzIIZqt80xd3m+xmziySCG/8AiEm6rkQrj3PWE2Y373bWg3iXau4idLb3v3Bg=="/>
-        </item>
-        <item>
-            <title>0.1.0</title>
-            <pubDate>Mon, 09 Nov 2026 22:17:30 +0800</pubDate>
-            <link>https://github.com/dqhieu/Silica</link>
-            <sparkle:fullReleaseNotesLink>https://github.com/dqhieu/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>2</sparkle:version>
-            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>27.0</sparkle:minimumSystemVersion>
-            <description sparkle:format="markdown"><![CDATA[The first release of Silica, a lightweight code editor for macOS, made of glass.
-
-### What's in it
-
-- **Projects.** Open a folder to get a window with a file tree that follows changes on disk and dims what your `.gitignore` excludes. Create, rename and trash files right in the tree, and filter it as you type.
-- **Quick Open (⌘P)** with fuzzy matching, and **Find in Project (⇧⌘F)**.
-- **Syntax highlighting** for 25 languages, including Swift, JavaScript, TypeScript, Python, Go, Rust, C, C++ and Markdown.
-- **Nine color themes**, each with a light and a dark palette: Atom One, GitHub, Xcode, Solarized, Catppuccin, Gruvbox, Tokyo Night, Rosé Pine and Dracula.
-- **Markdown preview (⇧⌘V)**, with highlighted code blocks.
-- **Editing tools**: tabs, line numbers, indent guides, a minimap, word wrap, Go to Line (⌘L), toggle comment (⌘/), and moving or duplicating lines (⌥↑ ⌥↓).
-- Projects **reopen their tabs** where you left them, and recent projects are on the welcome window.
-- **Open With** in Finder, the Dock icon and `open -a Silica` all open files and folders in Silica.
-
-### Installing
-
-Open the DMG and drag Silica to Applications. Silica needs macOS 27 or later.
-
-From now on, Silica checks for updates once a day and installs them for you. You can also use **Silica › Check for Updates…**, or turn automatic checks off in Settings › General.
-
-### Feedback
-
-This is an early release, so expect some rough edges. If you find a bug or have an idea, please [open an issue](https://github.com/dqhieu/Silica/issues).
-
-]]></description>
-            <enclosure url="https://github.com/dqhieu/Silica/releases/download/v0.1.0/Silica-0.1.0.dmg" length="5933975" type="application/octet-stream" sparkle:edSignature="6Wf8YXNZntlkDSFT0+EgUkJ9pfOLn64GM2sAmU26eJWM2DXvATKe6QK6qNhEntrV93hHYdAl+FN61cXzhyz3Aw=="/>
+            <description xml:lang="en"><![CDATA[
+         	<h3>What's new in Silica 0.7.5</h3>
+			<ul>
+				<li>Reduce editor jumps and blank lines at the top of the view</li>
+			</ul>            
+			<h3>What's new in Silica 0.7.2</h3>
+			<ul>
+				<li>Ported latest commit from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+				<ul><li>Option to add the <i>silica</i> command-line tool to /usr/local/bin</li></ul>
+			</ul>
+            <h3>What's new in Silica 0.7.0</h3>
+			<ul>
+				<li>Ported commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+				<ul><li>Keep top lines visible when the find bar appears</li>
+				<li>Relayout the TextKit 2 viewport after scrolling so find results highlight correctly</li>
+				<li>Dotfiles are no longer dimmed inside git repositories, they are still dimmed outside a repository</li>
+				<li>The sidebar narrows when the window is too small to give the editor its minimum width</li></ul>
+			</ul>
+            <h3>What's new in Silica 0.6.2</h3>
+			<ul>
+				<li>Raise the deployment target to macOS 26</li>
+				<li>Lower the development target to Xcode 26</li>
+			</ul>
+            <h3>What's new in Silica 0.6.1</h3>
+			<ul>
+				<li>Add glass mode to the Settings window</li>
+			</ul>
+            <h3>What's new in Silica 0.6.0</h3>
+			<ul>
+				<li>Ported commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+   				<ul><li>Lower the deployment target to macOS 15</li>
+   				<li>Add Dart highlighting for files and Markdown fences</li></ul>
+			</ul>			
+            <h3>What's new in Silica 0.6.0</h3>
+			<ul>
+				<li>Adaptar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+   				<ul><li>Bajar el mínimo macOS macOS 15</li>
+   				<li>Añadir coloreado de sintaxis para archivos Dart</li></ul>
+			</ul>
+            <h3>What's new in Silica 0.5.0</h3>
+			<ul>
+				<li>Set .txt as the default extension for untitled files when saving them</li>
+				<li>Add vertical scrollbar for large files</li>
+				<li>Localize numbered untitled file names</li>
+				<li>Reconcile key workspace after view updates</li>
+				<li>Add Spanish translations and update documentation and licensing</li>
+				<li>Ported commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+   				<ul><li>Integrate Terminal (`libghostty-vt`) with shell sessions, resizable terminal card and tabs</li>
+   				<li>Remove the preview markdown article width limit</li>
+   				<li>Use capsule-style picker tabs on macOS 27, retaining segmented controls on macOS 26</li>
+   				<li>Rebuild Settings on NavigationSplitView and grouped Forms</li></ul>
+			</ul>
+            <h3>What's new in Silica 0.4.1</h3>
+			<ul>
+					<li>Enable the menu option and keyboard shortcut for New File (⌘N) from the application launch:</li>
+					<ul><li>It opens a blank, untitled text file.</li></ul>
+					<li>Add a General settings choice at launch:</li>
+					<ul><li>Welcome window</li>
+					<li>Empty workspace</li>
+					<li>Blank text file.</li></ul>
+			</ul>
+            <h3>What's new in Silica 0.4.0</h3>
+			<ul>
+					<li>Port latest commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Preview HTML with unsaved edits, project assets and scripts</li>
+					<li>Add Finder folder icons, external drag support and a tab action to reveal files in the explorer</li>
+			</ul>
+            <h3>What's new in Silica 0.3.6</h3>
+			<ul>
+					<li>Port latest commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Add PDF viewing with password support</li>
+					<li>Add CSV/TSV previews, and diff highlighting</li>
+					<li>Add sidebar hover effects and font sizing</li>
+			</ul>
+            <h3>What's new in Silica 0.3.5</h3>
+			<ul>
+					<li>Localize the interface and alerts</li>
+					<li>Option to switch windows style (glass / opaque)</li>
+					<li>Welcome window is optional at launch</li>
+					<li>Migrate the Xcode project type to `pbxproj` format</li>
+			</ul>
+			]]></description>
+            <description xml:lang="es"><![CDATA[
+         	<h3>Lo nuevo de Silica 0.7.5</h3>
+			<ul>
+				<li>Reducir saltos del texto y primeras líneas en blanco en la ventana del editor</li>
+			</ul>
+         	<h3>Lo nuevo de Silica 0.7.2</h3>
+			<ul>
+				<li>Adaptado el último cambio desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+				<ul><li>Opción para instalar la herramienta de comandos <i>silica</i> en /usr/local/bin</li></ul>
+			</ul>
+           <h3>Lo nuevo de 0.7.0</h3>
+			<ul>
+				<li>Adaptados últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+				<ul><li>Primeras líneas visibles al abrir la barra de búsqueda</li>
+				<li>Las coincidencias del texto buscado son resaltadas correctamente</li>
+				<li>Archivos ocultos ya no se muestran atenuados si están dentro del repositorio</li>
+				<li>La barra lateral mantiene la vista cuando la ventana del editor reduce su anchura al mínimo</li></ul>
+			</ul>
+           <h3>Lo nuevo de Silica 0.6.2</h3>
+			<ul>
+				<li>Subir el macOS mínimo a macOS 26 </li>
+				<li>Bajar el Xcode mínimo a Xcode 26 </li>
+			</ul>
+           <h3>Lo nuevo de Silica 0.6.1</h3>
+			<ul>
+				<li>Añadir estilo transparente a la ventana de Ajustes</li>
+			</ul>
+            <h3>Lo nuevo de Silica 0.6.0</h3>
+			<ul>
+				<li>Adaptar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+   				<ul><li>Bajar el mínimo macOS a macOS 15 Sequoia</li>
+   				<li>Añadir coloreado de sintaxis para archivos Dart</li></ul>
+			</ul>
+           <h3>Lo nuevo de Silica 0.5.0</h3>
+			<ul>
+				<li>Usar .txt como extensión por defecto al guardar archivos sin título</li>
+				<li>Barra vertical de scroll para archivos extensos</li>
+				<li>Traducir nombres secuenciales de archivos sin título</li>
+				<li>Añadir traducciones al español y actualizar documentación y licencias</li>
+				<li>Portar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+   				<ul><li>Integrar Terminal (`libghostty-vt`) con sesiones de shell y pestañas</li>
+   				<li>Eliminar límite de anchura en la vista previa de archivos markdown</li>
+   				<li>Usar estilo de cápsula en selectores macOS 27, manteniendo controlers segmentados en macOS 26</li>
+   				<li>Reconstruir Settings como NavigationSplitView y Forms agrupados</li></ul>
+			</ul>
+            <h3>Lo nuevo de Silica 0.4.1</h3>
+			<ul>
+					<li>Habilita el menú y el atajo de teclado Archivo Nuevo (⌘N) desde el inicio de la app:</li>
+					<ul><li>Abre un archivo de texto en blanco y sin título</li></ul>
+					<li>Añade una opción en Ajustes (General) para elegir al inicio:</li>
+					<ul><li>Ventana de bienvenida</li>
+					<li>Espacio de trabajo vacío</li>
+					<li>Archivo de texto en blanco</li></ul>
+				</ul>
+            <h3>Lo nuevo de Silica 0.4.0</h3>
+			<ul>
+					<li>Adaptar los últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Puede mostrar la vista previa de archivos HTML</li>
+					<li>Añadir iconos de carpeta del Finder y soporte para arrastrar y soltar fuera de la app</li>
+				</ul>
+			<h3>Lo nuevo de Silica 0.3.6</h3>
+			<ul>
+					<li>Adaptar los últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+					<li>Puede mostrar PDF con soporte para contraseña</li>
+					<li>Añadir vista previa de CSV/TSV, y resaltado de sintaxis para diff</li>
+					<li>Ajustar tamaño de letra de la barra lateral</li>
+			</ul>
+            <h3>Lo nuevo de Silica 0.3.5</h3>
+			<ul>
+					<li>Traducción de interfaz y alertas</li>
+					<li>Opción para cambiar entre estilo de ventanas (translúcidas / opacas)</li>
+					<li>Pantalla de bienvenida es opcional al arrancar la app</li>
+					<li>El tipo de proyecto Xcode ha migrado al formato `pbxproj`</li>
+			</ul>
+			]]></description>
+            <enclosure 
+            url="https://github.com/perez987/Silica/releases/download/0.7.5/Silica.0.7.5.dmg" 
+            length="9459521" 
+            type="application/octet-stream" 
+            sparkle:edSignature="0/kQ8qRrBvpQcI2i9TBq01iz7a8TODoqiiMqm3HhnOzd3Xb+5pLMe7bAFLhPwDGK7G+RH+XScrxvnQFd9BQDDQ=="/>
         </item>
     </channel>
 </rss>
