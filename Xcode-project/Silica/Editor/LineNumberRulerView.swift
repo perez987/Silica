@@ -12,11 +12,18 @@ final class LineNumberRulerView: NSRulerView {
     private var lineStarts: [Int] = [0]
     private var lineStartsAreStale = true
 
-    private var font = NSFont.monospacedDigitSystemFont(ofSize: 11, weight: .regular)
+    private var font = NSFont.monospacedDigitSystemFont(
+        ofSize: 11,
+        weight: .regular
+    )
     private let leadingPadding: CGFloat = 6
     private let trailingPadding: CGFloat = 6
 
-    init(textView: NSTextView, scrollView: NSScrollView, editorFontSize: CGFloat) {
+    init(
+        textView: NSTextView,
+        scrollView: NSScrollView,
+        editorFontSize: CGFloat
+    ) {
         self.textView = textView
         super.init(scrollView: scrollView, orientation: .verticalRuler)
         font = Self.font(forEditorSize: editorFontSize)
@@ -26,13 +33,17 @@ final class LineNumberRulerView: NSRulerView {
 
         scrollView.contentView.postsBoundsChangedNotifications = true
         NotificationCenter.default.addObserver(
-            self, selector: #selector(setNeedsRedraw),
-            name: NSView.boundsDidChangeNotification, object: scrollView.contentView
+            self,
+            selector: #selector(setNeedsRedraw),
+            name: NSView.boundsDidChangeNotification,
+            object: scrollView.contentView
         )
         textView.postsFrameChangedNotifications = true
         NotificationCenter.default.addObserver(
-            self, selector: #selector(setNeedsRedraw),
-            name: NSView.frameDidChangeNotification, object: textView
+            self,
+            selector: #selector(setNeedsRedraw),
+            name: NSView.frameDidChangeNotification,
+            object: textView
         )
 
         rebuildLineStartsIfNeeded()
@@ -99,8 +110,9 @@ final class LineNumberRulerView: NSRulerView {
     /// Draws numbers only; skipping `super` keeps the ruler's default background off the glass.
     override func draw(_ dirtyRect: NSRect) {
         guard let textView,
-              let layoutManager = textView.textLayoutManager,
-              let contentManager = layoutManager.textContentManager else { return }
+            let layoutManager = textView.textLayoutManager,
+            let contentManager = layoutManager.textContentManager
+        else { return }
         rebuildLineStartsIfNeeded()
 
         let origin = textView.textContainerOrigin
@@ -108,28 +120,49 @@ final class LineNumberRulerView: NSRulerView {
         let top = CGPoint(x: 0, y: max(0, visible.minY - origin.y))
         let bottom = visible.maxY - origin.y
         let documentStart = layoutManager.documentRange.location
-        let start = layoutManager.textLayoutFragment(for: top)?.rangeInElement.location ?? documentStart
+        let start =
+            layoutManager.textLayoutFragment(for: top)?.rangeInElement.location
+            ?? documentStart
 
         let currentLine = lineIndex(for: textView.selectedRange().location)
-        let normal: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: SyntaxTheme.lineNumber]
-        let current: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: SyntaxTheme.currentLineNumber]
+        let normal: [NSAttributedString.Key: Any] = [
+            .font: font, .foregroundColor: SyntaxTheme.lineNumber,
+        ]
+        let current: [NSAttributedString.Key: Any] = [
+            .font: font, .foregroundColor: SyntaxTheme.currentLineNumber,
+        ]
         var lastDrawn = -1
 
-        layoutManager.enumerateTextLayoutFragments(from: start, options: [.ensuresLayout, .ensuresExtraLineFragment]) { fragment in
+        layoutManager.enumerateTextLayoutFragments(
+            from: start,
+            options: [.ensuresLayout, .ensuresExtraLineFragment]
+        ) { fragment in
             let frame = fragment.layoutFragmentFrame
             guard frame.minY <= bottom else { return false }
-            let fragmentOffset = contentManager.offset(from: documentStart, to: fragment.rangeInElement.location)
+            let fragmentOffset = contentManager.offset(
+                from: documentStart,
+                to: fragment.rangeInElement.location
+            )
 
             for line in fragment.textLineFragments {
                 let offset = fragmentOffset + line.characterRange.location
                 let index = lineIndex(for: offset)
                 // Wrapped continuations don't start a line; the extra fragment can repeat one.
-                guard lineStarts[index] == offset, index != lastDrawn else { continue }
+                guard lineStarts[index] == offset, index != lastDrawn else {
+                    continue
+                }
                 lastDrawn = index
 
-                let baseline = origin.y + frame.minY + line.typographicBounds.minY + line.glyphOrigin.y
-                let y = convert(NSPoint(x: 0, y: baseline), from: textView).y - font.ascender
-                let label = NSAttributedString(string: "\(index + 1)", attributes: index == currentLine ? current : normal)
+                let baseline =
+                    origin.y + frame.minY + line.typographicBounds.minY
+                    + line.glyphOrigin.y
+                let y =
+                    convert(NSPoint(x: 0, y: baseline), from: textView).y
+                    - font.ascender
+                let label = NSAttributedString(
+                    string: "\(index + 1)",
+                    attributes: index == currentLine ? current : normal
+                )
                 let x = bounds.width - trailingPadding - label.size().width
                 label.draw(at: NSPoint(x: x, y: y))
             }
@@ -154,7 +187,9 @@ final class LineNumberRulerView: NSRulerView {
     }
 
     private func rebuildLineStartsIfNeeded() {
-        guard lineStartsAreStale, let storage = textView?.textStorage else { return }
+        guard lineStartsAreStale, let storage = textView?.textStorage else {
+            return
+        }
         lineStartsAreStale = false
 
         let text = storage.string as NSString
@@ -167,13 +202,16 @@ final class LineNumberRulerView: NSRulerView {
 
         while location < length {
             let count = min(chunk, length - location)
-            text.getCharacters(&buffer, range: NSRange(location: location, length: count))
+            text.getCharacters(
+                &buffer,
+                range: NSRange(location: location, length: count)
+            )
             for i in 0..<count {
                 switch buffer[i] {
-                case 0x0D: // \r
+                case 0x0D:  // \r
                     starts.append(location + i + 1)
                     previousWasCR = true
-                case 0x0A: // \n, folded into a preceding \r
+                case 0x0A:  // \n, folded into a preceding \r
                     if previousWasCR {
                         starts[starts.count - 1] = location + i + 1
                     } else {
@@ -193,8 +231,13 @@ final class LineNumberRulerView: NSRulerView {
     /// Fits the widest line number, with room for at least three digits.
     private func updateThickness() {
         let digits = max(3, String(lineStarts.count).count)
-        let digitWidth = NSAttributedString(string: "8", attributes: [.font: font]).size().width
-        let thickness = ceil(leadingPadding + CGFloat(digits) * digitWidth + trailingPadding)
+        let digitWidth = NSAttributedString(
+            string: "8",
+            attributes: [.font: font]
+        ).size().width
+        let thickness = ceil(
+            leadingPadding + CGFloat(digits) * digitWidth + trailingPadding
+        )
         if ruleThickness != thickness {
             ruleThickness = thickness
         }

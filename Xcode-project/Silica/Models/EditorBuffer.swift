@@ -124,7 +124,9 @@ final class EditorBuffer: Identifiable {
     /// Whether closing it should ask to save: edited files, and untitled ones with
     /// any text (an empty untitled tab just closes).
     var needsSaving: Bool {
-        if isUntitled { return !(textController?.textView.string.isEmpty ?? true) }
+        if isUntitled {
+            return !(textController?.textView.string.isEmpty ?? true)
+        }
         return isDirty
     }
 
@@ -141,15 +143,29 @@ final class EditorBuffer: Identifiable {
         let isImage = Self.isImage(url)
         if isImage || Self.isPDF(url) {
             encoding = .utf8
-            diskSnapshot = attributes.map { DiskSnapshot(attributes: $0, digest: nil) }
+            diskSnapshot = attributes.map {
+                DiskSnapshot(attributes: $0, digest: nil)
+            }
             if size > Self.maxPreviewSize {
                 content = .tooLarge(size)
             } else if isImage {
-                content = Self.loadImage(url, byteCount: size).map(Content.image)
-                    ?? .unreadable(String(localized: "“\(url.lastPathComponent)” couldn’t be decoded as an image."))
+                content =
+                    Self.loadImage(url, byteCount: size).map(Content.image)
+                    ?? .unreadable(
+                        String(
+                            localized:
+                                "“\(url.lastPathComponent)” couldn’t be decoded as an image."
+                        )
+                    )
             } else {
-                content = Self.loadPDF(url, byteCount: size).map(Content.pdf)
-                    ?? .unreadable(String(localized: "“\(url.lastPathComponent)” couldn’t be read as a PDF."))
+                content =
+                    Self.loadPDF(url, byteCount: size).map(Content.pdf)
+                    ?? .unreadable(
+                        String(
+                            localized:
+                                "“\(url.lastPathComponent)” couldn’t be read as a PDF."
+                        )
+                    )
             }
             return
         }
@@ -157,7 +173,9 @@ final class EditorBuffer: Identifiable {
         if size > Self.maxFileSize {
             content = .tooLarge(size)
             encoding = .utf8
-            diskSnapshot = attributes.map { DiskSnapshot(attributes: $0, digest: nil) }
+            diskSnapshot = attributes.map {
+                DiskSnapshot(attributes: $0, digest: nil)
+            }
             return
         }
 
@@ -169,16 +187,22 @@ final class EditorBuffer: Identifiable {
             encoding = .utf8
             return
         }
-        diskSnapshot = attributes.map { DiskSnapshot(attributes: $0, digest: Self.digest(of: data)) }
+        diskSnapshot = attributes.map {
+            DiskSnapshot(attributes: $0, digest: Self.digest(of: data))
+        }
 
-        guard !Self.looksBinary(data), let (text, encoding) = Self.decode(data) else {
+        guard !Self.looksBinary(data), let (text, encoding) = Self.decode(data)
+        else {
             content = .binary
             encoding = .utf8
             return
         }
 
         self.encoding = encoding
-        let controller = TextController(text: text, language: SyntaxLanguage(url: url))
+        let controller = TextController(
+            text: text,
+            language: SyntaxLanguage(url: url)
+        )
         content = .text(controller)
         controller.buffer = self
         controller.updateStatus()
@@ -226,7 +250,10 @@ final class EditorBuffer: Identifiable {
         if isShowingPreview, let newFormat, let controller = textController {
             let preview = makePreview(for: controller, format: newFormat)
             self.preview = preview
-            preview.show(controller.textView.string, line: controller.topVisibleLine())
+            preview.show(
+                controller.textView.string,
+                line: controller.topVisibleLine()
+            )
         }
         textController?.setLanguage(SyntaxLanguage(url: newURL))
     }
@@ -235,9 +262,15 @@ final class EditorBuffer: Identifiable {
     func write(to destination: URL) throws {
         guard let controller = textController else { return }
         guard let data = controller.textView.string.data(using: encoding) else {
-            throw CocoaError(.fileWriteInapplicableStringEncoding, userInfo: [NSURLErrorKey: destination])
+            throw CocoaError(
+                .fileWriteInapplicableStringEncoding,
+                userInfo: [NSURLErrorKey: destination]
+            )
         }
-        try data.write(to: destination.resolvingSymlinksInPath(), options: .atomic)
+        try data.write(
+            to: destination.resolvingSymlinksInPath(),
+            options: .atomic
+        )
     }
 
     // MARK: Preview
@@ -248,11 +281,17 @@ final class EditorBuffer: Identifiable {
 
     /// Switches between source and preview, keeping roughly the same place in the document.
     func setShowingPreview(_ show: Bool) {
-        guard let format = previewFormat, let controller = textController, show != isShowingPreview else { return }
+        guard let format = previewFormat, let controller = textController,
+            show != isShowingPreview
+        else { return }
         if show {
-            let preview = self.preview ?? makePreview(for: controller, format: format)
+            let preview =
+                self.preview ?? makePreview(for: controller, format: format)
             self.preview = preview
-            preview.show(controller.textView.string, line: controller.topVisibleLine())
+            preview.show(
+                controller.textView.string,
+                line: controller.topVisibleLine()
+            )
             isShowingPreview = true
         } else if format == .html {
             isShowingPreview = false
@@ -265,18 +304,30 @@ final class EditorBuffer: Identifiable {
         }
     }
 
-    private func makePreview(for controller: TextController, format: PreviewFormat) -> DocumentPreview {
+    private func makePreview(
+        for controller: TextController,
+        format: PreviewFormat
+    ) -> DocumentPreview {
         let readAccessURL = projectURL.flatMap { project in
-            url.standardizedFileURL.pathComponents.dropLast().starts(with: project.standardizedFileURL.pathComponents) ? project : nil
+            url.standardizedFileURL.pathComponents.dropLast().starts(
+                with: project.standardizedFileURL.pathComponents
+            ) ? project : nil
         }
-        let preview = DocumentPreview(fileURL: url, format: format, readAccessURL: readAccessURL)
+        let preview = DocumentPreview(
+            fileURL: url,
+            format: format,
+            readAccessURL: readAccessURL
+        )
         preview.onOpenFile = { [weak self] url in self?.openFile?(url) }
         preview.onType = { [weak self] characters in
             guard let self else { return }
             self.isShowingPreview = false
             // Once the editor is back in the card, type the character there.
             DispatchQueue.main.async {
-                controller.textView.insertText(characters, replacementRange: controller.textView.selectedRange())
+                controller.textView.insertText(
+                    characters,
+                    replacementRange: controller.textView.selectedRange()
+                )
             }
         }
         return preview
@@ -285,12 +336,17 @@ final class EditorBuffer: Identifiable {
     func save() throws {
         guard !isUntitled, let controller = textController else { return }
         guard let data = controller.textView.string.data(using: encoding) else {
-            throw CocoaError(.fileWriteInapplicableStringEncoding, userInfo: [NSURLErrorKey: url])
+            throw CocoaError(
+                .fileWriteInapplicableStringEncoding,
+                userInfo: [NSURLErrorKey: url]
+            )
         }
         // Through a symlink to its target: an atomic write to the link itself would
         // swap it for a regular file and leave the real file unchanged.
         try data.write(to: url.resolvingSymlinksInPath(), options: .atomic)
-        diskSnapshot = Self.attributes(of: url).map { DiskSnapshot(attributes: $0, digest: Self.digest(of: data)) }
+        diskSnapshot = Self.attributes(of: url).map {
+            DiskSnapshot(attributes: $0, digest: Self.digest(of: data))
+        }
         isDirty = false
         isMissingOnDisk = false
     }
@@ -314,7 +370,10 @@ final class EditorBuffer: Identifiable {
         guard snapshot.digest != nil else { return .modified(nil) }
         guard let data = try? Data(contentsOf: url) else { return .deleted }
         if Self.digest(of: data) == snapshot.digest {
-            diskSnapshot = DiskSnapshot(attributes: attributes, digest: snapshot.digest)
+            diskSnapshot = DiskSnapshot(
+                attributes: attributes,
+                digest: snapshot.digest
+            )
             return .unchanged
         }
         return .modified(data)
@@ -350,10 +409,13 @@ final class EditorBuffer: Identifiable {
 
     private func revert(to data: Data) {
         guard let controller = textController, !Self.looksBinary(data),
-              let (text, newEncoding) = Self.decode(data) else { return }
+            let (text, newEncoding) = Self.decode(data)
+        else { return }
         encoding = newEncoding
         controller.replaceText(with: text)
-        diskSnapshot = Self.attributes(of: url).map { DiskSnapshot(attributes: $0, digest: Self.digest(of: data)) }
+        diskSnapshot = Self.attributes(of: url).map {
+            DiskSnapshot(attributes: $0, digest: Self.digest(of: data))
+        }
         isDirty = false
         isMissingOnDisk = false
         if isShowingPreview, let preview {
@@ -361,7 +423,9 @@ final class EditorBuffer: Identifiable {
                 preview.show(controller.textView.string, line: 1)
             } else {
                 preview.topVisibleLine { [weak self] line in
-                    guard let self, self.isShowingPreview, self.preview === preview else { return }
+                    guard let self, self.isShowingPreview,
+                        self.preview === preview
+                    else { return }
                     preview.show(controller.textView.string, line: line)
                 }
             }
@@ -381,7 +445,8 @@ final class EditorBuffer: Identifiable {
         }
 
         func matches(_ attributes: FileAttributes) -> Bool {
-            modificationDate == attributes.modificationDate && size == attributes.size
+            modificationDate == attributes.modificationDate
+                && size == attributes.size
         }
     }
 
@@ -394,7 +459,11 @@ final class EditorBuffer: Identifiable {
     /// through the link (or to the target directly) are noticed.
     private static func attributes(of url: URL) -> FileAttributes? {
         let path = url.resolvingSymlinksInPath().path(percentEncoded: false)
-        guard let attributes = try? FileManager.default.attributesOfItem(atPath: path) else {
+        guard
+            let attributes = try? FileManager.default.attributesOfItem(
+                atPath: path
+            )
+        else {
             return nil
         }
         return FileAttributes(
@@ -409,26 +478,46 @@ final class EditorBuffer: Identifiable {
 
     /// Raster image formats ImageIO can decode. SVG stays text so it can be edited.
     private static func isImage(_ url: URL) -> Bool {
-        guard let type = UTType(filenameExtension: url.pathExtension) else { return false }
+        guard let type = UTType(filenameExtension: url.pathExtension) else {
+            return false
+        }
         return type.conforms(to: .image) && !type.conforms(to: .svg)
     }
 
     private static func loadImage(_ url: URL, byteCount: Int64) -> ImageFile? {
-        guard let image = NSImage(contentsOf: url), image.isValid else { return nil }
-        var pixelSize = CGSize(width: image.size.width, height: image.size.height)
+        guard let image = NSImage(contentsOf: url), image.isValid else {
+            return nil
+        }
+        var pixelSize = CGSize(
+            width: image.size.width,
+            height: image.size.height
+        )
         var format = url.pathExtension.uppercased()
         if let source = CGImageSourceCreateWithURL(url as CFURL, nil) {
-            if let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
-               let width = properties[kCGImagePropertyPixelWidth] as? Int,
-               let height = properties[kCGImagePropertyPixelHeight] as? Int {
+            if let properties = CGImageSourceCopyPropertiesAtIndex(
+                source,
+                0,
+                nil
+            ) as? [CFString: Any],
+                let width = properties[kCGImagePropertyPixelWidth] as? Int,
+                let height = properties[kCGImagePropertyPixelHeight] as? Int
+            {
                 pixelSize = CGSize(width: width, height: height)
             }
             if let typeID = CGImageSourceGetType(source) as String?,
-               let name = UTType(typeID)?.preferredFilenameExtension {
-                format = name == "jpeg" ? "JPEG" : name == "webp" ? "WebP" : name.uppercased()
+                let name = UTType(typeID)?.preferredFilenameExtension
+            {
+                format =
+                    name == "jpeg"
+                    ? "JPEG" : name == "webp" ? "WebP" : name.uppercased()
             }
         }
-        return ImageFile(image: image, pixelSize: pixelSize, byteCount: byteCount, format: format)
+        return ImageFile(
+            image: image,
+            pixelSize: pixelSize,
+            byteCount: byteCount,
+            format: format
+        )
     }
 
     private static func isPDF(_ url: URL) -> Bool {
@@ -436,7 +525,9 @@ final class EditorBuffer: Identifiable {
     }
 
     private static func loadPDF(_ url: URL, byteCount: Int64) -> PDFFile? {
-        PDFDocument(url: url).map { PDFFile(document: $0, byteCount: byteCount) }
+        PDFDocument(url: url).map {
+            PDFFile(document: $0, byteCount: byteCount)
+        }
     }
 
     private static func looksBinary(_ data: Data) -> Bool {
@@ -463,7 +554,12 @@ final class EditorBuffer: Identifiable {
 extension URL {
     /// The placeholder location of an untitled file.
     static func untitled(_ name: String) -> URL {
-        URL(string: "untitled:///" + (name.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? name))!
+        URL(
+            string: "untitled:///"
+                + (name.addingPercentEncoding(
+                    withAllowedCharacters: .urlPathAllowed
+                ) ?? name)
+        )!
     }
 
     /// A placeholder for a file that hasn't been saved yet: there's nothing on disk.

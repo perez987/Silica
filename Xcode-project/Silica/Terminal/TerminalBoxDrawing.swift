@@ -10,10 +10,19 @@ nonisolated enum TerminalBoxDrawing {
     /// Draws `codepoint` in `cell` with the context's fill and stroke colors, in a
     /// context flipped like the terminal view (y grows downwards). Returns `false`
     /// for a character it has no drawing for, which is left to the font.
-    static func draw(_ codepoint: UInt32, in cell: CGRect, scale: CGFloat, context: CGContext) -> Bool {
+    static func draw(
+        _ codepoint: UInt32,
+        in cell: CGRect,
+        scale: CGFloat,
+        context: CGContext
+    ) -> Bool {
         switch codepoint {
         case 0x256D...0x2570:
-            drawRoundedCorner(codepoint, in: Grid(cell, scale: scale), context: context)
+            drawRoundedCorner(
+                codepoint,
+                in: Grid(cell, scale: scale),
+                context: context
+            )
         case 0x2500...0x257F:
             let arms = boxArms[Int(codepoint - 0x2500)]
             guard arms != 0 else { return false }
@@ -87,64 +96,119 @@ nonisolated enum TerminalBoxDrawing {
             ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
             ---- ---- ---- ---- 0001 1000 0100 0010 0002 2000 0200 0020 0201 1020 0102 2010
             """
-        var arms = table.split(whereSeparator: \.isWhitespace).map { entry -> UInt8 in
+        var arms = table.split(whereSeparator: \.isWhitespace).map {
+            entry -> UInt8 in
             // Two bits an arm: up, right, down, left from the high bits down.
             entry.utf8.reduce(0) { packed, digit in
-                digit == UInt8(ascii: "-") ? 0 : packed << 2 | (digit - UInt8(ascii: "0"))
+                digit == UInt8(ascii: "-")
+                    ? 0 : packed << 2 | (digit - UInt8(ascii: "0"))
             }
         }
         arms += [UInt8](repeating: 0, count: max(128 - arms.count, 0))
         return arms
     }()
 
-    private static func drawLines(_ arms: UInt8, in grid: Grid, context: CGContext) {
+    private static func drawLines(
+        _ arms: UInt8,
+        in grid: Grid,
+        context: CGContext
+    ) {
         let up = Int(arms >> 6 & 3) * grid.light
         let right = Int(arms >> 4 & 3) * grid.light
         let down = Int(arms >> 2 & 3) * grid.light
         let left = Int(arms & 3) * grid.light
         // Each arm runs from its edge to the far side of the arms it crosses in
         // the middle, so corners and joints come out square.
-        let across = max(up, down), along = max(left, right)
-        let middleX = grid.start(across, in: grid.width), middleY = grid.start(along, in: grid.height)
+        let across = max(up, down)
+        let along = max(left, right)
+        let middleX = grid.start(across, in: grid.width)
+        let middleY = grid.start(along, in: grid.height)
         if left > 0 {
             let y = grid.start(left, in: grid.height)
-            context.fill(grid.rect(0, y, across > 0 ? middleX + across : grid.width / 2, y + left))
+            context.fill(
+                grid.rect(
+                    0,
+                    y,
+                    across > 0 ? middleX + across : grid.width / 2,
+                    y + left
+                )
+            )
         }
         if right > 0 {
             let y = grid.start(right, in: grid.height)
-            context.fill(grid.rect(across > 0 ? middleX : grid.width / 2, y, grid.width, y + right))
+            context.fill(
+                grid.rect(
+                    across > 0 ? middleX : grid.width / 2,
+                    y,
+                    grid.width,
+                    y + right
+                )
+            )
         }
         if up > 0 {
             let x = grid.start(up, in: grid.width)
-            context.fill(grid.rect(x, 0, x + up, along > 0 ? middleY + along : grid.height / 2))
+            context.fill(
+                grid.rect(
+                    x,
+                    0,
+                    x + up,
+                    along > 0 ? middleY + along : grid.height / 2
+                )
+            )
         }
         if down > 0 {
             let x = grid.start(down, in: grid.width)
-            context.fill(grid.rect(x, along > 0 ? middleY : grid.height / 2, x + down, grid.height))
+            context.fill(
+                grid.rect(
+                    x,
+                    along > 0 ? middleY : grid.height / 2,
+                    x + down,
+                    grid.height
+                )
+            )
         }
     }
 
     /// ╭ ╮ ╯ ╰: a light line that turns through a quarter circle.
-    private static func drawRoundedCorner(_ codepoint: UInt32, in grid: Grid, context: CGContext) {
+    private static func drawRoundedCorner(
+        _ codepoint: UInt32,
+        in grid: Grid,
+        context: CGContext
+    ) {
         let cell = grid.cell
         let thickness = CGFloat(grid.light) / grid.scale
         // The same centers as the straight lines these meet in the cells around.
         let center = CGPoint(
-            x: cell.minX + CGFloat(grid.start(grid.light, in: grid.width)) / grid.scale + thickness / 2,
-            y: cell.minY + CGFloat(grid.start(grid.light, in: grid.height)) / grid.scale + thickness / 2
+            x: cell.minX + CGFloat(grid.start(grid.light, in: grid.width))
+                / grid.scale + thickness / 2,
+            y: cell.minY + CGFloat(grid.start(grid.light, in: grid.height))
+                / grid.scale + thickness / 2
         )
         // Which way the two arms go: ╭ down and right, ╮ down and left, ╯ up and
         // left, ╰ up and right.
         let goesDown = codepoint == 0x256D || codepoint == 0x256E
         let goesRight = codepoint == 0x256D || codepoint == 0x2570
-        let verticalEnd = CGPoint(x: center.x, y: goesDown ? cell.maxY : cell.minY)
-        let horizontalEnd = CGPoint(x: goesRight ? cell.maxX : cell.minX, y: center.y)
-        let radius = min(abs(horizontalEnd.x - center.x), abs(verticalEnd.y - center.y))
+        let verticalEnd = CGPoint(
+            x: center.x,
+            y: goesDown ? cell.maxY : cell.minY
+        )
+        let horizontalEnd = CGPoint(
+            x: goesRight ? cell.maxX : cell.minX,
+            y: center.y
+        )
+        let radius = min(
+            abs(horizontalEnd.x - center.x),
+            abs(verticalEnd.y - center.y)
+        )
 
         context.saveGState()
         context.setLineWidth(thickness)
         context.move(to: verticalEnd)
-        context.addArc(tangent1End: center, tangent2End: horizontalEnd, radius: radius)
+        context.addArc(
+            tangent1End: center,
+            tangent2End: horizontalEnd,
+            radius: radius
+        )
         context.addLine(to: horizontalEnd)
         context.strokePath()
         context.restoreGState()
@@ -152,41 +216,74 @@ nonisolated enum TerminalBoxDrawing {
 
     // MARK: Blocks
 
-    private static func drawBlock(_ codepoint: UInt32, in grid: Grid, context: CGContext) {
-        let width = grid.width, height = grid.height
+    private static func drawBlock(
+        _ codepoint: UInt32,
+        in grid: Grid,
+        context: CGContext
+    ) {
+        let width = grid.width
+        let height = grid.height
         func eighths(_ count: Int, of length: Int) -> Int {
             Int((Double(length) * Double(count) / 8).rounded())
         }
         switch codepoint {
-        case 0x2580: // ▀ upper half
+        case 0x2580:  // ▀ upper half
             context.fill(grid.rect(0, 0, width, height / 2))
-        case 0x2581...0x2588: // ▁ to █: the lower one to eight eighths
-            context.fill(grid.rect(0, height - eighths(Int(codepoint - 0x2580), of: height), width, height))
-        case 0x2589...0x258F: // ▉ to ▏: the left seven to one eighths
-            context.fill(grid.rect(0, 0, eighths(Int(0x2590 - codepoint), of: width), height))
-        case 0x2590: // ▐ right half
+        case 0x2581...0x2588:  // ▁ to █: the lower one to eight eighths
+            context.fill(
+                grid.rect(
+                    0,
+                    height - eighths(Int(codepoint - 0x2580), of: height),
+                    width,
+                    height
+                )
+            )
+        case 0x2589...0x258F:  // ▉ to ▏: the left seven to one eighths
+            context.fill(
+                grid.rect(
+                    0,
+                    0,
+                    eighths(Int(0x2590 - codepoint), of: width),
+                    height
+                )
+            )
+        case 0x2590:  // ▐ right half
             context.fill(grid.rect(width / 2, 0, width, height))
-        case 0x2591...0x2593: // ░ ▒ ▓: a quarter, a half and three quarters dark
+        case 0x2591...0x2593:  // ░ ▒ ▓: a quarter, a half and three quarters dark
             context.saveGState()
             context.setAlpha(CGFloat(codepoint - 0x2590) / 4)
             context.fill(grid.cell)
             context.restoreGState()
-        case 0x2594: // ▔ upper eighth
+        case 0x2594:  // ▔ upper eighth
             context.fill(grid.rect(0, 0, width, eighths(1, of: height)))
-        case 0x2595: // ▕ right eighth
-            context.fill(grid.rect(width - eighths(1, of: width), 0, width, height))
+        case 0x2595:  // ▕ right eighth
+            context.fill(
+                grid.rect(width - eighths(1, of: width), 0, width, height)
+            )
         default:
             // ▖ to ▟: quadrants. One bit each: upper left, upper right, lower left,
             // lower right.
-            let quadrants: [UInt8] = [0b0010, 0b0001, 0b1000, 0b1011, 0b1001, 0b1110, 0b1101, 0b0100, 0b0110, 0b0111]
+            let quadrants: [UInt8] = [
+                0b0010, 0b0001, 0b1000, 0b1011, 0b1001, 0b1110, 0b1101, 0b0100,
+                0b0110, 0b0111,
+            ]
             let index = Int(codepoint) - 0x2596
             guard quadrants.indices.contains(index) else { return }
             let bits = quadrants[index]
-            let middleX = width / 2, middleY = height / 2
-            if bits & 0b1000 != 0 { context.fill(grid.rect(0, 0, middleX, middleY)) }
-            if bits & 0b0100 != 0 { context.fill(grid.rect(middleX, 0, width, middleY)) }
-            if bits & 0b0010 != 0 { context.fill(grid.rect(0, middleY, middleX, height)) }
-            if bits & 0b0001 != 0 { context.fill(grid.rect(middleX, middleY, width, height)) }
+            let middleX = width / 2
+            let middleY = height / 2
+            if bits & 0b1000 != 0 {
+                context.fill(grid.rect(0, 0, middleX, middleY))
+            }
+            if bits & 0b0100 != 0 {
+                context.fill(grid.rect(middleX, 0, width, middleY))
+            }
+            if bits & 0b0010 != 0 {
+                context.fill(grid.rect(0, middleY, middleX, height))
+            }
+            if bits & 0b0001 != 0 {
+                context.fill(grid.rect(middleX, middleY, width, height))
+            }
         }
     }
 
@@ -195,7 +292,12 @@ nonisolated enum TerminalBoxDrawing {
     /// The arrows prompts put between their segments: solid (U+E0B0, U+E0B2) and
     /// outlined (U+E0B1, U+E0B3), pointing right and left. They're private-use
     /// characters that only patched fonts have.
-    private static func drawPowerline(_ codepoint: UInt32, in cell: CGRect, scale: CGFloat, context: CGContext) {
+    private static func drawPowerline(
+        _ codepoint: UInt32,
+        in cell: CGRect,
+        scale: CGFloat,
+        context: CGContext
+    ) {
         let pointsRight = codepoint == 0xE0B0 || codepoint == 0xE0B1
         let base = pointsRight ? cell.minX : cell.maxX
         let tip = CGPoint(x: pointsRight ? cell.maxX : cell.minX, y: cell.midY)
@@ -206,7 +308,9 @@ nonisolated enum TerminalBoxDrawing {
             context.fillPath()
         } else {
             context.saveGState()
-            context.setLineWidth(max((cell.height * scale / 16).rounded(), 1) / scale)
+            context.setLineWidth(
+                max((cell.height * scale / 16).rounded(), 1) / scale
+            )
             context.strokePath()
             context.restoreGState()
         }

@@ -31,16 +31,22 @@ struct AboutSettingsView: View {
             Section {
                 ForEach(Acknowledgement.all) { acknowledgement in
                     LabeledContent {
-                        Button("View License") { shownLicense = acknowledgement }
+                        Button("View License") {
+                            shownLicense = acknowledgement
+                        }
                     } label: {
                         Text(acknowledgement.name)
-                        Text("\(acknowledgement.license) · \(acknowledgement.holder)")
+                        Text(
+                            "\(acknowledgement.license) · \(acknowledgement.holder)"
+                        )
                     }
                 }
             } header: {
                 Text("Acknowledgements")
             } footer: {
-                Text("Silica’s Markdown preview and updates are built on these open-source projects.")
+                Text(
+                    "Silica’s Markdown preview and updates are built on these open-source projects."
+                )
             }
         }
         .sheet(item: $shownLicense) { acknowledgement in
@@ -69,7 +75,11 @@ private struct LicenseSheet: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
             }
-            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(.primary.opacity(0.05)))
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous).fill(
+                    .primary.opacity(0.05)
+                )
+            )
             HStack {
                 Spacer()
                 Button("Done") { dismiss() }
@@ -95,9 +105,13 @@ struct Acknowledgement: Identifiable {
 
     var text: String {
         files
-            .compactMap { Bundle.main.url(forResource: $0, withExtension: "txt") }
+            .compactMap {
+                Bundle.main.url(forResource: $0, withExtension: "txt")
+            }
             .compactMap { try? String(contentsOf: $0, encoding: .utf8) }
-            .joined(separator: "\n\n" + String(repeating: "─", count: 60) + "\n\n")
+            .joined(
+                separator: "\n\n" + String(repeating: "─", count: 60) + "\n\n"
+            )
     }
 
     static let all: [Acknowledgement] = [
@@ -105,7 +119,9 @@ struct Acknowledgement: Identifiable {
             name: "swift-markdown",
             license: "Apache License 2.0",
             holder: "Apple Inc. and the Swift project authors",
-            website: URL(string: "https://github.com/swiftlang/swift-markdown")!,
+            website: URL(
+                string: "https://github.com/swiftlang/swift-markdown"
+            )!,
             files: ["swift-markdown-LICENSE", "swift-markdown-NOTICE"]
         ),
         Acknowledgement(

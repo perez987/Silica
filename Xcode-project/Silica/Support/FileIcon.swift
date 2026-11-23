@@ -15,14 +15,20 @@ struct FileIcon: View {
                 .interpolation(.high)
                 .frame(width: width, height: width)
         } else {
-            let (symbol, color) = Self.style(for: url, isDirectory: false, isExpanded: isExpanded)
+            let (symbol, color) = Self.style(
+                for: url,
+                isDirectory: false,
+                isExpanded: isExpanded
+            )
             Image(systemName: symbol)
                 .foregroundStyle(color)
                 .frame(width: width)
         }
     }
 
-    static func style(for url: URL, isDirectory: Bool, isExpanded: Bool) -> (String, Color) {
+    static func style(for url: URL, isDirectory: Bool, isExpanded: Bool) -> (
+        String, Color
+    ) {
         typealias C = FileIconPalette
         if isDirectory {
             return ("folder", C.folder)
@@ -33,8 +39,10 @@ struct FileIcon: View {
         case "package.swift": return ("swift", C.swift)
         case "dockerfile": return ("shippingbox", C.blue)
         case "makefile": return ("hammer", C.brown)
-        case "license", "license.md", "license.txt": return ("checkmark.seal", C.yellow)
-        case ".gitignore", ".gitattributes": return ("arrow.triangle.branch", C.red)
+        case "license", "license.md", "license.txt":
+            return ("checkmark.seal", C.yellow)
+        case ".gitignore", ".gitattributes":
+            return ("arrow.triangle.branch", C.red)
         default: break
         }
         switch url.pathExtension.lowercased() {
@@ -53,8 +61,10 @@ struct FileIcon: View {
         case "php": return (code, C.indigo)
         case "c", "h", "m", "mm", "cpp", "hpp": return (code, C.blue)
         case "sh", "zsh", "bash", "fish": return ("terminal", C.green)
-        case "yml", "yaml", "toml", "ini", "plist", "xcconfig", "env": return ("gearshape", C.steel)
-        case "png", "jpg", "jpeg", "gif", "heic", "webp", "ico", "icns": return ("photo", C.mint)
+        case "yml", "yaml", "toml", "ini", "plist", "xcconfig", "env":
+            return ("gearshape", C.steel)
+        case "png", "jpg", "jpeg", "gif", "heic", "webp", "ico", "icns":
+            return ("photo", C.mint)
         case "pdf": return ("doc.richtext", C.red)
         case "zip", "gz", "tar", "rar", "7z": return ("archivebox", C.brown)
         case "diff", "patch", "rej": return ("plusminus", C.green)
@@ -75,7 +85,8 @@ final class FolderIcons {
         _ = generation
         if let icon = icons[url] { return icon }
         let path = url.path(percentEncoded: false)
-        let icon = FileManager.default.fileExists(atPath: path)
+        let icon =
+            FileManager.default.fileExists(atPath: path)
             ? NSWorkspace.shared.icon(forFile: path)
             : NSWorkspace.shared.icon(for: .folder)
         icons[url] = icon
@@ -111,14 +122,18 @@ enum FileIconPalette {
     static let neutral = dynamic(light: 0x8A8D94, dark: 0xA2A5AC)
 
     private static func dynamic(light: UInt32, dark: UInt32) -> Color {
-        Color(nsColor: NSColor(name: nil) { appearance in
-            let hex = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
-            return NSColor(
-                srgbRed: CGFloat((hex >> 16) & 0xFF) / 255,
-                green: CGFloat((hex >> 8) & 0xFF) / 255,
-                blue: CGFloat(hex & 0xFF) / 255,
-                alpha: 1
-            )
-        })
+        Color(
+            nsColor: NSColor(name: nil) { appearance in
+                let hex =
+                    appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
+                    ? dark : light
+                return NSColor(
+                    srgbRed: CGFloat((hex >> 16) & 0xFF) / 255,
+                    green: CGFloat((hex >> 8) & 0xFF) / 255,
+                    blue: CGFloat(hex & 0xFF) / 255,
+                    alpha: 1
+                )
+            }
+        )
     }
 }

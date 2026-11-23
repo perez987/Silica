@@ -20,8 +20,12 @@ nonisolated struct GitIgnoreFile: @unchecked Sendable {
 
     init(base: String, contents: String) {
         self.base = base
-        self.rules = contents
-            .split(omittingEmptySubsequences: false, whereSeparator: \.isNewline)
+        self.rules =
+            contents
+            .split(
+                omittingEmptySubsequences: false,
+                whereSeparator: \.isNewline
+            )
             .compactMap { Rule(line: String($0)) }
     }
 
@@ -33,9 +37,12 @@ nonisolated struct GitIgnoreFile: @unchecked Sendable {
     /// `true` / `false` when a rule decides `path` (relative to `base`), `nil` if none matches.
     func decision(for path: String, isDirectory: Bool) -> Bool? {
         let lowered = path.lowercased()
-        let name = lowered.split(separator: "/").last.map(String.init) ?? lowered
+        let name =
+            lowered.split(separator: "/").last.map(String.init) ?? lowered
         var result: Bool?
-        for rule in rules where rule.matches(path: lowered, name: name, isDirectory: isDirectory) {
+        for rule in rules
+        where rule.matches(path: lowered, name: name, isDirectory: isDirectory)
+        {
             result = !rule.isNegated
         }
         return result
@@ -59,7 +66,9 @@ nonisolated struct GitIgnoreFile: @unchecked Sendable {
             if pattern.hasPrefix("#") { return nil }
 
             // Trailing spaces are dropped unless escaped with a backslash.
-            while pattern.hasSuffix(" "), !pattern.hasSuffix("\\ ") { pattern.removeLast() }
+            while pattern.hasSuffix(" "), !pattern.hasSuffix("\\ ") {
+                pattern.removeLast()
+            }
             if pattern.isEmpty { return nil }
 
             var negated = false
@@ -89,10 +98,15 @@ nonisolated struct GitIgnoreFile: @unchecked Sendable {
             if !anchored, !lowered.contains(where: { "*?[\\".contains($0) }) {
                 matcher = .name(lowered)
             } else if !anchored, lowered.hasPrefix("*"),
-                      !lowered.dropFirst().contains(where: { "*?[\\".contains($0) }) {
+                !lowered.dropFirst().contains(where: { "*?[\\".contains($0) })
+            {
                 matcher = .nameSuffix(String(lowered.dropFirst()))
             } else {
-                guard let regex = try? NSRegularExpression(pattern: "^" + Self.regex(from: lowered) + "$") else {
+                guard
+                    let regex = try? NSRegularExpression(
+                        pattern: "^" + Self.regex(from: lowered) + "$"
+                    )
+                else {
                     return nil
                 }
                 matcher = .regex(regex)
@@ -125,7 +139,8 @@ nonisolated struct GitIgnoreFile: @unchecked Sendable {
                     if i + 1 < chars.count, chars[i + 1] == "*" {
                         let atStart = i == 0
                         let afterSlash = i > 0 && chars[i - 1] == "/"
-                        let beforeSlash = i + 2 < chars.count && chars[i + 2] == "/"
+                        let beforeSlash =
+                            i + 2 < chars.count && chars[i + 2] == "/"
                         let atEnd = i + 2 == chars.count
                         if (atStart || afterSlash) && beforeSlash {
                             // "**/" — zero or more leading folders.
@@ -147,7 +162,9 @@ nonisolated struct GitIgnoreFile: @unchecked Sendable {
                 case "?":
                     out += "[^/]"
                 case "[":
-                    if let close = chars[(i + 1)...].firstIndex(of: "]"), close > i + 1 {
+                    if let close = chars[(i + 1)...].firstIndex(of: "]"),
+                        close > i + 1
+                    {
                         var body = String(chars[(i + 1)..<close])
                         if body.hasPrefix("!") { body = "^" + body.dropFirst() }
                         body = body.replacingOccurrences(of: "\\", with: "\\\\")
@@ -158,7 +175,9 @@ nonisolated struct GitIgnoreFile: @unchecked Sendable {
                     out += "\\["
                 case "\\":
                     if i + 1 < chars.count {
-                        out += NSRegularExpression.escapedPattern(for: String(chars[i + 1]))
+                        out += NSRegularExpression.escapedPattern(
+                            for: String(chars[i + 1])
+                        )
                         i += 2
                         continue
                     }
@@ -195,7 +214,10 @@ nonisolated struct GitIgnoreStack: Sendable {
             } else {
                 continue
             }
-            if let decision = file.decision(for: relative, isDirectory: isDirectory) {
+            if let decision = file.decision(
+                for: relative,
+                isDirectory: isDirectory
+            ) {
                 ignored = decision
             }
         }

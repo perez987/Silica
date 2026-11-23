@@ -2,10 +2,14 @@ import AppKit
 import Observation
 
 extension Notification.Name {
-    static let editorFontSizeDidChange = Notification.Name("EditorFontSizeDidChange")
+    static let editorFontSizeDidChange = Notification.Name(
+        "EditorFontSizeDidChange"
+    )
     static let editorWrapDidChange = Notification.Name("EditorWrapDidChange")
     /// Font, tab width, line numbers, indent guides or the minimap changed.
-    static let editorSettingsDidChange = Notification.Name("EditorSettingsDidChange")
+    static let editorSettingsDidChange = Notification.Name(
+        "EditorSettingsDidChange"
+    )
     static let syntaxThemeDidChange = Notification.Name("SyntaxThemeDidChange")
 }
 
@@ -49,7 +53,10 @@ final class EditorSettings {
         didSet {
             guard fontFamily != oldValue else { return }
             store(fontFamily, Key.fontFamily, isDefault: fontFamily == nil)
-            NotificationCenter.default.post(name: .editorSettingsDidChange, object: self)
+            NotificationCenter.default.post(
+                name: .editorSettingsDidChange,
+                object: self
+            )
         }
     }
 
@@ -57,7 +64,11 @@ final class EditorSettings {
     var sidebarFontSize: CGFloat {
         didSet {
             guard sidebarFontSize != oldValue else { return }
-            store(Double(sidebarFontSize), Key.sidebarFontSize, isDefault: sidebarFontSize == Self.defaultSidebarFontSize)
+            store(
+                Double(sidebarFontSize),
+                Key.sidebarFontSize,
+                isDefault: sidebarFontSize == Self.defaultSidebarFontSize
+            )
         }
     }
 
@@ -72,7 +83,10 @@ final class EditorSettings {
         didSet {
             guard wrapsLines != oldValue else { return }
             store(wrapsLines, Key.wrapsLines, isDefault: wrapsLines)
-            NotificationCenter.default.post(name: .editorWrapDidChange, object: self)
+            NotificationCenter.default.post(
+                name: .editorWrapDidChange,
+                object: self
+            )
         }
     }
 
@@ -81,7 +95,10 @@ final class EditorSettings {
         didSet {
             guard tabWidth != oldValue else { return }
             store(tabWidth, Key.tabWidth, isDefault: tabWidth == 4)
-            NotificationCenter.default.post(name: .editorSettingsDidChange, object: self)
+            NotificationCenter.default.post(
+                name: .editorSettingsDidChange,
+                object: self
+            )
         }
     }
 
@@ -89,24 +106,45 @@ final class EditorSettings {
     var indentsWithTabs: Bool {
         didSet {
             guard indentsWithTabs != oldValue else { return }
-            store(indentsWithTabs, Key.indentsWithTabs, isDefault: !indentsWithTabs)
-            NotificationCenter.default.post(name: .editorSettingsDidChange, object: self)
+            store(
+                indentsWithTabs,
+                Key.indentsWithTabs,
+                isDefault: !indentsWithTabs
+            )
+            NotificationCenter.default.post(
+                name: .editorSettingsDidChange,
+                object: self
+            )
         }
     }
 
     var showsLineNumbers: Bool {
         didSet {
             guard showsLineNumbers != oldValue else { return }
-            store(showsLineNumbers, Key.showsLineNumbers, isDefault: showsLineNumbers)
-            NotificationCenter.default.post(name: .editorSettingsDidChange, object: self)
+            store(
+                showsLineNumbers,
+                Key.showsLineNumbers,
+                isDefault: showsLineNumbers
+            )
+            NotificationCenter.default.post(
+                name: .editorSettingsDidChange,
+                object: self
+            )
         }
     }
 
     var showsIndentGuides: Bool {
         didSet {
             guard showsIndentGuides != oldValue else { return }
-            store(showsIndentGuides, Key.showsIndentGuides, isDefault: showsIndentGuides)
-            NotificationCenter.default.post(name: .editorSettingsDidChange, object: self)
+            store(
+                showsIndentGuides,
+                Key.showsIndentGuides,
+                isDefault: showsIndentGuides
+            )
+            NotificationCenter.default.post(
+                name: .editorSettingsDidChange,
+                object: self
+            )
         }
     }
 
@@ -115,7 +153,10 @@ final class EditorSettings {
         didSet {
             guard showsMinimap != oldValue else { return }
             store(showsMinimap, Key.showsMinimap, isDefault: !showsMinimap)
-            NotificationCenter.default.post(name: .editorSettingsDidChange, object: self)
+            NotificationCenter.default.post(
+                name: .editorSettingsDidChange,
+                object: self
+            )
         }
     }
 
@@ -123,8 +164,15 @@ final class EditorSettings {
     var syntaxTheme: SyntaxTheme {
         didSet {
             guard syntaxTheme != oldValue else { return }
-            store(syntaxTheme.rawValue, Key.syntaxTheme, isDefault: syntaxTheme == .default)
-            NotificationCenter.default.post(name: .syntaxThemeDidChange, object: self)
+            store(
+                syntaxTheme.rawValue,
+                Key.syntaxTheme,
+                isDefault: syntaxTheme == .default
+            )
+            NotificationCenter.default.post(
+                name: .syntaxThemeDidChange,
+                object: self
+            )
         }
     }
 
@@ -136,7 +184,11 @@ final class EditorSettings {
     var appearance: Appearance {
         didSet {
             guard appearance != oldValue else { return }
-            store(appearance.rawValue, Key.appearance, isDefault: appearance == .system)
+            store(
+                appearance.rawValue,
+                Key.appearance,
+                isDefault: appearance == .system
+            )
             applyAppearance()
         }
     }
@@ -148,7 +200,11 @@ final class EditorSettings {
     var windowStyle: WindowStyle {
         didSet {
             guard windowStyle != oldValue else { return }
-            store(windowStyle.rawValue, Key.windowStyle, isDefault: windowStyle == .glass)
+            store(
+                windowStyle.rawValue,
+                Key.windowStyle,
+                isDefault: windowStyle == .glass
+            )
         }
     }
 
@@ -168,7 +224,11 @@ final class EditorSettings {
         didSet {
             guard startupBehavior != oldValue else { return }
             UserDefaults.standard.removeObject(forKey: Key.showsWelcomeAtLaunch)
-            store(startupBehavior.rawValue, Key.startupBehavior, isDefault: startupBehavior == .welcome)
+            store(
+                startupBehavior.rawValue,
+                Key.startupBehavior,
+                isDefault: startupBehavior == .welcome
+            )
         }
     }
 
@@ -185,7 +245,11 @@ final class EditorSettings {
     var pinsParentFolders: Bool {
         didSet {
             guard pinsParentFolders != oldValue else { return }
-            store(pinsParentFolders, Key.pinsParentFolders, isDefault: pinsParentFolders)
+            store(
+                pinsParentFolders,
+                Key.pinsParentFolders,
+                isDefault: pinsParentFolders
+            )
         }
     }
 
@@ -196,26 +260,49 @@ final class EditorSettings {
     private init() {
         let defaults = UserDefaults.standard
         let storedSize = defaults.double(forKey: Key.fontSize)
-        fontSize = storedSize > 0 ? Self.clamped(CGFloat(storedSize)) : Self.defaultFontSize
+        fontSize =
+            storedSize > 0
+            ? Self.clamped(CGFloat(storedSize)) : Self.defaultFontSize
         fontFamily = defaults.string(forKey: Key.fontFamily)
         let storedSidebarSize = defaults.double(forKey: Key.sidebarFontSize)
-        sidebarFontSize = storedSidebarSize > 0
-            ? Self.clamped(CGFloat(storedSidebarSize), to: Self.sidebarFontSizeRange)
+        sidebarFontSize =
+            storedSidebarSize > 0
+            ? Self.clamped(
+                CGFloat(storedSidebarSize),
+                to: Self.sidebarFontSizeRange
+            )
             : Self.defaultSidebarFontSize
         wrapsLines = defaults.object(forKey: Key.wrapsLines) as? Bool ?? true
         let storedTabWidth = defaults.integer(forKey: Key.tabWidth)
         tabWidth = Self.tabWidths.contains(storedTabWidth) ? storedTabWidth : 4
         indentsWithTabs = defaults.bool(forKey: Key.indentsWithTabs)
-        showsLineNumbers = defaults.object(forKey: Key.showsLineNumbers) as? Bool ?? true
-        showsIndentGuides = defaults.object(forKey: Key.showsIndentGuides) as? Bool ?? true
+        showsLineNumbers =
+            defaults.object(forKey: Key.showsLineNumbers) as? Bool ?? true
+        showsIndentGuides =
+            defaults.object(forKey: Key.showsIndentGuides) as? Bool ?? true
         showsMinimap = defaults.bool(forKey: Key.showsMinimap)
-        syntaxTheme = defaults.string(forKey: Key.syntaxTheme).flatMap(SyntaxTheme.init(rawValue:)) ?? .default
-        appearance = defaults.string(forKey: Key.appearance).flatMap(Appearance.init(rawValue:)) ?? .system
-        windowStyle = defaults.string(forKey: Key.windowStyle).flatMap(WindowStyle.init(rawValue:)) ?? .glass
-        startupBehavior = defaults.string(forKey: Key.startupBehavior).flatMap(StartupBehavior.init(rawValue:))
-            ?? ((defaults.object(forKey: Key.showsWelcomeAtLaunch) as? Bool ?? true) ? .welcome : .emptyWorkspace)
-        restoresTabs = defaults.object(forKey: Key.restoresTabs) as? Bool ?? true
-        pinsParentFolders = defaults.object(forKey: Key.pinsParentFolders) as? Bool ?? true
+        syntaxTheme =
+            defaults.string(forKey: Key.syntaxTheme).flatMap(
+                SyntaxTheme.init(rawValue:)
+            ) ?? .default
+        appearance =
+            defaults.string(forKey: Key.appearance).flatMap(
+                Appearance.init(rawValue:)
+            ) ?? .system
+        windowStyle =
+            defaults.string(forKey: Key.windowStyle).flatMap(
+                WindowStyle.init(rawValue:)
+            ) ?? .glass
+        startupBehavior =
+            defaults.string(forKey: Key.startupBehavior).flatMap(
+                StartupBehavior.init(rawValue:)
+            )
+            ?? ((defaults.object(forKey: Key.showsWelcomeAtLaunch) as? Bool
+                ?? true) ? .welcome : .emptyWorkspace)
+        restoresTabs =
+            defaults.object(forKey: Key.restoresTabs) as? Bool ?? true
+        pinsParentFolders =
+            defaults.object(forKey: Key.pinsParentFolders) as? Bool ?? true
     }
 
     private func store(_ value: Any?, _ key: String, isDefault: Bool) {
@@ -236,18 +323,34 @@ final class EditorSettings {
         let size = Self.clamped(size)
         guard size != fontSize else { return }
         fontSize = size
-        store(Double(size), Key.fontSize, isDefault: size == Self.defaultFontSize)
-        NotificationCenter.default.post(name: .editorFontSizeDidChange, object: self)
+        store(
+            Double(size),
+            Key.fontSize,
+            isDefault: size == Self.defaultFontSize
+        )
+        NotificationCenter.default.post(
+            name: .editorFontSizeDidChange,
+            object: self
+        )
     }
 
-    private static func clamped(_ size: CGFloat, to range: ClosedRange<CGFloat> = fontSizeRange) -> CGFloat {
+    private static func clamped(
+        _ size: CGFloat,
+        to range: ClosedRange<CGFloat> = fontSizeRange
+    ) -> CGFloat {
         min(max(size.rounded(), range.lowerBound), range.upperBound)
     }
 
     /// The editor font at `size`: the chosen family, or the system monospaced font.
     func editorFont(ofSize size: CGFloat) -> NSFont {
         if let fontFamily,
-           let font = NSFontManager.shared.font(withFamily: fontFamily, traits: [], weight: 5, size: size) {
+            let font = NSFontManager.shared.font(
+                withFamily: fontFamily,
+                traits: [],
+                weight: 5,
+                size: size
+            )
+        {
             return font
         }
         return .monospacedSystemFont(ofSize: size, weight: .regular)
@@ -255,22 +358,29 @@ final class EditorSettings {
 
     /// Installed fixed-pitch font families, for the font picker.
     static let monospacedFamilies: [String] = {
-        let names = NSFontManager.shared.availableFontNames(with: .fixedPitchFontMask) ?? []
-        let families = Set(names.compactMap { NSFont(name: $0, size: 12)?.familyName })
-            // Hidden system families start with a dot.
-            .filter { !$0.hasPrefix(".") }
-        return families.sorted { $0.localizedStandardCompare($1) == .orderedAscending }
+        let names =
+            NSFontManager.shared.availableFontNames(with: .fixedPitchFontMask)
+            ?? []
+        let families = Set(
+            names.compactMap { NSFont(name: $0, size: 12)?.familyName }
+        )
+        // Hidden system families start with a dot.
+        .filter { !$0.hasPrefix(".") }
+        return families.sorted {
+            $0.localizedStandardCompare($1) == .orderedAscending
+        }
     }()
 
     // MARK: Appearance
 
     /// Light, dark, or following the system, for every window.
     func applyAppearance() {
-        NSApp.appearance = switch appearance {
-        case .system: nil
-        case .light: NSAppearance(named: .aqua)
-        case .dark: NSAppearance(named: .darkAqua)
-        }
+        NSApp.appearance =
+            switch appearance {
+            case .system: nil
+            case .light: NSAppearance(named: .aqua)
+            case .dark: NSAppearance(named: .darkAqua)
+            }
     }
 
     // MARK: Keyboard
@@ -284,8 +394,11 @@ final class EditorSettings {
     /// keyboard needs Shift; menus can't also match the unshifted key.
     func installKeyboardShortcuts() {
         guard keyMonitor == nil else { return }
-        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            let flags = event.modifierFlags.intersection([.command, .shift, .option, .control])
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) {
+            [weak self] event in
+            let flags = event.modifierFlags.intersection([
+                .command, .shift, .option, .control,
+            ])
             guard let self else { return event }
             if flags == .command, event.charactersIgnoringModifiers == "=" {
                 self.increaseFontSize()
@@ -293,9 +406,11 @@ final class EditorSettings {
             }
             // ⌥Z, as in VS Code. Also in the View menu, but an editor with focus would
             // otherwise type "Ω".
-            if flags == .option, event.charactersIgnoringModifiers?.lowercased() == "z",
-               event.window?.attachedSheet == nil, NSApp.modalWindow == nil,
-               event.window?.firstResponder is EditorTextView {
+            if flags == .option,
+                event.charactersIgnoringModifiers?.lowercased() == "z",
+                event.window?.attachedSheet == nil, NSApp.modalWindow == nil,
+                event.window?.firstResponder is EditorTextView
+            {
                 self.wrapsLines.toggle()
                 return nil
             }

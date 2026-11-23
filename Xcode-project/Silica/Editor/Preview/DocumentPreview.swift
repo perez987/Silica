@@ -30,7 +30,14 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
     private var isUnloaded = false
     private var pageRequest = 0
     private var baseURL: URL {
-        URL(string: Self.scheme + "://local" + Self.encodedPath(fileURL.deletingLastPathComponent().path(percentEncoded: false)))!
+        URL(
+            string: Self.scheme + "://local"
+                + Self.encodedPath(
+                    fileURL.deletingLastPathComponent().path(
+                        percentEncoded: false
+                    )
+                )
+        )!
     }
 
     static let scheme = "silica-preview"
@@ -38,17 +45,28 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
     init(fileURL: URL, format: PreviewFormat, readAccessURL: URL? = nil) {
         self.fileURL = fileURL
         self.format = format
-        self.readAccessURL = readAccessURL ?? fileURL.deletingLastPathComponent()
+        self.readAccessURL =
+            readAccessURL ?? fileURL.deletingLastPathComponent()
 
         let configuration = WKWebViewConfiguration()
         if format == .html {
-            configuration.defaultWebpagePreferences.allowsContentJavaScript = true
+            configuration.defaultWebpagePreferences.allowsContentJavaScript =
+                true
         } else {
-            configuration.defaultWebpagePreferences.allowsContentJavaScript = false
-            configuration.setURLSchemeHandler(LocalFileSchemeHandler(), forURLScheme: Self.scheme)
-            configuration.userContentController.addUserScript(WKUserScript(
-                source: Self.script, injectionTime: .atDocumentEnd, forMainFrameOnly: true, in: .defaultClient
-            ))
+            configuration.defaultWebpagePreferences.allowsContentJavaScript =
+                false
+            configuration.setURLSchemeHandler(
+                LocalFileSchemeHandler(),
+                forURLScheme: Self.scheme
+            )
+            configuration.userContentController.addUserScript(
+                WKUserScript(
+                    source: Self.script,
+                    injectionTime: .atDocumentEnd,
+                    forMainFrameOnly: true,
+                    in: .defaultClient
+                )
+            )
         }
         webView = PreviewWebView(frame: .zero, configuration: configuration)
         super.init()
@@ -59,15 +77,23 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
         webView.setValue(false, forKey: "drawsBackground")
         webView.onType = { [weak self] characters in self?.onType?(characters) }
         NotificationCenter.default.addObserver(
-            self, selector: #selector(syntaxThemeDidChange),
-            name: .syntaxThemeDidChange, object: nil
+            self,
+            selector: #selector(syntaxThemeDidChange),
+            name: .syntaxThemeDidChange,
+            object: nil
         )
     }
 
     /// Swaps in the new code colors without reloading, so the scroll position stays.
     @objc private func syntaxThemeDidChange() {
-        guard let data = try? JSONEncoder().encode(Self.css), let css = String(data: data, encoding: .utf8) else { return }
-        webView.evaluateJavaScript("{ const style = document.querySelector('head > style'); if (style) style.textContent = \(css); }", in: nil, in: .defaultClient) { _ in }
+        guard let data = try? JSONEncoder().encode(Self.css),
+            let css = String(data: data, encoding: .utf8)
+        else { return }
+        webView.evaluateJavaScript(
+            "{ const style = document.querySelector('head > style'); if (style) style.textContent = \(css); }",
+            in: nil,
+            in: .defaultClient
+        ) { _ in }
     }
 
     /// Renders the file's `text` and, once loaded, scrolls to the block nearest `line`.
@@ -87,7 +113,10 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
             // Set with the load it belongs to, not before: a page still loading from
             // an earlier call would take it when it finishes.
             self.pendingLine = line
-            self.webView.loadHTMLString(Self.page(body: body, isTable: format.isTable), baseURL: self.baseURL)
+            self.webView.loadHTMLString(
+                Self.page(body: body, isTable: format.isTable),
+                baseURL: self.baseURL
+            )
         }
     }
 
@@ -118,9 +147,17 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
     }
 
     private func scrollPosition(_ completion: @escaping (CGPoint?) -> Void) {
-        webView.evaluateJavaScript("[window.scrollX, window.scrollY]", in: nil, in: .defaultClient) { result in
+        webView.evaluateJavaScript(
+            "[window.scrollX, window.scrollY]",
+            in: nil,
+            in: .defaultClient
+        ) { result in
             let offset = (try? result.get()) as? [Double]
-            completion(offset.flatMap { $0.count == 2 ? CGPoint(x: $0[0], y: $0[1]) : nil })
+            completion(
+                offset.flatMap {
+                    $0.count == 2 ? CGPoint(x: $0[0], y: $0[1]) : nil
+                }
+            )
         }
     }
 
@@ -132,7 +169,10 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
         } else {
             hasReadAccess = true
             pendingHTML = html
-            accessNavigation = webView.loadFileURL(fileURL, allowingReadAccessTo: readAccessURL)
+            accessNavigation = webView.loadFileURL(
+                fileURL,
+                allowingReadAccessTo: readAccessURL
+            )
         }
     }
 
@@ -156,7 +196,11 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
 
     /// The 1-based source line of the first block visible at the top.
     func topVisibleLine(_ completion: @escaping (Int) -> Void) {
-        webView.evaluateJavaScript("silica.topLine()", in: nil, in: .defaultClient) { result in
+        webView.evaluateJavaScript(
+            "silica.topLine()",
+            in: nil,
+            in: .defaultClient
+        ) { result in
             completion((try? result.get()) as? Int ?? 1)
         }
     }
@@ -165,15 +209,25 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         if format == .html {
-            if let navigation, navigation === pageNavigation, let scroll = pendingScroll {
+            if let navigation, navigation === pageNavigation,
+                let scroll = pendingScroll
+            {
                 pendingScroll = nil
-                webView.evaluateJavaScript("window.scrollTo(\(scroll.x), \(scroll.y))", in: nil, in: .defaultClient) { _ in }
+                webView.evaluateJavaScript(
+                    "window.scrollTo(\(scroll.x), \(scroll.y))",
+                    in: nil,
+                    in: .defaultClient
+                ) { _ in }
             }
             return
         }
         guard let line = pendingLine else { return }
         pendingLine = nil
-        webView.evaluateJavaScript("silica.scrollToLine(\(line))", in: nil, in: .defaultClient) { _ in }
+        webView.evaluateJavaScript(
+            "silica.scrollToLine(\(line))",
+            in: nil,
+            in: .defaultClient
+        ) { _ in }
     }
 
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
@@ -185,12 +239,20 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
         }
     }
 
-    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: any Error) {
+    func webView(
+        _ webView: WKWebView,
+        didFail navigation: WKNavigation!,
+        withError error: any Error
+    ) {
         if navigation === pageNavigation { isStartingPage = false }
         accessDidFail(navigation)
     }
 
-    func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: any Error) {
+    func webView(
+        _ webView: WKWebView,
+        didFailProvisionalNavigation navigation: WKNavigation!,
+        withError error: any Error
+    ) {
         if navigation === pageNavigation { isStartingPage = false }
         accessDidFail(navigation)
     }
@@ -199,29 +261,42 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
         _ webView: WKWebView,
         decidePolicyFor navigationAction: WKNavigationAction,
         preferences: WKWebpagePreferences,
-        decisionHandler: @escaping @MainActor (WKNavigationActionPolicy, WKWebpagePreferences) -> Void
+        decisionHandler:
+            @escaping @MainActor (
+                WKNavigationActionPolicy, WKWebpagePreferences
+            ) -> Void
     ) {
         // Only the page itself loads in place (and subframes, e.g. an embedded video);
         // every other navigation is a link and is handled here instead.
         guard let url = navigationAction.request.url,
-              navigationAction.targetFrame?.isMainFrame != false,
-              url.absoluteString != baseURL.absoluteString, url.scheme != "about",
-              !loadsInPlace(url, navigationAction.navigationType) else {
-            if pendingHTML != nil { preferences.allowsContentJavaScript = false }
+            navigationAction.targetFrame?.isMainFrame != false,
+            url.absoluteString != baseURL.absoluteString, url.scheme != "about",
+            !loadsInPlace(url, navigationAction.navigationType)
+        else {
+            if pendingHTML != nil {
+                preferences.allowsContentJavaScript = false
+            }
             decisionHandler(.allow, preferences)
             return
         }
         decisionHandler(.cancel, preferences)
 
         if format == .html {
-            guard navigationAction.navigationType == .linkActivated else { return }
+            guard navigationAction.navigationType == .linkActivated else {
+                return
+            }
             if url.isFileURL {
                 let target = URL(filePath: url.path(percentEncoded: false))
                 var isDirectory: ObjCBool = false
-                if FileManager.default.fileExists(atPath: target.path(percentEncoded: false), isDirectory: &isDirectory), !isDirectory.boolValue {
+                if FileManager.default.fileExists(
+                    atPath: target.path(percentEncoded: false),
+                    isDirectory: &isDirectory
+                ), !isDirectory.boolValue {
                     onOpenFile?(target)
                 }
-            } else if ["http", "https", "mailto"].contains(url.scheme?.lowercased()) {
+            } else if ["http", "https", "mailto"].contains(
+                url.scheme?.lowercased()
+            ) {
                 NSWorkspace.shared.open(url)
             }
             return
@@ -229,25 +304,39 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
 
         if url.scheme == Self.scheme {
             let path = url.path(percentEncoded: false)
-            if let fragment = url.fragment, path == baseURL.path(percentEncoded: false) || path == fileURL.path(percentEncoded: false) {
+            if let fragment = url.fragment,
+                path == baseURL.path(percentEncoded: false)
+                    || path == fileURL.path(percentEncoded: false)
+            {
                 // An #anchor in this document.
-                let id = fragment.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "'", with: "\\'")
-                webView.evaluateJavaScript("document.getElementById('\(id)')?.scrollIntoView()", in: nil, in: .defaultClient) { _ in }
+                let id = fragment.replacingOccurrences(of: "\\", with: "\\\\")
+                    .replacingOccurrences(of: "'", with: "\\'")
+                webView.evaluateJavaScript(
+                    "document.getElementById('\(id)')?.scrollIntoView()",
+                    in: nil,
+                    in: .defaultClient
+                ) { _ in }
                 return
             }
             let target = URL(filePath: path)
             var isDirectory: ObjCBool = false
-            if FileManager.default.fileExists(atPath: target.path(percentEncoded: false), isDirectory: &isDirectory), !isDirectory.boolValue {
+            if FileManager.default.fileExists(
+                atPath: target.path(percentEncoded: false),
+                isDirectory: &isDirectory
+            ), !isDirectory.boolValue {
                 onOpenFile?(target)
             }
-        } else if ["http", "https", "mailto"].contains(url.scheme?.lowercased()) {
+        } else if ["http", "https", "mailto"].contains(url.scheme?.lowercased())
+        {
             NSWorkspace.shared.open(url)
         }
     }
 
     private func loadsInPlace(_ url: URL, _ type: WKNavigationType) -> Bool {
         guard format == .html, url.isFileURL, url.query == nil,
-              url.standardizedFileURL.path(percentEncoded: false) == fileURL.standardizedFileURL.path(percentEncoded: false) else { return false }
+            url.standardizedFileURL.path(percentEncoded: false)
+                == fileURL.standardizedFileURL.path(percentEncoded: false)
+        else { return false }
         if url.fragment != nil { return true }
         return type == .other && (pendingHTML != nil || isStartingPage)
     }
@@ -263,7 +352,9 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
 
     private static func encodedPath(_ path: String) -> String {
         let directory = path.hasSuffix("/") ? path : path + "/"
-        return directory.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? directory
+        return directory.addingPercentEncoding(
+            withAllowedCharacters: .urlPathAllowed
+        ) ?? directory
     }
 
     private static func page(body: String, isTable: Bool) -> String {
@@ -279,7 +370,8 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
     }
 
     private static var tokenCSS: (light: String, dark: String) {
-        var light = "", dark = ""
+        var light = ""
+        var dark = ""
         let theme = EditorSettings.shared.syntaxTheme
         for kind in TokenKind.allCases {
             let pair = theme.hexPair(for: kind)
@@ -292,94 +384,97 @@ final class DocumentPreview: NSObject, WKNavigationDelegate {
     private static var css: String {
         let size = Int(EditorSettings.shared.fontSize) + 1
         // Code in the editor's font, when one is chosen in Settings.
-        let codeFont = EditorSettings.shared.fontFamily.map { "\"\($0.replacingOccurrences(of: "\"", with: ""))\", " } ?? ""
+        let codeFont =
+            EditorSettings.shared.fontFamily.map {
+                "\"\($0.replacingOccurrences(of: "\"", with: ""))\", "
+            } ?? ""
         let link = EditorSettings.shared.syntaxTheme.linkPair
         let tokens = tokenCSS
         return """
-        :root { color-scheme: light dark; }
-        html, body { background: transparent; margin: 0; }
-        body {
-          font: \(size)px/1.6 -apple-system, BlinkMacSystemFont, sans-serif;
-          color: rgba(0, 0, 0, 0.86);
-          -webkit-font-smoothing: antialiased;
-        }
-        article { padding: 24px 32px 48px; }
-        h1, h2, h3, h4, h5, h6 { line-height: 1.25; margin: 1.4em 0 0.6em; font-weight: 650; }
-        h1 { font-size: 1.9em; } h2 { font-size: 1.45em; } h3 { font-size: 1.2em; }
-        h1, h2 { padding-bottom: 0.3em; border-bottom: 1px solid rgba(128, 128, 128, 0.25); }
-        article > :first-child { margin-top: 0; }
-        p, ul, ol, blockquote, pre, table { margin: 0 0 1em; }
-        a { color: \(hex(link.light)); text-decoration: none; }
-        a:hover { text-decoration: underline; }
-        code, pre { font-family: \(codeFont)ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.88em; }
-        :not(pre) > code { padding: 0.15em 0.35em; border-radius: 4px; background: rgba(128, 128, 128, 0.14); }
-        pre { padding: 12px 14px; border-radius: 8px; background: rgba(128, 128, 128, 0.10); overflow-x: auto; line-height: 1.45; }
-        blockquote { margin-left: 0; padding: 0 1em; border-left: 3px solid rgba(128, 128, 128, 0.35); color: rgba(0, 0, 0, 0.6); }
-        ul, ol { padding-left: 1.6em; }
-        li > p { margin: 0 0 0.4em; }
-        li.task { list-style: none; margin-left: -1.3em; }
-        li.task input { margin: 0 0.45em 0 0; vertical-align: -1px; }
-        li.task > p:first-of-type { display: inline; }
-        /* Leave a little room above whatever block the preview scrolls to. */
-        [data-line] { scroll-margin-top: 20px; }
-        /* No scroll bar, like the rest of Silica. */
-        ::-webkit-scrollbar { display: none; }
-        hr { border: none; border-top: 1px solid rgba(128, 128, 128, 0.3); margin: 1.6em 0; }
-        table { border-collapse: collapse; display: block; overflow-x: auto; }
-        th, td { border: 1px solid rgba(128, 128, 128, 0.3); padding: 6px 12px; }
-        th { font-weight: 600; background: rgba(128, 128, 128, 0.08); }
-        img { max-width: 100%; }
-        /* CSV: a table as wide as its columns. The page scrolls both ways, under a
-           header row that stays at the top. Borders are drawn per cell, as collapsed
-           ones don't move with a sticky row. */
-        .csv article { width: max-content; padding: 16px 20px 40px; }
-        .csv table { display: table; overflow: visible; border-collapse: separate; border-spacing: 0; font-size: 0.92em; line-height: 1.45; }
-        .csv th, .csv td { border-width: 0 1px 1px 0; padding: 5px 12px; vertical-align: top; }
-        .csv th > div, .csv td > div { max-width: 32em; overflow: hidden; text-overflow: ellipsis; white-space: pre; }
-        .csv tr > :first-child { border-left-width: 1px; }
-        .csv th { position: sticky; top: 0; border-top-width: 1px; text-align: left; background: rgba(244, 244, 245, 0.94); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
-        .csv .num { text-align: right; font-variant-numeric: tabular-nums; }
-        .note { color: rgba(0, 0, 0, 0.5); font-size: 0.92em; }
-        ::selection { background: rgba(64, 120, 242, 0.25); }
-        \(tokens.light)
-        @media (prefers-color-scheme: dark) {
-          body { color: rgba(255, 255, 255, 0.88); }
-          a { color: \(hex(link.dark)); }
-          blockquote { color: rgba(255, 255, 255, 0.6); }
-          .csv th { background: rgba(44, 44, 46, 0.94); }
-          .note { color: rgba(255, 255, 255, 0.5); }
-          \(tokens.dark)
-        }
-        """
+            :root { color-scheme: light dark; }
+            html, body { background: transparent; margin: 0; }
+            body {
+              font: \(size)px/1.6 -apple-system, BlinkMacSystemFont, sans-serif;
+              color: rgba(0, 0, 0, 0.86);
+              -webkit-font-smoothing: antialiased;
+            }
+            article { padding: 24px 32px 48px; }
+            h1, h2, h3, h4, h5, h6 { line-height: 1.25; margin: 1.4em 0 0.6em; font-weight: 650; }
+            h1 { font-size: 1.9em; } h2 { font-size: 1.45em; } h3 { font-size: 1.2em; }
+            h1, h2 { padding-bottom: 0.3em; border-bottom: 1px solid rgba(128, 128, 128, 0.25); }
+            article > :first-child { margin-top: 0; }
+            p, ul, ol, blockquote, pre, table { margin: 0 0 1em; }
+            a { color: \(hex(link.light)); text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            code, pre { font-family: \(codeFont)ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.88em; }
+            :not(pre) > code { padding: 0.15em 0.35em; border-radius: 4px; background: rgba(128, 128, 128, 0.14); }
+            pre { padding: 12px 14px; border-radius: 8px; background: rgba(128, 128, 128, 0.10); overflow-x: auto; line-height: 1.45; }
+            blockquote { margin-left: 0; padding: 0 1em; border-left: 3px solid rgba(128, 128, 128, 0.35); color: rgba(0, 0, 0, 0.6); }
+            ul, ol { padding-left: 1.6em; }
+            li > p { margin: 0 0 0.4em; }
+            li.task { list-style: none; margin-left: -1.3em; }
+            li.task input { margin: 0 0.45em 0 0; vertical-align: -1px; }
+            li.task > p:first-of-type { display: inline; }
+            /* Leave a little room above whatever block the preview scrolls to. */
+            [data-line] { scroll-margin-top: 20px; }
+            /* No scroll bar, like the rest of Silica. */
+            ::-webkit-scrollbar { display: none; }
+            hr { border: none; border-top: 1px solid rgba(128, 128, 128, 0.3); margin: 1.6em 0; }
+            table { border-collapse: collapse; display: block; overflow-x: auto; }
+            th, td { border: 1px solid rgba(128, 128, 128, 0.3); padding: 6px 12px; }
+            th { font-weight: 600; background: rgba(128, 128, 128, 0.08); }
+            img { max-width: 100%; }
+            /* CSV: a table as wide as its columns. The page scrolls both ways, under a
+               header row that stays at the top. Borders are drawn per cell, as collapsed
+               ones don't move with a sticky row. */
+            .csv article { width: max-content; padding: 16px 20px 40px; }
+            .csv table { display: table; overflow: visible; border-collapse: separate; border-spacing: 0; font-size: 0.92em; line-height: 1.45; }
+            .csv th, .csv td { border-width: 0 1px 1px 0; padding: 5px 12px; vertical-align: top; }
+            .csv th > div, .csv td > div { max-width: 32em; overflow: hidden; text-overflow: ellipsis; white-space: pre; }
+            .csv tr > :first-child { border-left-width: 1px; }
+            .csv th { position: sticky; top: 0; border-top-width: 1px; text-align: left; background: rgba(244, 244, 245, 0.94); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+            .csv .num { text-align: right; font-variant-numeric: tabular-nums; }
+            .note { color: rgba(0, 0, 0, 0.5); font-size: 0.92em; }
+            ::selection { background: rgba(64, 120, 242, 0.25); }
+            \(tokens.light)
+            @media (prefers-color-scheme: dark) {
+              body { color: rgba(255, 255, 255, 0.88); }
+              a { color: \(hex(link.dark)); }
+              blockquote { color: rgba(255, 255, 255, 0.6); }
+              .csv th { background: rgba(44, 44, 46, 0.94); }
+              .note { color: rgba(255, 255, 255, 0.5); }
+              \(tokens.dark)
+            }
+            """
     }
 
     /// Runs in Silica's own script world, not the document's.
     private static let script = """
-    window.silica = {
-      blocks() { return Array.from(document.querySelectorAll('[data-line]')); },
-      // A CSV table's header row stays at the top, over the rows scrolled under it.
-      headerHeight() {
-        const header = document.querySelector('.csv thead');
-        return header ? header.getBoundingClientRect().height : 0;
-      },
-      scrollToLine(line) {
-        let target = null;
-        const blocks = this.blocks();
-        for (const el of blocks) { if (+el.dataset.line <= line) target = el; else break; }
-        const header = this.headerHeight();
-        if (!target || target === blocks[0]) window.scrollTo(0, 0);
-        else if (header) window.scrollTo(window.scrollX, window.scrollY + target.getBoundingClientRect().top - header);
-        else target.scrollIntoView({ block: 'start' });
-      },
-      topLine() {
-        // At the top, the source starts from its first line too, not the first block's.
-        if (window.scrollY < 1) return 1;
-        const top = this.headerHeight() + 1;
-        for (const el of this.blocks()) { if (el.getBoundingClientRect().bottom > top) return +el.dataset.line; }
-        return 1;
-      }
-    };
-    """
+        window.silica = {
+          blocks() { return Array.from(document.querySelectorAll('[data-line]')); },
+          // A CSV table's header row stays at the top, over the rows scrolled under it.
+          headerHeight() {
+            const header = document.querySelector('.csv thead');
+            return header ? header.getBoundingClientRect().height : 0;
+          },
+          scrollToLine(line) {
+            let target = null;
+            const blocks = this.blocks();
+            for (const el of blocks) { if (+el.dataset.line <= line) target = el; else break; }
+            const header = this.headerHeight();
+            if (!target || target === blocks[0]) window.scrollTo(0, 0);
+            else if (header) window.scrollTo(window.scrollX, window.scrollY + target.getBoundingClientRect().top - header);
+            else target.scrollIntoView({ block: 'start' });
+          },
+          topLine() {
+            // At the top, the source starts from its first line too, not the first block's.
+            if (window.scrollY < 1) return 1;
+            const top = this.headerHeight() + 1;
+            for (const el of this.blocks()) { if (el.getBoundingClientRect().bottom > top) return +el.dataset.line; }
+            return 1;
+          }
+        };
+        """
 }
 
 /// The preview's web view: printable keys hand control back to the editor.
@@ -388,8 +483,14 @@ final class PreviewWebView: WKWebView {
 
     override func keyDown(with event: NSEvent) {
         let modifiers = event.modifierFlags.intersection([.command, .control])
-        if let onType, modifiers.isEmpty, let characters = event.characters, !characters.isEmpty,
-           characters.unicodeScalars.allSatisfy({ !CharacterSet.whitespacesAndNewlines.contains($0) && !CharacterSet.controlCharacters.contains($0) && $0.value < 0xF700 }) {
+        if let onType, modifiers.isEmpty, let characters = event.characters,
+            !characters.isEmpty,
+            characters.unicodeScalars.allSatisfy({
+                !CharacterSet.whitespacesAndNewlines.contains($0)
+                    && !CharacterSet.controlCharacters.contains($0)
+                    && $0.value < 0xF700
+            })
+        {
             onType(characters)
             return
         }
@@ -400,19 +501,33 @@ final class PreviewWebView: WKWebView {
 
 /// Serves local files (images next to the document) to the preview.
 private final class LocalFileSchemeHandler: NSObject, WKURLSchemeHandler {
-    func webView(_ webView: WKWebView, start urlSchemeTask: any WKURLSchemeTask) {
+    func webView(_ webView: WKWebView, start urlSchemeTask: any WKURLSchemeTask)
+    {
         guard let url = urlSchemeTask.request.url,
-              let data = try? Data(contentsOf: URL(filePath: url.path(percentEncoded: false))) else {
+            let data = try? Data(
+                contentsOf: URL(filePath: url.path(percentEncoded: false))
+            )
+        else {
             urlSchemeTask.didFailWithError(URLError(.fileDoesNotExist))
             return
         }
-        let mimeType = UTType(filenameExtension: url.pathExtension)?.preferredMIMEType ?? "application/octet-stream"
-        urlSchemeTask.didReceive(URLResponse(url: url, mimeType: mimeType, expectedContentLength: data.count, textEncodingName: nil))
+        let mimeType =
+            UTType(filenameExtension: url.pathExtension)?.preferredMIMEType
+            ?? "application/octet-stream"
+        urlSchemeTask.didReceive(
+            URLResponse(
+                url: url,
+                mimeType: mimeType,
+                expectedContentLength: data.count,
+                textEncodingName: nil
+            )
+        )
         urlSchemeTask.didReceive(data)
         urlSchemeTask.didFinish()
     }
 
-    func webView(_ webView: WKWebView, stop urlSchemeTask: any WKURLSchemeTask) {}
+    func webView(_ webView: WKWebView, stop urlSchemeTask: any WKURLSchemeTask)
+    {}
 }
 
 /// Hosts a buffer's preview web view in the editor card.

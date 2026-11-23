@@ -27,9 +27,13 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
     private let onExit: @MainActor () -> Void
 
     /// Reads the shell's output and watches for its exit.
-    private let ioQueue = DispatchQueue(label: "com.hieudinh.Silica.terminal.io")
+    private let ioQueue = DispatchQueue(
+        label: "com.hieudinh.Silica.terminal.io"
+    )
     /// Writes block while the shell isn't reading, so they have their own queue.
-    private let writeQueue = DispatchQueue(label: "com.hieudinh.Silica.terminal.write")
+    private let writeQueue = DispatchQueue(
+        label: "com.hieudinh.Silica.terminal.write"
+    )
     private let readSource: DispatchSourceRead
     private let exitSource: DispatchSourceProcess
 
@@ -52,7 +56,9 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
             let path = String(cString: shell)
             if files.isExecutableFile(atPath: path) { return path }
         }
-        if let path = ProcessInfo.processInfo.environment["SHELL"], files.isExecutableFile(atPath: path) {
+        if let path = ProcessInfo.processInfo.environment["SHELL"],
+            files.isExecutableFile(atPath: path)
+        {
             return path
         }
         return "/bin/zsh"
@@ -78,8 +84,10 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
         let path = strdup(shell)
         let workingDirectory = strdup(directory.path)
         let home = strdup(NSHomeDirectory())
-        let argv: [UnsafeMutablePointer<CChar>?] = arguments.map { strdup($0) } + [nil]
-        let envp: [UnsafeMutablePointer<CChar>?] = environment.map { strdup($0) } + [nil]
+        let argv: [UnsafeMutablePointer<CChar>?] =
+            arguments.map { strdup($0) } + [nil]
+        let envp: [UnsafeMutablePointer<CChar>?] =
+            environment.map { strdup($0) } + [nil]
         defer {
             free(path)
             free(workingDirectory)
@@ -90,7 +98,12 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
         let descriptorLimit = getdtablesize()
         var noSignals = sigset_t()
         sigemptyset(&noSignals)
-        var windowSize = winsize(ws_row: size.rows, ws_col: size.columns, ws_xpixel: size.pixelWidth, ws_ypixel: size.pixelHeight)
+        var windowSize = winsize(
+            ws_row: size.rows,
+            ws_col: size.columns,
+            ws_xpixel: size.pixelWidth,
+            ws_ypixel: size.pixelHeight
+        )
         var master: Int32 = -1
 
         let pid = argv.withUnsafeBufferPointer { argv in
@@ -138,8 +151,15 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
         self.pid = pid
         self.onOutput = onOutput
         self.onExit = onExit
-        readSource = DispatchSource.makeReadSource(fileDescriptor: master, queue: ioQueue)
-        exitSource = DispatchSource.makeProcessSource(identifier: pid, eventMask: .exit, queue: ioQueue)
+        readSource = DispatchSource.makeReadSource(
+            fileDescriptor: master,
+            queue: ioQueue
+        )
+        exitSource = DispatchSource.makeProcessSource(
+            identifier: pid,
+            eventMask: .exit,
+            queue: ioQueue
+        )
 
         readSource.setEventHandler { [weak self] in self?.readAvailable() }
         // The descriptor closes once nothing reads it, and behind any write under way.
@@ -165,13 +185,21 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
                 var offset = 0
                 while offset < bytes.count {
                     guard !closed else { return }
-                    let written = Darwin.write(master, bytes.baseAddress! + offset, bytes.count - offset)
+                    let written = Darwin.write(
+                        master,
+                        bytes.baseAddress! + offset,
+                        bytes.count - offset
+                    )
                     if written > 0 {
                         offset += written
                     } else if written < 0, errno == EAGAIN {
                         // The shell isn't reading: wait for room, but not so long
                         // that closing the terminal has to wait too.
-                        var descriptor = pollfd(fd: master, events: Int16(POLLOUT), revents: 0)
+                        var descriptor = pollfd(
+                            fd: master,
+                            events: Int16(POLLOUT),
+                            revents: 0
+                        )
                         poll(&descriptor, 1, 100)
                     } else if written < 0, errno == EINTR {
                         continue
@@ -187,7 +215,12 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
     func resize(to size: Size) {
         writeQueue.async { [self] in
             guard !closed else { return }
-            var windowSize = winsize(ws_row: size.rows, ws_col: size.columns, ws_xpixel: size.pixelWidth, ws_ypixel: size.pixelHeight)
+            var windowSize = winsize(
+                ws_row: size.rows,
+                ws_col: size.columns,
+                ws_xpixel: size.pixelWidth,
+                ws_ypixel: size.pixelHeight
+            )
             _ = ioctl(master, Self.setWindowSize, &windowSize)
         }
     }
@@ -199,11 +232,16 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
         for process in [tcgetpgrp(master), pid] where process > 0 {
             var info = proc_vnodepathinfo()
             let size = Int32(MemoryLayout<proc_vnodepathinfo>.size)
-            guard proc_pidinfo(process, PROC_PIDVNODEPATHINFO, 0, &info, size) == size else { continue }
+            guard
+                proc_pidinfo(process, PROC_PIDVNODEPATHINFO, 0, &info, size)
+                    == size
+            else { continue }
             let path = withUnsafeBytes(of: &info.pvi_cdir.vip_path) { bytes in
                 String(decoding: bytes.prefix { $0 != 0 }, as: UTF8.self)
             }
-            if !path.isEmpty { return URL(fileURLWithPath: path, isDirectory: true) }
+            if !path.isEmpty {
+                return URL(fileURLWithPath: path, isDirectory: true)
+            }
         }
         return nil
     }
@@ -267,7 +305,9 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
             if !isTerminated {
                 pending.append(chunk)
                 isDrainScheduled = true
-                if pending.count >= Self.highWaterMark, !isReadSuspended, !isClosed, !reachedEnd {
+                if pending.count >= Self.highWaterMark, !isReadSuspended,
+                    !isClosed, !reachedEnd
+                {
                     isReadSuspended = true
                     readSource.suspend()
                 }
@@ -324,22 +364,34 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
 
     private static func environment(shell: String, directory: URL) -> [String] {
         // Without what makes the app load its debugging libraries when run from Xcode.
-        var environment = ProcessInfo.processInfo.environment.filter { name, _ in
-            !name.hasPrefix("DYLD_") && !name.hasPrefix("__XPC_DYLD_") && name != "OS_ACTIVITY_DT_MODE"
+        var environment = ProcessInfo.processInfo.environment.filter {
+            name,
+            _ in
+            !name.hasPrefix("DYLD_") && !name.hasPrefix("__XPC_DYLD_")
+                && name != "OS_ACTIVITY_DT_MODE"
         }
         environment["TERM"] = "xterm-256color"
         environment["COLORTERM"] = "truecolor"
         environment["TERM_PROGRAM"] = "Silica"
-        environment["TERM_PROGRAM_VERSION"] = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        environment["TERM_PROGRAM_VERSION"] =
+            Bundle.main.object(
+                forInfoDictionaryKey: "CFBundleShortVersionString"
+            ) as? String
         environment["SHELL"] = shell
         environment["PWD"] = directory.path
         environment["OLDPWD"] = nil
-        if environment["HOME"] == nil { environment["HOME"] = NSHomeDirectory() }
+        if environment["HOME"] == nil {
+            environment["HOME"] = NSHomeDirectory()
+        }
         if environment["USER"] == nil { environment["USER"] = NSUserName() }
-        if environment["LOGNAME"] == nil { environment["LOGNAME"] = NSUserName() }
+        if environment["LOGNAME"] == nil {
+            environment["LOGNAME"] = NSUserName()
+        }
         // Apps aren't launched with a locale; without one, programs take the
         // terminal for ASCII-only.
-        if environment["LANG"] == nil, environment["LC_ALL"] == nil, environment["LC_CTYPE"] == nil {
+        if environment["LANG"] == nil, environment["LC_ALL"] == nil,
+            environment["LC_CTYPE"] == nil
+        {
             environment["LANG"] = utf8Locale
         }
         return environment.map { "\($0.key)=\($0.value)" }
@@ -348,9 +400,15 @@ nonisolated final class TerminalProcess: @unchecked Sendable {
     /// The user's locale if the system has it in UTF-8, as Terminal sets `LANG`.
     private static var utf8Locale: String {
         let locale = Locale.current
-        if let language = locale.language.languageCode?.identifier, let region = locale.region?.identifier {
+        if let language = locale.language.languageCode?.identifier,
+            let region = locale.region?.identifier
+        {
             let name = "\(language)_\(region).UTF-8"
-            if FileManager.default.fileExists(atPath: "/usr/share/locale/\(name)") { return name }
+            if FileManager.default.fileExists(
+                atPath: "/usr/share/locale/\(name)"
+            ) {
+                return name
+            }
         }
         return "en_US.UTF-8"
     }

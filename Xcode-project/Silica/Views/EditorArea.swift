@@ -23,7 +23,9 @@ struct EditorArea: View {
                 }
                 EditorTabBar(workspace: workspace)
                 Spacer(minLength: 0)
-                if let buffer = workspace.activeBuffer, let format = buffer.previewFormat {
+                if let buffer = workspace.activeBuffer,
+                    let format = buffer.previewFormat
+                {
                     PreviewModeToggle(buffer: buffer, format: format)
                 }
                 // Last, so it stays in place whatever the tab has beside it.
@@ -34,7 +36,9 @@ struct EditorArea: View {
 
             VStack(spacing: 0) {
                 editorCard
-                if workspace.isTerminalVisible, let terminal = workspace.terminal {
+                if workspace.isTerminalVisible,
+                    let terminal = workspace.terminal
+                {
                     // The terminal's card sits under the editor's, the gap between
                     // them being the handle that resizes it.
                     VStack(spacing: 0) {
@@ -45,8 +49,15 @@ struct EditorArea: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
-            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { cardsHeight = $0 }
-            .padding(.leading, workspace.isSidebarVisible ? 0 : WorkspaceLayout.cardInset)
+            .onGeometryChange(for: CGFloat.self) {
+                $0.size.height
+            } action: {
+                cardsHeight = $0
+            }
+            .padding(
+                .leading,
+                workspace.isSidebarVisible ? 0 : WorkspaceLayout.cardInset
+            )
             .padding([.trailing, .bottom], WorkspaceLayout.cardInset)
         }
         .frame(minWidth: WorkspaceLayout.editorMinWidth)
@@ -56,8 +67,15 @@ struct EditorArea: View {
     /// keeps a few lines however small the window gets.
     private var clampedTerminalHeight: CGFloat {
         let range = WorkspaceLayout.terminalHeightRange
-        let most = max(cardsHeight - WorkspaceLayout.cardInset - WorkspaceLayout.minimumEditorHeight, range.lowerBound)
-        return min(max(terminalHeight, range.lowerBound), min(most, range.upperBound))
+        let most = max(
+            cardsHeight - WorkspaceLayout.cardInset
+                - WorkspaceLayout.minimumEditorHeight,
+            range.lowerBound
+        )
+        return min(
+            max(terminalHeight, range.lowerBound),
+            min(most, range.upperBound)
+        )
     }
 
     /// Invisible strip between the two cards that resizes the terminal.
@@ -70,11 +88,22 @@ struct EditorArea: View {
                 DragGesture(minimumDistance: 1, coordinateSpace: .global)
                     .onChanged { value in
                         // From the height on screen, which the window may have limited.
-                        let start = dragStartTerminalHeight ?? clampedTerminalHeight
+                        let start =
+                            dragStartTerminalHeight ?? clampedTerminalHeight
                         dragStartTerminalHeight = start
                         let range = WorkspaceLayout.terminalHeightRange
-                        let most = max(cardsHeight - WorkspaceLayout.cardInset - WorkspaceLayout.minimumEditorHeight, range.lowerBound)
-                        terminalHeight = min(max(start - value.translation.height, range.lowerBound), min(most, range.upperBound))
+                        let most = max(
+                            cardsHeight - WorkspaceLayout.cardInset
+                                - WorkspaceLayout.minimumEditorHeight,
+                            range.lowerBound
+                        )
+                        terminalHeight = min(
+                            max(
+                                start - value.translation.height,
+                                range.lowerBound
+                            ),
+                            min(most, range.upperBound)
+                        )
                     }
                     .onEnded { _ in dragStartTerminalHeight = nil }
             )
@@ -136,14 +165,28 @@ private struct EditorTabBar: View {
                             url: url,
                             isActive: url == workspace.activeTab,
                             isDirty: workspace.buffers[url]?.isDirty == true,
-                            isMissing: workspace.buffers[url]?.isMissingOnDisk == true,
+                            isMissing: workspace.buffers[url]?.isMissingOnDisk
+                                == true,
                             select: { workspace.activate(url) },
-                            close: { withAnimation(.snappy) { workspace.closeTab(url) } },
-                            closeOthers: { withAnimation(.snappy) { workspace.closeOtherTabs(than: url) } },
-                            revealInTree: workspace.contains(url) ? { workspace.revealInTree(url) } : nil,
+                            close: {
+                                withAnimation(.snappy) {
+                                    workspace.closeTab(url)
+                                }
+                            },
+                            closeOthers: {
+                                withAnimation(.snappy) {
+                                    workspace.closeOtherTabs(than: url)
+                                }
+                            },
+                            revealInTree: workspace.contains(url)
+                                ? { workspace.revealInTree(url) } : nil,
                             drag: { handleDrag($0, of: url, proxy: proxy) }
                         )
-                        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { tabWidths[url] = $0 }
+                        .onGeometryChange(for: CGFloat.self) {
+                            $0.size.width
+                        } action: {
+                            tabWidths[url] = $0
+                        }
                         // Room on either side that the row scrolls into view with the tab,
                         // so that it comes to rest clear of the faded ends of the bar. The
                         // row's spacing and padding take the same room back out.
@@ -151,7 +194,10 @@ private struct EditorTabBar: View {
                         .offset(x: offset)
                         .zIndex(isDragged ? 1 : 0)
                         // The dragged tab stays under the pointer; the others slide out of its way.
-                        .animation(isDragged ? nil : Self.reorderAnimation, value: offset)
+                        .animation(
+                            isDragged ? nil : Self.reorderAnimation,
+                            value: offset
+                        )
                         .id(url)
                     }
                 }
@@ -165,18 +211,30 @@ private struct EditorTabBar: View {
             }
             .scrollIndicators(.never)
             .scrollPosition($scrollPosition)
-            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.x } action: { _, offset in
+            .onScrollGeometryChange(for: CGFloat.self) {
+                $0.contentOffset.x
+            } action: { _, offset in
                 scrollOffset = offset
             }
             .onScrollGeometryChange(for: EdgeFades.self) { geometry in
                 let offset = geometry.contentOffset.x
-                let hiddenAfter = geometry.contentSize.width - geometry.containerSize.width - offset
-                return EdgeFades(leading: offset, trailing: hiddenAfter, over: Self.fadeWidth)
+                let hiddenAfter =
+                    geometry.contentSize.width - geometry.containerSize.width
+                    - offset
+                return EdgeFades(
+                    leading: offset,
+                    trailing: hiddenAfter,
+                    over: Self.fadeWidth
+                )
             } action: { _, fades in
                 edgeFades = fades
             }
             .fixedSize(horizontal: false, vertical: true)
-            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { barWidth = $0 }
+            .onGeometryChange(for: CGFloat.self) {
+                $0.size.width
+            } action: {
+                barWidth = $0
+            }
             // A tab scrolled part of the way out fades away rather than ending in a cut.
             .mask { fadeMask }
             .background(WheelScrollsSideways())
@@ -223,27 +281,43 @@ private struct EditorTabBar: View {
         HStack(spacing: 0) {
             LinearGradient(
                 colors: [.black.opacity(1 - edgeFades.leading), .black],
-                startPoint: .leading, endPoint: .trailing
+                startPoint: .leading,
+                endPoint: .trailing
             )
             .frame(width: Self.fadeWidth)
             Color.black
             LinearGradient(
                 colors: [.black, .black.opacity(1 - edgeFades.trailing)],
-                startPoint: .leading, endPoint: .trailing
+                startPoint: .leading,
+                endPoint: .trailing
             )
             .frame(width: Self.fadeWidth)
         }
     }
 
-    private func handleDrag(_ event: TabDragEvent, of url: URL, proxy: ScrollViewProxy) {
+    private func handleDrag(
+        _ event: TabDragEvent,
+        of url: URL,
+        proxy: ScrollViewProxy
+    ) {
         switch event {
         case .moved(let translation, let location):
             if let drag, drag.tab == url {
-                self.drag = TabDrag(tab: url, translation: translation, location: location, startScrollOffset: drag.startScrollOffset)
+                self.drag = TabDrag(
+                    tab: url,
+                    translation: translation,
+                    location: location,
+                    startScrollOffset: drag.startScrollOffset
+                )
             } else {
                 // Dragging a tab brings it forward, as clicking it does.
                 workspace.activate(url)
-                drag = TabDrag(tab: url, translation: translation, location: location, startScrollOffset: scrollOffset)
+                drag = TabDrag(
+                    tab: url,
+                    translation: translation,
+                    location: location,
+                    startScrollOffset: scrollOffset
+                )
             }
         case .dropped(let translation):
             guard var dropped = drag, dropped.tab == url else { return }
@@ -271,15 +345,20 @@ private struct EditorTabBar: View {
     /// The row as it's laid out now, for the drag to be worked out from.
     private var layout: TabBarLayout<URL> {
         TabBarLayout(
-            tabs: workspace.openTabs, widths: tabWidths, spacing: Self.spacing, inset: Self.inset,
-            barWidth: barWidth, scrollOffset: scrollOffset
+            tabs: workspace.openTabs,
+            widths: tabWidths,
+            spacing: Self.spacing,
+            inset: Self.inset,
+            barWidth: barWidth,
+            scrollOffset: scrollOffset
         )
     }
 
     /// Scrolls the row while a tab is held near an end of the bar, so a tab can be
     /// taken past the ones that fit in the bar.
     private func autoscroll(elapsed: TimeInterval) {
-        guard let target = drag?.autoscrollOffset(in: layout, elapsed: elapsed) else { return }
+        guard let target = drag?.autoscrollOffset(in: layout, elapsed: elapsed)
+        else { return }
         scrollPosition.scrollTo(x: target)
         // Ahead of the scroll view reporting it, so the tab doesn't trail the row by a frame.
         scrollOffset = target
@@ -308,11 +387,14 @@ struct WheelScrollsSideways: NSViewRepresentable {
             super.viewDidMoveToWindow()
             stopWatching()
             guard window != nil else { return }
-            monitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
+            monitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) {
+                [weak self] event in
                 // A wheel's events belong to no gesture, unlike a trackpad's.
-                guard let self, event.window === window, event.phase.isEmpty, event.momentumPhase.isEmpty,
-                      event.scrollingDeltaX == 0, event.scrollingDeltaY != 0,
-                      bounds.contains(convert(event.locationInWindow, from: nil)) else { return event }
+                guard let self, event.window === window, event.phase.isEmpty,
+                    event.momentumPhase.isEmpty,
+                    event.scrollingDeltaX == 0, event.scrollingDeltaY != 0,
+                    bounds.contains(convert(event.locationInWindow, from: nil))
+                else { return event }
                 return event.turnedSideways() ?? event
             }
         }
@@ -328,7 +410,9 @@ struct MiddleClickClosesTab<Tab: Hashable>: NSViewRepresentable {
     let tab: (CGFloat) -> Tab?
     let close: (Tab) -> Void
 
-    func makeNSView(context: Context) -> MiddleClickAnchorView { MiddleClickAnchorView() }
+    func makeNSView(context: Context) -> MiddleClickAnchorView {
+        MiddleClickAnchorView()
+    }
 
     func updateNSView(_ nsView: MiddleClickAnchorView, context: Context) {
         let tab = self.tab
@@ -339,7 +423,10 @@ struct MiddleClickClosesTab<Tab: Hashable>: NSViewRepresentable {
         }
     }
 
-    static func dismantleNSView(_ nsView: MiddleClickAnchorView, coordinator: ()) {
+    static func dismantleNSView(
+        _ nsView: MiddleClickAnchorView,
+        coordinator: ()
+    ) {
         nsView.stopWatching()
     }
 }
@@ -357,7 +444,9 @@ final class MiddleClickAnchorView: NSView {
         super.viewDidMoveToWindow()
         stopWatching()
         guard window != nil else { return }
-        monitor = NSEvent.addLocalMonitorForEvents(matching: [.otherMouseDown, .otherMouseUp]) { [weak self] event in
+        monitor = NSEvent.addLocalMonitorForEvents(matching: [
+            .otherMouseDown, .otherMouseUp,
+        ]) { [weak self] event in
             self?.handle(event)
             return event
         }
@@ -373,7 +462,9 @@ final class MiddleClickAnchorView: NSView {
         guard event.buttonNumber == 2 else { return }
         let point = convert(event.locationInWindow, from: nil)
         let isBlocked = window?.attachedSheet != nil || NSApp.modalWindow != nil
-        let hit = event.window === window && !isBlocked && bounds.contains(point) ? tab(point.x) : nil
+        let hit =
+            event.window === window && !isBlocked && bounds.contains(point)
+            ? tab(point.x) : nil
         if event.type == .otherMouseDown {
             pressed = hit
             return
@@ -384,21 +475,29 @@ final class MiddleClickAnchorView: NSView {
     }
 }
 
-private extension NSEvent {
+extension NSEvent {
     /// A copy of a scroll event with its vertical travel made horizontal, as holding
     /// Shift does.
-    func turnedSideways() -> NSEvent? {
+    fileprivate func turnedSideways() -> NSEvent? {
         guard let copy = cgEvent?.copy() else { return nil }
         let lines = copy.getIntegerValueField(.scrollWheelEventDeltaAxis1)
-        let fraction = copy.getDoubleValueField(.scrollWheelEventFixedPtDeltaAxis1)
+        let fraction = copy.getDoubleValueField(
+            .scrollWheelEventFixedPtDeltaAxis1
+        )
         let points = copy.getIntegerValueField(.scrollWheelEventPointDeltaAxis1)
         // Whole lines first: setting them recomputes the finer amounts.
         copy.setIntegerValueField(.scrollWheelEventDeltaAxis1, value: 0)
         copy.setIntegerValueField(.scrollWheelEventDeltaAxis2, value: lines)
         copy.setDoubleValueField(.scrollWheelEventFixedPtDeltaAxis1, value: 0)
-        copy.setDoubleValueField(.scrollWheelEventFixedPtDeltaAxis2, value: fraction)
+        copy.setDoubleValueField(
+            .scrollWheelEventFixedPtDeltaAxis2,
+            value: fraction
+        )
         copy.setIntegerValueField(.scrollWheelEventPointDeltaAxis1, value: 0)
-        copy.setIntegerValueField(.scrollWheelEventPointDeltaAxis2, value: points)
+        copy.setIntegerValueField(
+            .scrollWheelEventPointDeltaAxis2,
+            value: points
+        )
         return NSEvent(cgEvent: copy)
     }
 }
@@ -454,7 +553,9 @@ struct TabDrag<Tab: Hashable> {
     /// Where the dragged tab would land if dropped now, and how far each tab sits from
     /// its place in the row meanwhile: the dragged one follows the pointer, and the
     /// tabs it has passed step aside by its width. The order itself changes on drop.
-    func reorder(in bar: TabBarLayout<Tab>) -> (destination: Int, offsets: [Tab: CGFloat])? {
+    func reorder(in bar: TabBarLayout<Tab>) -> (
+        destination: Int, offsets: [Tab: CGFloat]
+    )? {
         let tabs = bar.tabs
         guard let source = tabs.firstIndex(of: tab) else { return nil }
         let widths = tabs.map { bar.widths[$0] ?? 0 }
@@ -468,24 +569,32 @@ struct TabDrag<Tab: Hashable> {
         // The tab stays in view when the pointer leaves the bar, which scrolls it...
         if bar.barWidth > 0 {
             let leading = bar.scrollOffset - (bar.inset + before)
-            offset = max(min(offset, leading + bar.barWidth - widths[source]), leading)
+            offset = max(
+                min(offset, leading + bar.barWidth - widths[source]),
+                leading
+            )
         }
         // ...and stops at the ends of the row.
         offset = min(max(offset, -before), after)
 
         // A neighbor is passed once the dragged tab's leading or trailing edge crosses its middle.
-        let neighbors = offset > 0 ? Array((source + 1)..<tabs.count) : Array((0..<source).reversed())
+        let neighbors =
+            offset > 0
+            ? Array((source + 1)..<tabs.count) : Array((0..<source).reversed())
         var destination = source
         var passed: CGFloat = 0
         for index in neighbors {
-            guard abs(offset) > passed + bar.spacing + widths[index] / 2 else { break }
+            guard abs(offset) > passed + bar.spacing + widths[index] / 2 else {
+                break
+            }
             passed += strides[index]
             destination = index
         }
 
         var offsets = [tab: offset]
         let slot = destination > source ? -strides[source] : strides[source]
-        for index in min(source, destination)...max(source, destination) where index != source {
+        for index in min(source, destination)...max(source, destination)
+        where index != source {
             offsets[tabs[index]] = slot
         }
         return (destination, offsets)
@@ -494,7 +603,9 @@ struct TabDrag<Tab: Hashable> {
     /// Where the row should be scrolled to after `elapsed` seconds of the tab being
     /// held near an end of the bar, faster the further the pointer goes; `nil` when
     /// the row has no need to move.
-    func autoscrollOffset(in bar: TabBarLayout<Tab>, elapsed: TimeInterval) -> CGFloat? {
+    func autoscrollOffset(in bar: TabBarLayout<Tab>, elapsed: TimeInterval)
+        -> CGFloat?
+    {
         guard bar.barWidth > 0 else { return nil }
         // How close to an end of the bar the pointer starts scrolling it.
         let zone: CGFloat = 40
@@ -510,8 +621,13 @@ struct TabDrag<Tab: Hashable> {
         }
         let speed = min(max(depth, -2 * zone), 2 * zone) * rate
 
-        let rowWidth = bar.tabs.reduce(2 * bar.inset - bar.spacing) { $0 + (bar.widths[$1] ?? 0) + bar.spacing }
-        let target = min(max(bar.scrollOffset + speed * CGFloat(elapsed), 0), max(rowWidth - bar.barWidth, 0))
+        let rowWidth = bar.tabs.reduce(2 * bar.inset - bar.spacing) {
+            $0 + (bar.widths[$1] ?? 0) + bar.spacing
+        }
+        let target = min(
+            max(bar.scrollOffset + speed * CGFloat(elapsed), 0),
+            max(rowWidth - bar.barWidth, 0)
+        )
         return target == bar.scrollOffset ? nil : target
     }
 }
@@ -548,7 +664,13 @@ private struct EditorTab: View {
                 .font(.callout)
                 .lineLimit(1)
                 .strikethrough(isMissing)
-                .help(isMissing ? String(localized: "Deleted from disk. Save to write it again.") : "")
+                .help(
+                    isMissing
+                        ? String(
+                            localized:
+                                "Deleted from disk. Save to write it again."
+                        ) : ""
+                )
 
             ZStack {
                 if isDirty && !isHovering {
@@ -582,7 +704,14 @@ private struct EditorTab: View {
         .gesture(
             DragGesture(minimumDistance: 1, coordinateSpace: EditorTabBar.space)
                 .updating($isDragging) { _, state, _ in state = true }
-                .onChanged { drag(.moved(translation: $0.translation.width, location: $0.location.x)) }
+                .onChanged {
+                    drag(
+                        .moved(
+                            translation: $0.translation.width,
+                            location: $0.location.x
+                        )
+                    )
+                }
                 .onEnded { drag(.dropped(translation: $0.translation.width)) }
         )
         // A cancelled gesture resets its state without calling `onEnded`.
@@ -624,8 +753,12 @@ private struct BufferView: View {
                             .padding(4)
                             .padding(
                                 .trailing,
-                                (EditorSettings.shared.showsMinimap ? MinimapView.width : 0)
-                                    + NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
+                                (EditorSettings.shared.showsMinimap
+                                    ? MinimapView.width : 0)
+                                    + NSScroller.scrollerWidth(
+                                        for: .regular,
+                                        scrollerStyle: .legacy
+                                    )
                             )
                     }
             }
@@ -637,13 +770,17 @@ private struct BufferView: View {
             ContentUnavailableView(
                 "Binary File",
                 systemImage: "doc.questionmark",
-                description: Text("“\(buffer.name)” isn’t a text file, so it can’t be shown in the editor.")
+                description: Text(
+                    "“\(buffer.name)” isn’t a text file, so it can’t be shown in the editor."
+                )
             )
         case .tooLarge(let size):
             ContentUnavailableView(
                 "File Too Large",
                 systemImage: "externaldrive.badge.exclamationmark",
-                description: Text("“\(buffer.name)” is \(size.formatted(.byteCount(style: .file))), which is too large to open here.")
+                description: Text(
+                    "“\(buffer.name)” is \(size.formatted(.byteCount(style: .file))), which is too large to open here."
+                )
             )
         case .unreadable(let message):
             ContentUnavailableView(
@@ -670,10 +807,16 @@ private struct StatusBar: View {
             }
             .buttonStyle(.plain)
             .help("Go to Line (⌘L)")
-            Text(buffer.indentation.usesTabs ? String(localized: "Tabs") : String(localized: "Spaces: \(buffer.indentation.width)"))
+            Text(
+                buffer.indentation.usesTabs
+                    ? String(localized: "Tabs")
+                    : String(localized: "Spaces: \(buffer.indentation.width)")
+            )
             Text(buffer.encodingName)
             Text(buffer.lineEndingName)
-            Text(buffer.language?.displayName ?? String(localized: "Plain Text"))
+            Text(
+                buffer.language?.displayName ?? String(localized: "Plain Text")
+            )
         }
         .font(.caption)
         .monospacedDigit()
@@ -688,7 +831,9 @@ private struct StatusBar: View {
     private var position: String {
         let cursor = buffer.cursor
         let base = String(localized: "Ln \(cursor.line), Col \(cursor.column)")
-        return cursor.selectedLength > 0 ? base + String(localized: " (\(cursor.selectedLength) selected)") : base
+        return cursor.selectedLength > 0
+            ? base + String(localized: " (\(cursor.selectedLength) selected)")
+            : base
     }
 }
 
@@ -702,16 +847,29 @@ private struct PreviewModeToggle: View {
 
     var body: some View {
         HStack(spacing: 2) {
-            option("doc.plaintext", help: "Show \(format.sourceName) (⇧⌘V)", isOn: !buffer.isShowingPreview) {
+            option(
+                "doc.plaintext",
+                help: "Show \(format.sourceName) (⇧⌘V)",
+                isOn: !buffer.isShowingPreview
+            ) {
                 buffer.setShowingPreview(false)
             }
-            option("eye", help: "Show Preview (⇧⌘V)", isOn: buffer.isShowingPreview) {
+            option(
+                "eye",
+                help: "Show Preview (⇧⌘V)",
+                isOn: buffer.isShowingPreview
+            ) {
                 buffer.setShowingPreview(true)
             }
         }
     }
 
-    private func option(_ symbol: String, help: LocalizedStringKey, isOn: Bool, action: @escaping () -> Void) -> some View {
+    private func option(
+        _ symbol: String,
+        help: LocalizedStringKey,
+        isOn: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
                 .frame(width: 26, height: 22)
@@ -745,7 +903,10 @@ private struct ImagePreview: View {
                 .scaledToFit()
                 .background(Checkerboard())
                 .overlay(Rectangle().strokeBorder(.separator, lineWidth: 1))
-                .frame(maxWidth: file.pixelSize.width, maxHeight: file.pixelSize.height)
+                .frame(
+                    maxWidth: file.pixelSize.width,
+                    maxHeight: file.pixelSize.height
+                )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             Text(details)
@@ -757,8 +918,12 @@ private struct ImagePreview: View {
     }
 
     private var details: String {
-        let size = "\(Int(file.pixelSize.width)) × \(Int(file.pixelSize.height)) px"
-        return [size, file.format, file.byteCount.formatted(.byteCount(style: .file))].joined(separator: "  ·  ")
+        let size =
+            "\(Int(file.pixelSize.width)) × \(Int(file.pixelSize.height)) px"
+        return [
+            size, file.format,
+            file.byteCount.formatted(.byteCount(style: .file)),
+        ].joined(separator: "  ·  ")
     }
 }
 
@@ -768,9 +933,18 @@ private struct Checkerboard: View {
         Canvas { context, size in
             let square: CGFloat = 8
             for row in 0..<Int((size.height / square).rounded(.up)) {
-                for column in 0..<Int((size.width / square).rounded(.up)) where (row + column).isMultiple(of: 2) {
-                    let rect = CGRect(x: CGFloat(column) * square, y: CGFloat(row) * square, width: square, height: square)
-                    context.fill(Path(rect), with: .color(.primary.opacity(0.06)))
+                for column in 0..<Int((size.width / square).rounded(.up))
+                where (row + column).isMultiple(of: 2) {
+                    let rect = CGRect(
+                        x: CGFloat(column) * square,
+                        y: CGFloat(row) * square,
+                        width: square,
+                        height: square
+                    )
+                    context.fill(
+                        Path(rect),
+                        with: .color(.primary.opacity(0.06))
+                    )
                 }
             }
         }
@@ -809,8 +983,12 @@ private struct PDFPreview: View {
     }
 
     private var details: String {
-        let pages = file.pageCount == 1 ? String(localized: "1 page") : String(localized: "\(file.pageCount) pages")
-        return [pages, file.byteCount.formatted(.byteCount(style: .file))].joined(separator: "  ·  ")
+        let pages =
+            file.pageCount == 1
+            ? String(localized: "1 page")
+            : String(localized: "\(file.pageCount) pages")
+        return [pages, file.byteCount.formatted(.byteCount(style: .file))]
+            .joined(separator: "  ·  ")
     }
 }
 
@@ -827,7 +1005,12 @@ private struct PDFPasswordPrompt: View {
         ContentUnavailableView {
             Label("Password Required", systemImage: "lock.doc")
         } description: {
-            Text(wasRejected ? String(localized: "That password didn’t unlock “\(name)”.") : String(localized: "“\(name)” is password-protected."))
+            Text(
+                wasRejected
+                    ? String(
+                        localized: "That password didn’t unlock “\(name)”."
+                    ) : String(localized: "“\(name)” is password-protected.")
+            )
         } actions: {
             HStack {
                 SecureField("Password", text: $password)
@@ -900,7 +1083,8 @@ private struct EmptyEditorView: View {
                 }
             }
 
-            Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
+            Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8)
+            {
                 if workspace.isStandalone {
                     shortcut("New File", keys: "⌘N")
                 } else {
@@ -916,7 +1100,9 @@ private struct EmptyEditorView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private func shortcut(_ title: LocalizedStringKey, keys: String) -> some View {
+    private func shortcut(_ title: LocalizedStringKey, keys: String)
+        -> some View
+    {
         GridRow {
             Text(title)
                 .foregroundStyle(.secondary)

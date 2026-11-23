@@ -12,7 +12,9 @@ struct RecentProject: Codable, Identifiable, Hashable {
     var displayPath: String {
         let home = RealHome.path
         if path == home { return "~" }
-        if path.hasPrefix(home + "/") { return "~" + path.dropFirst(home.count) }
+        if path.hasPrefix(home + "/") {
+            return "~" + path.dropFirst(home.count)
+        }
         return path
     }
 }
@@ -21,7 +23,9 @@ enum RecentProjectError: LocalizedError {
     case notFound
 
     var errorDescription: String? {
-        String(localized: "This project is no longer in the recent projects list.")
+        String(
+            localized: "This project is no longer in the recent projects list."
+        )
     }
 }
 
@@ -52,7 +56,8 @@ final class RecentProjectsStore {
             includingResourceValuesForKeys: nil,
             relativeTo: nil
         )
-        let path = url.standardizedFileURL.path(percentEncoded: false).trimmingTrailingSlash
+        let path = url.standardizedFileURL.path(percentEncoded: false)
+            .trimmingTrailingSlash
 
         var entry: RecentProject
         if let index = projects.firstIndex(where: { $0.path == path }) {
@@ -61,7 +66,13 @@ final class RecentProjectsStore {
             entry.name = url.lastPathComponent
             entry.lastOpened = .now
         } else {
-            entry = RecentProject(id: UUID(), name: url.lastPathComponent, path: path, bookmark: bookmark, lastOpened: .now)
+            entry = RecentProject(
+                id: UUID(),
+                name: url.lastPathComponent,
+                path: path,
+                bookmark: bookmark,
+                lastOpened: .now
+            )
         }
         projects.insert(entry, at: 0)
         if projects.count > maxCount {
@@ -72,7 +83,9 @@ final class RecentProjectsStore {
     }
 
     func markOpened(_ id: RecentProject.ID) {
-        guard let index = projects.firstIndex(where: { $0.id == id }) else { return }
+        guard let index = projects.firstIndex(where: { $0.id == id }) else {
+            return
+        }
         var entry = projects.remove(at: index)
         entry.lastOpened = .now
         projects.insert(entry, at: 0)
@@ -105,9 +118,15 @@ final class RecentProjectsStore {
         if isStale {
             let accessing = url.startAccessingSecurityScopedResource()
             defer { if accessing { url.stopAccessingSecurityScopedResource() } }
-            if let fresh = try? url.bookmarkData(options: [.withSecurityScope], includingResourceValuesForKeys: nil, relativeTo: nil) {
+            if let fresh = try? url.bookmarkData(
+                options: [.withSecurityScope],
+                includingResourceValuesForKeys: nil,
+                relativeTo: nil
+            ) {
                 projects[index].bookmark = fresh
-                projects[index].path = url.standardizedFileURL.path(percentEncoded: false).trimmingTrailingSlash
+                projects[index].path =
+                    url.standardizedFileURL.path(percentEncoded: false)
+                    .trimmingTrailingSlash
                 projects[index].name = url.lastPathComponent
                 save()
             }
@@ -117,7 +136,10 @@ final class RecentProjectsStore {
 
     private func load() {
         guard let data = UserDefaults.standard.data(forKey: defaultsKey),
-              let decoded = try? JSONDecoder().decode([RecentProject].self, from: data)
+            let decoded = try? JSONDecoder().decode(
+                [RecentProject].self,
+                from: data
+            )
         else { return }
         projects = decoded
     }

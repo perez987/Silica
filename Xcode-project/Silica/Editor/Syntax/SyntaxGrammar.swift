@@ -64,15 +64,23 @@ nonisolated struct SyntaxGrammar: SyntaxTokenizer, @unchecked Sendable {
             Rule(
                 kind: pattern.kind,
                 // Grammars are static and covered by tests; a bad pattern is a programmer error.
-                regex: try! NSRegularExpression(pattern: pattern.pattern, options: options),
+                regex: try! NSRegularExpression(
+                    pattern: pattern.pattern,
+                    options: options
+                ),
                 group: pattern.group
             )
         }
         if spans.isEmpty {
             spanRegex = nil
         } else {
-            let combined = spans.map { "(\($0.pattern))" }.joined(separator: "|")
-            spanRegex = try! NSRegularExpression(pattern: combined, options: options)
+            let combined = spans.map { "(\($0.pattern))" }.joined(
+                separator: "|"
+            )
+            spanRegex = try! NSRegularExpression(
+                pattern: combined,
+                options: options
+            )
         }
         spanKinds = spans.map(\.kind)
     }
@@ -84,14 +92,22 @@ nonisolated struct SyntaxGrammar: SyntaxTokenizer, @unchecked Sendable {
         var tokens: [SyntaxToken] = []
 
         for rule in rules {
-            rule.regex.enumerateMatches(in: string, range: fullRange) { match, _, _ in
-                guard let range = match?.range(at: rule.group), range.location != NSNotFound, range.length > 0 else { return }
+            rule.regex.enumerateMatches(in: string, range: fullRange) {
+                match,
+                _,
+                _ in
+                guard let range = match?.range(at: rule.group),
+                    range.location != NSNotFound, range.length > 0
+                else { return }
                 tokens.append(SyntaxToken(range: range, kind: rule.kind))
             }
         }
 
         if let spanRegex {
-            spanRegex.enumerateMatches(in: string, range: fullRange) { match, _, _ in
+            spanRegex.enumerateMatches(in: string, range: fullRange) {
+                match,
+                _,
+                _ in
                 guard let match else { return }
                 for (index, kind) in spanKinds.enumerated() {
                     let range = match.range(at: index + 1)

@@ -40,13 +40,33 @@ final class MinimapView: NSView {
         clipView.postsBoundsChangedNotifications = true
         textView.postsFrameChangedNotifications = true
         let center = NotificationCenter.default
-        center.addObserver(self, selector: #selector(setNeedsRedraw), name: NSView.boundsDidChangeNotification, object: clipView)
-        center.addObserver(self, selector: #selector(setNeedsRedraw), name: NSView.frameDidChangeNotification, object: textView)
+        center.addObserver(
+            self,
+            selector: #selector(setNeedsRedraw),
+            name: NSView.boundsDidChangeNotification,
+            object: clipView
+        )
+        center.addObserver(
+            self,
+            selector: #selector(setNeedsRedraw),
+            name: NSView.frameDidChangeNotification,
+            object: textView
+        )
         // Edits and highlighting (attribute-only changes) alike.
         if let storage = textView.textStorage {
-            center.addObserver(self, selector: #selector(setNeedsRedraw), name: NSTextStorage.didProcessEditingNotification, object: storage)
+            center.addObserver(
+                self,
+                selector: #selector(setNeedsRedraw),
+                name: NSTextStorage.didProcessEditingNotification,
+                object: storage
+            )
         }
-        center.addObserver(self, selector: #selector(setNeedsRedraw), name: NSTextView.didChangeSelectionNotification, object: textView)
+        center.addObserver(
+            self,
+            selector: #selector(setNeedsRedraw),
+            name: NSTextView.didChangeSelectionNotification,
+            object: textView
+        )
     }
 
     @available(*, unavailable)
@@ -89,25 +109,42 @@ final class MinimapView: NSView {
         // at the top it starts at 0, at the bottom the last row meets the bottom edge.
         let fraction = controller.scrollFraction
         let maxOffset = max(0, contentHeight - bounds.height)
-        let offset = min(max(sliderTop - fraction * (bounds.height - sliderHeight), 0), maxOffset)
+        let offset = min(
+            max(sliderTop - fraction * (bounds.height - sliderHeight), 0),
+            maxOffset
+        )
 
-        let slider = NSRect(x: 0, y: sliderTop - offset, width: bounds.width, height: sliderHeight)
+        let slider = NSRect(
+            x: 0,
+            y: sliderTop - offset,
+            width: bounds.width,
+            height: sliderHeight
+        )
         let track = max(0, min(contentHeight, bounds.height) - sliderHeight)
-        return Metrics(lineCount: lineCount, offset: offset, slider: slider, track: track)
+        return Metrics(
+            lineCount: lineCount,
+            offset: offset,
+            slider: slider,
+            track: track
+        )
     }
 
     // MARK: Drawing
 
     override func draw(_ dirtyRect: NSRect) {
         guard let controller, let storage = controller.textView.textStorage,
-              let context = NSGraphicsContext.current?.cgContext,
-              let metrics = metrics() else { return }
+            let context = NSGraphicsContext.current?.cgContext,
+            let metrics = metrics()
+        else { return }
 
         drawSelection(in: context, metrics: metrics)
         drawText(storage, in: context, metrics: metrics, dirtyRect: dirtyRect)
 
-        let sliderOpacity: CGFloat = drag != nil ? 0.16 : isHovering ? 0.11 : 0.07
-        context.setFillColor(NSColor.labelColor.withAlphaComponent(sliderOpacity).cgColor)
+        let sliderOpacity: CGFloat =
+            drag != nil ? 0.16 : isHovering ? 0.11 : 0.07
+        context.setFillColor(
+            NSColor.labelColor.withAlphaComponent(sliderOpacity).cgColor
+        )
         context.fill(metrics.slider)
 
         drawDivider(in: context)
@@ -117,7 +154,9 @@ final class MinimapView: NSView {
     private func drawDivider(in context: CGContext) {
         let scale = window?.backingScaleFactor ?? 2
         context.setFillColor(SyntaxTheme.indentGuide.cgColor)
-        context.fill(NSRect(x: 0, y: 0, width: 1 / scale, height: bounds.height))
+        context.fill(
+            NSRect(x: 0, y: 0, width: 1 / scale, height: bounds.height)
+        )
     }
 
     /// Rows holding the selection get a faint accent wash; the cursor's row a stronger one.
@@ -128,35 +167,58 @@ final class MinimapView: NSView {
         let cursorLine = controller.lineNumber(at: selection.location)
 
         if selection.length > 0 {
-            let lastLine = controller.lineNumber(at: max(selection.location, NSMaxRange(selection) - 1))
+            let lastLine = controller.lineNumber(
+                at: max(selection.location, NSMaxRange(selection) - 1)
+            )
             let top = CGFloat(cursorLine - 1) * rowHeight - metrics.offset
             let height = CGFloat(lastLine - cursorLine + 1) * rowHeight
             context.setFillColor(accent.withAlphaComponent(0.25).cgColor)
-            context.fill(NSRect(x: 0, y: top, width: bounds.width, height: height))
+            context.fill(
+                NSRect(x: 0, y: top, width: bounds.width, height: height)
+            )
         } else {
             let top = CGFloat(cursorLine - 1) * rowHeight - metrics.offset
             context.setFillColor(accent.withAlphaComponent(0.6).cgColor)
-            context.fill(NSRect(x: 0, y: top, width: bounds.width, height: rowHeight))
+            context.fill(
+                NSRect(x: 0, y: top, width: bounds.width, height: rowHeight)
+            )
         }
     }
 
     /// One block per non-blank character, merged into runs of the same color.
-    private func drawText(_ storage: NSTextStorage, in context: CGContext, metrics: Metrics, dirtyRect: NSRect) {
+    private func drawText(
+        _ storage: NSTextStorage,
+        in context: CGContext,
+        metrics: Metrics,
+        dirtyRect: NSRect
+    ) {
         guard let controller, storage.length > 0 else { return }
         let text = storage.string as NSString
         let length = text.length
         let tabWidth = EditorTextView.tabWidth
-        let maxColumns = Int((bounds.width - 2 * horizontalPadding) / columnWidth)
+        let maxColumns = Int(
+            (bounds.width - 2 * horizontalPadding) / columnWidth
+        )
 
-        let firstRow = max(0, Int((metrics.offset + dirtyRect.minY) / rowHeight))
-        let lastRow = min(metrics.lineCount - 1, Int((metrics.offset + dirtyRect.maxY) / rowHeight))
+        let firstRow = max(
+            0,
+            Int((metrics.offset + dirtyRect.minY) / rowHeight)
+        )
+        let lastRow = min(
+            metrics.lineCount - 1,
+            Int((metrics.offset + dirtyRect.maxY) / rowHeight)
+        )
         guard firstRow <= lastRow else { return }
 
         var rects: [CGRect] = []
         var rectsColor: NSColor?
         func flush() {
             guard let rectsColor, !rects.isEmpty else { return }
-            context.setFillColor(rectsColor.withAlphaComponent(rectsColor.alphaComponent * textOpacity).cgColor)
+            context.setFillColor(
+                rectsColor.withAlphaComponent(
+                    rectsColor.alphaComponent * textOpacity
+                ).cgColor
+            )
             context.fill(rects)
             rects.removeAll(keepingCapacity: true)
         }
@@ -168,10 +230,15 @@ final class MinimapView: NSView {
         for row in firstRow...lastRow {
             let start = controller.offset(ofLine: row + 1)
             guard start < length else { break }
-            let y = CGFloat(row) * rowHeight - metrics.offset + (rowHeight - blockHeight) / 2
+            let y =
+                CGFloat(row) * rowHeight - metrics.offset
+                + (rowHeight - blockHeight) / 2
             // A row never shows more characters than it has columns (tabs only widen it).
             let count = min(maxColumns, length - start)
-            text.getCharacters(&buffer, range: NSRange(location: start, length: count))
+            text.getCharacters(
+                &buffer,
+                range: NSRange(location: start, length: count)
+            )
 
             var column = 0
             var spanStart = -1
@@ -183,10 +250,14 @@ final class MinimapView: NSView {
                     flush()
                     rectsColor = spanColor
                 }
-                rects.append(CGRect(
-                    x: horizontalPadding + CGFloat(spanStart) * columnWidth, y: y,
-                    width: CGFloat(end - spanStart) * columnWidth, height: blockHeight
-                ))
+                rects.append(
+                    CGRect(
+                        x: horizontalPadding + CGFloat(spanStart) * columnWidth,
+                        y: y,
+                        width: CGFloat(end - spanStart) * columnWidth,
+                        height: blockHeight
+                    )
+                )
                 spanStart = -1
             }
 
@@ -196,12 +267,19 @@ final class MinimapView: NSView {
                 if column >= maxColumns { break }
                 if character == 0x20 || character == 0x09 {
                     endSpan(at: column)
-                    column = character == 0x09 ? column + tabWidth - column % tabWidth : column + 1
+                    column =
+                        character == 0x09
+                        ? column + tabWidth - column % tabWidth : column + 1
                     continue
                 }
                 let index = start + i
                 if !NSLocationInRange(index, colorRun) {
-                    color = storage.attribute(.foregroundColor, at: index, effectiveRange: &colorRun) as? NSColor ?? SyntaxTheme.plain
+                    color =
+                        storage.attribute(
+                            .foregroundColor,
+                            at: index,
+                            effectiveRange: &colorRun
+                        ) as? NSColor ?? SyntaxTheme.plain
                 }
                 if spanStart >= 0, color !== spanColor {
                     endSpan(at: column)
@@ -222,11 +300,15 @@ final class MinimapView: NSView {
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         trackingAreas.forEach(removeTrackingArea)
-        addTrackingArea(NSTrackingArea(
-            rect: .zero,
-            options: [.mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect],
-            owner: self
-        ))
+        addTrackingArea(
+            NSTrackingArea(
+                rect: .zero,
+                options: [
+                    .mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect,
+                ],
+                owner: self
+            )
+        )
     }
 
     override func mouseEntered(with event: NSEvent) { isHovering = true }
@@ -248,10 +330,14 @@ final class MinimapView: NSView {
     }
 
     override func mouseDragged(with event: NSEvent) {
-        guard let controller, let drag, let metrics = metrics(), metrics.track > 0 else { return }
+        guard let controller, let drag, let metrics = metrics(),
+            metrics.track > 0
+        else { return }
         let point = convert(event.locationInWindow, from: nil)
         let delta = point.y - drag.startMouseY
-        controller.setScrollY(drag.startScrollY + delta * controller.maxScrollY / metrics.track)
+        controller.setScrollY(
+            drag.startScrollY + delta * controller.maxScrollY / metrics.track
+        )
     }
 
     override func mouseUp(with event: NSEvent) {

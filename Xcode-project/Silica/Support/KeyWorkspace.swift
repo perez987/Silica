@@ -27,25 +27,35 @@ final class KeyWorkspace: ObservableObject {
     /// ⌘ + letter items (⇧⌘V lost to Paste, ⇧⌘F to Find).
     func installKeyboardShortcuts() {
         guard keyMonitor == nil else { return }
-        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            let flags = event.modifierFlags.intersection([.command, .shift, .option, .control])
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) {
+            [weak self] event in
+            let flags = event.modifierFlags.intersection([
+                .command, .shift, .option, .control,
+            ])
             // Quick Open's field takes focus a moment after the panel appears; keys typed
             // in between (⌘L then a quick "100") belong in the query, not the editor.
             if let workspace = self?.current, workspace.isQuickOpenVisible,
-               !flags.contains(.command), !flags.contains(.control),
-               !((event.window?.firstResponder as? NSTextView)?.isFieldEditor ?? false),
-               let characters = event.characters, !characters.isEmpty,
-               characters.unicodeScalars.allSatisfy({ $0.value >= 0x20 && $0.value != 0x7F && $0.value < 0xF700 }) {
+                !flags.contains(.command), !flags.contains(.control),
+                !((event.window?.firstResponder as? NSTextView)?.isFieldEditor
+                    ?? false),
+                let characters = event.characters, !characters.isEmpty,
+                characters.unicodeScalars.allSatisfy({
+                    $0.value >= 0x20 && $0.value != 0x7F && $0.value < 0xF700
+                })
+            {
                 workspace.quickOpen.query += characters
                 return nil
             }
             guard flags == [.command, .shift], let workspace = self?.current,
-                  // Not while a sheet or alert is up.
-                  event.window?.attachedSheet == nil, NSApp.modalWindow == nil,
-                  let key = event.charactersIgnoringModifiers?.lowercased() else { return event }
+                // Not while a sheet or alert is up.
+                event.window?.attachedSheet == nil, NSApp.modalWindow == nil,
+                let key = event.charactersIgnoringModifiers?.lowercased()
+            else { return event }
             switch key {
             case "v":
-                guard let buffer = workspace.activeBuffer, buffer.previewFormat != nil else { return event }
+                guard let buffer = workspace.activeBuffer,
+                    buffer.previewFormat != nil
+                else { return event }
                 buffer.togglePreview()
             case "f":
                 guard !workspace.isStandalone else { return event }
@@ -54,7 +64,9 @@ final class KeyWorkspace: ObservableObject {
                 guard !workspace.isStandalone else { return event }
                 workspace.showExplorer()
             case "s":
-                guard workspace.activeBuffer?.textController != nil else { return event }
+                guard workspace.activeBuffer?.textController != nil else {
+                    return event
+                }
                 workspace.saveActiveAs()
             case "w":
                 event.window?.performClose(nil)
@@ -119,22 +131,32 @@ struct KeyWindowTracker: NSViewRepresentable {
             guard let window else { return }
             workspace?.window = window
             NotificationCenter.default.addObserver(
-                self, selector: #selector(windowDidBecomeKey),
-                name: NSWindow.didBecomeKeyNotification, object: window
+                self,
+                selector: #selector(windowDidBecomeKey),
+                name: NSWindow.didBecomeKeyNotification,
+                object: window
             )
             NotificationCenter.default.addObserver(
-                self, selector: #selector(windowDidResignKey),
-                name: NSWindow.didResignKeyNotification, object: window
+                self,
+                selector: #selector(windowDidResignKey),
+                name: NSWindow.didResignKeyNotification,
+                object: window
             )
-            if let workspace { KeyWorkspace.shared.scheduleUpdate(for: workspace) }
+            if let workspace {
+                KeyWorkspace.shared.scheduleUpdate(for: workspace)
+            }
         }
 
         @objc private func windowDidBecomeKey() {
-            if let workspace { KeyWorkspace.shared.scheduleUpdate(for: workspace) }
+            if let workspace {
+                KeyWorkspace.shared.scheduleUpdate(for: workspace)
+            }
         }
 
         @objc private func windowDidResignKey() {
-            if let workspace { KeyWorkspace.shared.scheduleUpdate(for: workspace) }
+            if let workspace {
+                KeyWorkspace.shared.scheduleUpdate(for: workspace)
+            }
         }
     }
 }

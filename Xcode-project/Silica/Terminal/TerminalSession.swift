@@ -37,7 +37,8 @@ final class TerminalSession {
     @ObservationIgnored private var process: TerminalProcess?
     @ObservationIgnored private var didAttemptStart = false
     @ObservationIgnored private var size: TerminalProcess.Size?
-    @ObservationIgnored private var cellPixelSize: (width: UInt32, height: UInt32) = (0, 0)
+    @ObservationIgnored private var cellPixelSize:
+        (width: UInt32, height: UInt32) = (0, 0)
     @ObservationIgnored private var isDark = false
     @ObservationIgnored private var renderHoldTimeout: DispatchWorkItem?
 
@@ -57,7 +58,9 @@ final class TerminalSession {
 
         var terminal: GhosttyTerminal?
         // A placeholder size: the real one comes with the view's first layout.
-        guard ghostty_terminal_new(nil, &terminal, 80, 24) == GHOSTTY_SUCCESS, terminal != nil else { return nil }
+        guard ghostty_terminal_new(nil, &terminal, 80, 24) == GHOSTTY_SUCCESS,
+            terminal != nil
+        else { return nil }
         self.terminal = terminal
         configure()
         view = TerminalView(session: self)
@@ -70,33 +73,80 @@ final class TerminalSession {
     private func configure() {
         // The callbacks get the session back through this pointer. It isn't
         // retained: the session frees the terminal before it goes away.
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_USERDATA, Unmanaged.passUnretained(self).toOpaque())
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_USERDATA,
+            Unmanaged.passUnretained(self).toOpaque()
+        )
         let writePty: GhosttyTerminalWritePtyFn = terminalWritePty
         let bell: GhosttyTerminalBellFn = terminalBell
         let titleChanged: GhosttyTerminalTitleChangedFn = terminalTitleChanged
         let size: GhosttyTerminalSizeFn = terminalSize
         let colorScheme: GhosttyTerminalColorSchemeFn = terminalColorScheme
         let renderHold: GhosttyTerminalRenderHoldFn = terminalRenderHold
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_WRITE_PTY, unsafeBitCast(writePty, to: UnsafeRawPointer.self))
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_BELL, unsafeBitCast(bell, to: UnsafeRawPointer.self))
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_TITLE_CHANGED, unsafeBitCast(titleChanged, to: UnsafeRawPointer.self))
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_SIZE, unsafeBitCast(size, to: UnsafeRawPointer.self))
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_COLOR_SCHEME, unsafeBitCast(colorScheme, to: UnsafeRawPointer.self))
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_RENDER_HOLD, unsafeBitCast(renderHold, to: UnsafeRawPointer.self))
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_WRITE_PTY,
+            unsafeBitCast(writePty, to: UnsafeRawPointer.self)
+        )
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_BELL,
+            unsafeBitCast(bell, to: UnsafeRawPointer.self)
+        )
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_TITLE_CHANGED,
+            unsafeBitCast(titleChanged, to: UnsafeRawPointer.self)
+        )
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_SIZE,
+            unsafeBitCast(size, to: UnsafeRawPointer.self)
+        )
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_COLOR_SCHEME,
+            unsafeBitCast(colorScheme, to: UnsafeRawPointer.self)
+        )
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_RENDER_HOLD,
+            unsafeBitCast(renderHold, to: UnsafeRawPointer.self)
+        )
 
         // The emulator's own default keeps next to no history.
         var lines = Self.scrollbackLines
         var bytes = Self.scrollbackBytes
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_SCROLLBACK_MAX_LINES, &lines)
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_SCROLLBACK_MAX_BYTES, &bytes)
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_SCROLLBACK_MAX_LINES,
+            &lines
+        )
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_SCROLLBACK_MAX_BYTES,
+            &bytes
+        )
 
         // An emoji with a skin tone or a flag takes one cell pair, as it's drawn,
         // rather than one per code point. Ghostty itself runs with this on.
-        var graphemes = GhosttyTerminalModeConfig(mode: ghostty_mode_new(TerminalMode.graphemeCluster, false), value: true)
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_MODE_DEFAULT, &graphemes)
+        var graphemes = GhosttyTerminalModeConfig(
+            mode: ghostty_mode_new(TerminalMode.graphemeCluster, false),
+            value: true
+        )
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_MODE_DEFAULT,
+            &graphemes
+        )
 
         var blinks = true
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_DEFAULT_CURSOR_BLINK, &blinks)
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_DEFAULT_CURSOR_BLINK,
+            &blinks
+        )
     }
 
     /// Ends the shell and frees the emulator. The view draws nothing afterwards.
@@ -118,8 +168,12 @@ final class TerminalSession {
     /// instead of redrawing its prompt a moment later.
     func resize(columns: Int, rows: Int, cellPixelSize: CGSize) {
         guard let terminal else { return }
-        let columns = UInt16(clamping: columns), rows = UInt16(clamping: rows)
-        let cell = (width: UInt32(max(cellPixelSize.width, 1)), height: UInt32(max(cellPixelSize.height, 1)))
+        let columns = UInt16(clamping: columns)
+        let rows = UInt16(clamping: rows)
+        let cell = (
+            width: UInt32(max(cellPixelSize.width, 1)),
+            height: UInt32(max(cellPixelSize.height, 1))
+        )
         let size = TerminalProcess.Size(
             columns: columns,
             rows: rows,
@@ -130,7 +184,13 @@ final class TerminalSession {
         self.size = size
         self.cellPixelSize = cell
         // Ends a render hold, if there was one.
-        ghostty_terminal_resize(terminal, columns, rows, cell.width, cell.height)
+        ghostty_terminal_resize(
+            terminal,
+            columns,
+            rows,
+            cell.width,
+            cell.height
+        )
         if let process {
             process.resize(to: size)
         } else if !didAttemptStart {
@@ -148,7 +208,12 @@ final class TerminalSession {
             onExit: { [weak self] in self?.onExit?() }
         )
         if process == nil {
-            receive(Data((String(localized: "Silica couldn’t start \(shell).") + "\r\n").utf8))
+            receive(
+                Data(
+                    (String(localized: "Silica couldn’t start \(shell).")
+                        + "\r\n").utf8
+                )
+            )
         }
     }
 
@@ -157,19 +222,30 @@ final class TerminalSession {
     private func receive(_ data: Data) {
         guard let terminal else { return }
         data.withUnsafeBytes { bytes in
-            ghostty_terminal_vt_write(terminal, bytes.bindMemory(to: UInt8.self).baseAddress, bytes.count)
+            ghostty_terminal_vt_write(
+                terminal,
+                bytes.bindMemory(to: UInt8.self).baseAddress,
+                bytes.count
+            )
         }
         view.terminalDidChange()
     }
 
     fileprivate func titleDidChange() {
         var title = GhosttyString()
-        guard ghostty_terminal_get(terminal, GHOSTTY_TERMINAL_DATA_TITLE, &title) == GHOSTTY_SUCCESS else { return }
+        guard
+            ghostty_terminal_get(terminal, GHOSTTY_TERMINAL_DATA_TITLE, &title)
+                == GHOSTTY_SUCCESS
+        else { return }
         // The bytes are the terminal's, good until its next change.
-        self.title = String(decoding: UnsafeBufferPointer(start: title.ptr, count: title.len), as: UTF8.self)
+        self.title = String(
+            decoding: UnsafeBufferPointer(start: title.ptr, count: title.len),
+            as: UTF8.self
+        )
     }
 
-    fileprivate func reportSize(to report: inout GhosttySizeReportSize) -> Bool {
+    fileprivate func reportSize(to report: inout GhosttySizeReportSize) -> Bool
+    {
         guard let size else { return false }
         report.rows = size.rows
         report.columns = size.columns
@@ -190,9 +266,14 @@ final class TerminalSession {
             // there until the frame is done.
             view.terminalDidChange()
             isRenderHeld = true
-            let timeout = DispatchWorkItem { [weak self] in self?.endOverdueRenderHold() }
+            let timeout = DispatchWorkItem { [weak self] in
+                self?.endOverdueRenderHold()
+            }
             renderHoldTimeout = timeout
-            DispatchQueue.main.asyncAfter(deadline: .now() + Self.renderHoldLimit, execute: timeout)
+            DispatchQueue.main.asyncAfter(
+                deadline: .now() + Self.renderHoldLimit,
+                execute: timeout
+            )
         } else {
             isRenderHeld = false
             view?.terminalDidChange()
@@ -210,7 +291,9 @@ final class TerminalSession {
     /// The folders a path that a program printed may be relative to: the one the
     /// program is working in, then the project's.
     var workingDirectories: [URL] {
-        guard let current = process?.currentDirectory, current.standardizedFileURL != directory.standardizedFileURL else {
+        guard let current = process?.currentDirectory,
+            current.standardizedFileURL != directory.standardizedFileURL
+        else {
             return [directory]
         }
         return [current, directory]
@@ -229,26 +312,44 @@ final class TerminalSession {
 
     /// Whether a mode the running program can switch (DECSET) is on.
     func isModeSet(_ mode: UInt16) -> Bool {
-        var config = GhosttyTerminalModeConfig(mode: ghostty_mode_new(mode, false), value: false)
-        return ghostty_terminal_get(terminal, GHOSTTY_TERMINAL_DATA_MODE, &config) == GHOSTTY_SUCCESS && config.value
+        var config = GhosttyTerminalModeConfig(
+            mode: ghostty_mode_new(mode, false),
+            value: false
+        )
+        return ghostty_terminal_get(
+            terminal,
+            GHOSTTY_TERMINAL_DATA_MODE,
+            &config
+        ) == GHOSTTY_SUCCESS && config.value
     }
 
     private func setMode(_ mode: UInt16, _ value: Bool) {
-        var config = GhosttyTerminalModeConfig(mode: ghostty_mode_new(mode, false), value: value)
+        var config = GhosttyTerminalModeConfig(
+            mode: ghostty_mode_new(mode, false),
+            value: value
+        )
         ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_MODE, &config)
     }
 
     /// A full-screen program (an editor, a pager) has the screen, which has no history.
     var isAlternateScreen: Bool {
         var screen = GHOSTTY_TERMINAL_SCREEN_PRIMARY
-        ghostty_terminal_get(terminal, GHOSTTY_TERMINAL_DATA_ACTIVE_SCREEN, &screen)
+        ghostty_terminal_get(
+            terminal,
+            GHOSTTY_TERMINAL_DATA_ACTIVE_SCREEN,
+            &screen
+        )
         return screen == GHOSTTY_TERMINAL_SCREEN_ALTERNATE
     }
 
     /// The running program wants the mouse for itself.
     var tracksMouse: Bool {
         var tracking = false
-        ghostty_terminal_get(terminal, GHOSTTY_TERMINAL_DATA_MOUSE_TRACKING, &tracking)
+        ghostty_terminal_get(
+            terminal,
+            GHOSTTY_TERMINAL_DATA_MOUSE_TRACKING,
+            &tracking
+        )
         return tracking
     }
 
@@ -256,10 +357,17 @@ final class TerminalSession {
     func setFocused(_ focused: Bool) {
         guard focused != isFocused else { return }
         isFocused = focused
-        guard terminal != nil, isModeSet(TerminalMode.focusEvents) else { return }
+        guard terminal != nil, isModeSet(TerminalMode.focusEvents) else {
+            return
+        }
         var bytes = [UInt8](repeating: 0, count: 8)
         var count = 0
-        if ghostty_focus_encode(focused ? GHOSTTY_FOCUS_GAINED : GHOSTTY_FOCUS_LOST, &bytes, bytes.count, &count) == GHOSTTY_SUCCESS {
+        if ghostty_focus_encode(
+            focused ? GHOSTTY_FOCUS_GAINED : GHOSTTY_FOCUS_LOST,
+            &bytes,
+            bytes.count,
+            &count
+        ) == GHOSTTY_SUCCESS {
             send(Data(bytes.prefix(count)))
         }
     }
@@ -269,7 +377,13 @@ final class TerminalSession {
     /// Scrolls through the history: negative is up, towards older lines.
     func scroll(byRows rows: Int) {
         guard let terminal, rows != 0 else { return }
-        ghostty_terminal_scroll_viewport(terminal, GhosttyTerminalScrollViewport(tag: GHOSTTY_TERMINAL_SCROLL_VIEWPORT_DELTA, value: .init(delta: rows)))
+        ghostty_terminal_scroll_viewport(
+            terminal,
+            GhosttyTerminalScrollViewport(
+                tag: GHOSTTY_TERMINAL_SCROLL_VIEWPORT_DELTA,
+                value: .init(delta: rows)
+            )
+        )
         view.terminalDidChange()
     }
 
@@ -277,9 +391,19 @@ final class TerminalSession {
     func scrollToBottom() {
         guard let terminal else { return }
         var isAtBottom = true
-        ghostty_terminal_get(terminal, GHOSTTY_TERMINAL_DATA_VIEWPORT_ACTIVE, &isAtBottom)
+        ghostty_terminal_get(
+            terminal,
+            GHOSTTY_TERMINAL_DATA_VIEWPORT_ACTIVE,
+            &isAtBottom
+        )
         guard !isAtBottom else { return }
-        ghostty_terminal_scroll_viewport(terminal, GhosttyTerminalScrollViewport(tag: GHOSTTY_TERMINAL_SCROLL_VIEWPORT_BOTTOM, value: .init()))
+        ghostty_terminal_scroll_viewport(
+            terminal,
+            GhosttyTerminalScrollViewport(
+                tag: GHOSTTY_TERMINAL_SCROLL_VIEWPORT_BOTTOM,
+                value: .init()
+            )
+        )
         view.terminalDidChange()
     }
 
@@ -295,40 +419,69 @@ final class TerminalSession {
 
     var hasSelection: Bool {
         var selection = GhosttySelection()
-        return ghostty_terminal_get(terminal, GHOSTTY_TERMINAL_DATA_SELECTION, &selection) == GHOSTTY_SUCCESS
+        return ghostty_terminal_get(
+            terminal,
+            GHOSTTY_TERMINAL_DATA_SELECTION,
+            &selection
+        ) == GHOSTTY_SUCCESS
     }
 
     /// The selected text, with wrapped lines joined back together.
     var selectedText: String? {
         guard let terminal else { return nil }
         var selection = GhosttySelection()
-        guard ghostty_terminal_get(terminal, GHOSTTY_TERMINAL_DATA_SELECTION, &selection) == GHOSTTY_SUCCESS else { return nil }
+        guard
+            ghostty_terminal_get(
+                terminal,
+                GHOSTTY_TERMINAL_DATA_SELECTION,
+                &selection
+            ) == GHOSTTY_SUCCESS
+        else { return nil }
         var formatter: GhosttyFormatter?
-        guard ghostty_formatter_terminal_new(nil, &formatter, terminal) == GHOSTTY_SUCCESS else { return nil }
+        guard
+            ghostty_formatter_terminal_new(nil, &formatter, terminal)
+                == GHOSTTY_SUCCESS
+        else { return nil }
         defer { ghostty_formatter_free(formatter) }
         var format = GHOSTTY_FORMATTER_FORMAT_PLAIN
         var yes = true
         ghostty_formatter_set(formatter, GHOSTTY_FORMATTER_OPT_EMIT, &format)
         ghostty_formatter_set(formatter, GHOSTTY_FORMATTER_OPT_UNWRAP, &yes)
         ghostty_formatter_set(formatter, GHOSTTY_FORMATTER_OPT_TRIM, &yes)
-        ghostty_formatter_set(formatter, GHOSTTY_FORMATTER_OPT_SELECTION, &selection)
+        ghostty_formatter_set(
+            formatter,
+            GHOSTTY_FORMATTER_OPT_SELECTION,
+            &selection
+        )
         var bytes: UnsafeMutablePointer<UInt8>?
         var count = 0
-        guard ghostty_formatter_format_alloc(formatter, nil, &bytes, &count) == GHOSTTY_SUCCESS else { return nil }
+        guard
+            ghostty_formatter_format_alloc(formatter, nil, &bytes, &count)
+                == GHOSTTY_SUCCESS
+        else { return nil }
         defer { ghostty_free(nil, bytes, count) }
-        let text = String(decoding: UnsafeBufferPointer(start: bytes, count: count), as: UTF8.self)
+        let text = String(
+            decoding: UnsafeBufferPointer(start: bytes, count: count),
+            as: UTF8.self
+        )
         return text.isEmpty ? nil : text
     }
 
     func select(_ selection: GhosttySelection) {
         var selection = selection
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_SELECTION, &selection)
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_SELECTION,
+            &selection
+        )
         view.terminalDidChange()
     }
 
     func selectAll() {
         var selection = GhosttySelection()
-        guard ghostty_terminal_select_all(terminal, &selection) == GHOSTTY_SUCCESS else { return }
+        guard
+            ghostty_terminal_select_all(terminal, &selection) == GHOSTTY_SUCCESS
+        else { return }
         select(selection)
     }
 
@@ -363,7 +516,10 @@ final class TerminalSession {
                 paste.source = GHOSTTY_PASTE_SOURCE_CLIPBOARD
                 paste.mimes = UnsafePointer(mimes.baseAddress)
                 paste.mimes_len = mimes.count
-                paste.reader = GhosttyMimeReader(read: terminalPasteRead, userdata: Unmanaged.passUnretained(source).toOpaque())
+                paste.reader = GhosttyMimeReader(
+                    read: terminalPasteRead,
+                    userdata: Unmanaged.passUnretained(source).toOpaque()
+                )
                 paste.allow_unsafe = allowingUnsafe
                 var didPaste = false
                 // The encoded paste comes back through the write callback.
@@ -385,16 +541,31 @@ final class TerminalSession {
         guard let terminal else { return }
         self.isDark = isDark
         let colors = isDark ? TerminalColors.dark : TerminalColors.light
-        var palette = [GhosttyColorRgb](repeating: GhosttyColorRgb(), count: 256)
+        var palette = [GhosttyColorRgb](
+            repeating: GhosttyColorRgb(),
+            count: 256
+        )
         ghostty_color_palette_default(&palette)
         for (index, hex) in colors.ansi.enumerated() {
             palette[index] = GhosttyColorRgb(hex: hex)
         }
         var foreground = GhosttyColorRgb(hex: colors.foreground)
         var background = GhosttyColorRgb(hex: colors.background)
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_COLOR_PALETTE, &palette)
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_COLOR_FOREGROUND, &foreground)
-        ghostty_terminal_set(terminal, GHOSTTY_TERMINAL_OPT_COLOR_BACKGROUND, &background)
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_COLOR_PALETTE,
+            &palette
+        )
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_COLOR_FOREGROUND,
+            &foreground
+        )
+        ghostty_terminal_set(
+            terminal,
+            GHOSTTY_TERMINAL_OPT_COLOR_BACKGROUND,
+            &background
+        )
     }
 }
 
@@ -429,8 +600,10 @@ nonisolated struct TerminalColors {
         foreground: 0x1F2328,
         background: 0xFFFFFF,
         ansi: [
-            0x24292F, 0xCF222E, 0x116329, 0x7D4E00, 0x0969DA, 0x8250DF, 0x1B7C83, 0x6E7781,
-            0x57606A, 0xA40E26, 0x1A7F37, 0x633C01, 0x218BFF, 0xA475F9, 0x3192AA, 0x8C959F,
+            0x24292F, 0xCF222E, 0x116329, 0x7D4E00, 0x0969DA, 0x8250DF,
+            0x1B7C83, 0x6E7781,
+            0x57606A, 0xA40E26, 0x1A7F37, 0x633C01, 0x218BFF, 0xA475F9,
+            0x3192AA, 0x8C959F,
         ]
     )
 
@@ -438,15 +611,21 @@ nonisolated struct TerminalColors {
         foreground: 0xE6EDF3,
         background: 0x1E1E1E,
         ansi: [
-            0x484F58, 0xFF7B72, 0x3FB950, 0xD29922, 0x58A6FF, 0xBC8CFF, 0x39C5CF, 0xB1BAC4,
-            0x6E7681, 0xFFA198, 0x56D364, 0xE3B341, 0x79C0FF, 0xD2A8FF, 0x56D4DD, 0xFFFFFF,
+            0x484F58, 0xFF7B72, 0x3FB950, 0xD29922, 0x58A6FF, 0xBC8CFF,
+            0x39C5CF, 0xB1BAC4,
+            0x6E7681, 0xFFA198, 0x56D364, 0xE3B341, 0x79C0FF, 0xD2A8FF,
+            0x56D4DD, 0xFFFFFF,
         ]
     )
 }
 
 nonisolated extension GhosttyColorRgb {
     init(hex: UInt32) {
-        self.init(r: UInt8((hex >> 16) & 0xFF), g: UInt8((hex >> 8) & 0xFF), b: UInt8(hex & 0xFF))
+        self.init(
+            r: UInt8((hex >> 16) & 0xFF),
+            g: UInt8((hex >> 8) & 0xFF),
+            b: UInt8(hex & 0xFF)
+        )
     }
 }
 
@@ -465,32 +644,57 @@ private nonisolated final class PasteSource {
 // `ghostty_terminal_paste`, so on the main thread, with the session as `userdata`.
 // They can't write to the terminal again from in here.
 
-private nonisolated func session(_ userdata: UnsafeMutableRawPointer?) -> TerminalSession? {
-    userdata.map { Unmanaged<TerminalSession>.fromOpaque($0).takeUnretainedValue() }
+private nonisolated func session(_ userdata: UnsafeMutableRawPointer?)
+    -> TerminalSession?
+{
+    userdata.map {
+        Unmanaged<TerminalSession>.fromOpaque($0).takeUnretainedValue()
+    }
 }
 
 /// The terminal's own replies to a program's questions (where's the cursor, what
 /// kind of terminal is this), and encoded pastes.
-private nonisolated func terminalWritePty(_ terminal: GhosttyTerminal?, _ userdata: UnsafeMutableRawPointer?, _ bytes: UnsafePointer<UInt8>?, _ count: Int) {
+private nonisolated func terminalWritePty(
+    _ terminal: GhosttyTerminal?,
+    _ userdata: UnsafeMutableRawPointer?,
+    _ bytes: UnsafePointer<UInt8>?,
+    _ count: Int
+) {
     guard let bytes, count > 0 else { return }
     let data = Data(bytes: bytes, count: count)
     MainActor.assumeIsolated { session(userdata)?.send(data) }
 }
 
-private nonisolated func terminalBell(_ terminal: GhosttyTerminal?, _ userdata: UnsafeMutableRawPointer?) {
+private nonisolated func terminalBell(
+    _ terminal: GhosttyTerminal?,
+    _ userdata: UnsafeMutableRawPointer?
+) {
     MainActor.assumeIsolated { NSSound.beep() }
 }
 
-private nonisolated func terminalTitleChanged(_ terminal: GhosttyTerminal?, _ userdata: UnsafeMutableRawPointer?) {
+private nonisolated func terminalTitleChanged(
+    _ terminal: GhosttyTerminal?,
+    _ userdata: UnsafeMutableRawPointer?
+) {
     MainActor.assumeIsolated { session(userdata)?.titleDidChange() }
 }
 
-private nonisolated func terminalSize(_ terminal: GhosttyTerminal?, _ userdata: UnsafeMutableRawPointer?, _ size: UnsafeMutablePointer<GhosttySizeReportSize>?) -> Bool {
+private nonisolated func terminalSize(
+    _ terminal: GhosttyTerminal?,
+    _ userdata: UnsafeMutableRawPointer?,
+    _ size: UnsafeMutablePointer<GhosttySizeReportSize>?
+) -> Bool {
     guard let size else { return false }
-    return MainActor.assumeIsolated { session(userdata)?.reportSize(to: &size.pointee) ?? false }
+    return MainActor.assumeIsolated {
+        session(userdata)?.reportSize(to: &size.pointee) ?? false
+    }
 }
 
-private nonisolated func terminalColorScheme(_ terminal: GhosttyTerminal?, _ userdata: UnsafeMutableRawPointer?, _ scheme: UnsafeMutablePointer<GhosttyColorScheme>?) -> Bool {
+private nonisolated func terminalColorScheme(
+    _ terminal: GhosttyTerminal?,
+    _ userdata: UnsafeMutableRawPointer?,
+    _ scheme: UnsafeMutablePointer<GhosttyColorScheme>?
+) -> Bool {
     guard let scheme else { return false }
     return MainActor.assumeIsolated {
         guard let session = session(userdata) else { return false }
@@ -499,12 +703,23 @@ private nonisolated func terminalColorScheme(_ terminal: GhosttyTerminal?, _ use
     }
 }
 
-private nonisolated func terminalRenderHold(_ terminal: GhosttyTerminal?, _ userdata: UnsafeMutableRawPointer?, _ held: Bool) {
+private nonisolated func terminalRenderHold(
+    _ terminal: GhosttyTerminal?,
+    _ userdata: UnsafeMutableRawPointer?,
+    _ held: Bool
+) {
     MainActor.assumeIsolated { session(userdata)?.setRenderHeld(held) }
 }
 
-private nonisolated func terminalPasteRead(_ userdata: UnsafeMutableRawPointer?, _ mime: GhosttyString, _ writer: GhosttyWriter) -> Bool {
+private nonisolated func terminalPasteRead(
+    _ userdata: UnsafeMutableRawPointer?,
+    _ mime: GhosttyString,
+    _ writer: GhosttyWriter
+) -> Bool {
     guard let userdata else { return false }
-    let source = Unmanaged<PasteSource>.fromOpaque(userdata).takeUnretainedValue()
-    return source.bytes.withUnsafeBufferPointer { writer.write(writer.userdata, $0.baseAddress, $0.count) }
+    let source = Unmanaged<PasteSource>.fromOpaque(userdata)
+        .takeUnretainedValue()
+    return source.bytes.withUnsafeBufferPointer {
+        writer.write(writer.userdata, $0.baseAddress, $0.count)
+    }
 }

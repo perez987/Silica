@@ -20,12 +20,17 @@ struct WorkspaceWindow: View {
                 WorkspaceView(workspace: workspace)
             } else if let errorMessage {
                 ContentUnavailableView {
-                    Label("Can’t Open Project", systemImage: "exclamationmark.triangle")
+                    Label(
+                        "Can’t Open Project",
+                        systemImage: "exclamationmark.triangle"
+                    )
                 } description: {
                     Text(errorMessage)
                 } actions: {
-                    Button("Open Project…") { ProjectOpener(openWindow: openWindow).chooseAndOpen() }
-                        .glassButtonStyle(prominent: true)
+                    Button("Open Project…") {
+                        ProjectOpener(openWindow: openWindow).chooseAndOpen()
+                    }
+                    .glassButtonStyle(prominent: true)
                 }
                 .frame(minWidth: 500, minHeight: 360)
             } else {
@@ -48,7 +53,9 @@ struct WorkspaceWindow: View {
                 workspace.window = nil
                 KeyWorkspace.shared.scheduleUpdate(for: workspace)
             }
-            if let workspace { ExternalOpener.shared.workspaceDidClose(workspace) }
+            if let workspace {
+                ExternalOpener.shared.workspaceDidClose(workspace)
+            }
             workspace?.close()
             Self.openCount -= 1
             if Self.openCount == 0 {
@@ -74,7 +81,10 @@ struct WorkspaceWindow: View {
             let url = try RecentProjectsStore.shared.resolveURL(for: projectID)
             let workspace = WorkspaceModel(rootURL: url)
             self.workspace = workspace
-            ExternalOpener.shared.workspaceDidOpen(workspace, projectID: projectID)
+            ExternalOpener.shared.workspaceDidOpen(
+                workspace,
+                projectID: projectID
+            )
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -94,7 +104,8 @@ enum WorkspaceLayout {
     static let sidebarWidthRange: ClosedRange<Double> = 220...480
     static let editorMinWidth: CGFloat = 420
     /// Fits the narrowest sidebar beside the narrowest editor.
-    static let windowMinWidth: CGFloat = sidebarWidthRange.lowerBound + editorMinWidth
+    static let windowMinWidth: CGFloat =
+        sidebarWidthRange.lowerBound + editorMinWidth
     static let terminalHeightRange: ClosedRange<Double> = 100...1200
     /// What the terminal card leaves of the editor card at the least.
     static let minimumEditorHeight: CGFloat = 120
@@ -105,7 +116,7 @@ struct WorkspaceView: View {
     @AppStorage("sidebarWidth") private var sidebarWidth: Double = 260
     @State private var dragStartWidth: Double?
     @State private var windowWidth: CGFloat = 0
-    
+
     var body: some View {
         HStack(spacing: 0) {
             if workspace.isSidebarVisible {
@@ -123,29 +134,47 @@ struct WorkspaceView: View {
             }
         }
         .frame(minWidth: WorkspaceLayout.windowMinWidth, minHeight: 400)
-         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { windowWidth = $0 }
+        .onGeometryChange(for: CGFloat.self) {
+            $0.size.width
+        } action: {
+            windowWidth = $0
+        }
         .navigationTitle(workspace.name)
         .background(KeyWindowTracker(workspace: workspace))
-        .background(UnsavedChangesGuard(workspace: workspace, hasUnsavedChanges: workspace.hasUnsavedChanges))
-        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+        .background(
+            UnsavedChangesGuard(
+                workspace: workspace,
+                hasUnsavedChanges: workspace.hasUnsavedChanges
+            )
+        )
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: NSApplication.didBecomeActiveNotification
+            )
+        ) { _ in
             workspace.refresh()
         }
     }
-    
+
     /// The widest the sidebar can be while the editor keeps its minimum width.
     private var widestSidebar: Double {
         let range = WorkspaceLayout.sidebarWidthRange
         // Before the first layout pass there's no width to go by.
         guard windowWidth > 0 else { return range.upperBound }
-        return min(max(windowWidth - WorkspaceLayout.editorMinWidth, range.lowerBound), range.upperBound)
+        return min(
+            max(windowWidth - WorkspaceLayout.editorMinWidth, range.lowerBound),
+            range.upperBound
+        )
     }
 
     /// The stored width, narrowed while the window is too small for it. The stored
     /// width is kept, so the sidebar grows back when the window does.
     private var shownSidebarWidth: Double {
-        min(max(sidebarWidth, WorkspaceLayout.sidebarWidthRange.lowerBound), widestSidebar)
+        min(
+            max(sidebarWidth, WorkspaceLayout.sidebarWidthRange.lowerBound),
+            widestSidebar
+        )
     }
-
 
     /// Invisible strip on the sidebar's trailing edge that resizes it.
     private var resizeHandle: some View {
@@ -160,7 +189,13 @@ struct WorkspaceView: View {
                         let start = dragStartWidth ?? shownSidebarWidth
                         dragStartWidth = start
                         let proposed = start + value.translation.width
-                        sidebarWidth = min(max(proposed, WorkspaceLayout.sidebarWidthRange.lowerBound), widestSidebar)
+                        sidebarWidth = min(
+                            max(
+                                proposed,
+                                WorkspaceLayout.sidebarWidthRange.lowerBound
+                            ),
+                            widestSidebar
+                        )
                     }
                     .onEnded { _ in dragStartWidth = nil }
             )
@@ -178,7 +213,11 @@ struct SidebarToggleButton: View {
         }
         .buttonStyle(.titleBarIcon)
         .foregroundStyle(.secondary)
-        .help(workspace.isSidebarVisible ? String(localized: "Hide Sidebar (⌃⌘S)") : String(localized: "Show Sidebar (⌃⌘S)"))
+        .help(
+            workspace.isSidebarVisible
+                ? String(localized: "Hide Sidebar (⌃⌘S)")
+                : String(localized: "Show Sidebar (⌃⌘S)")
+        )
     }
 }
 
@@ -195,7 +234,9 @@ struct TitleBarIconButtonStyle: ButtonStyle {
             configuration.label
                 .frame(width: 26, height: 22)
                 .background(
-                    Color.primary.opacity(configuration.isPressed ? 0.14 : isHovering ? 0.08 : 0),
+                    Color.primary.opacity(
+                        configuration.isPressed ? 0.14 : isHovering ? 0.08 : 0
+                    ),
                     in: .rect(cornerRadius: 6, style: .continuous)
                 )
                 .contentShape(.rect(cornerRadius: 6, style: .continuous))
@@ -206,5 +247,7 @@ struct TitleBarIconButtonStyle: ButtonStyle {
 }
 
 extension ButtonStyle where Self == TitleBarIconButtonStyle {
-    static var titleBarIcon: TitleBarIconButtonStyle { TitleBarIconButtonStyle() }
+    static var titleBarIcon: TitleBarIconButtonStyle {
+        TitleBarIconButtonStyle()
+    }
 }

@@ -31,7 +31,8 @@ enum ProjectSessionStore {
         var sessions = all()
         sessions[path(of: root)] = session
         if sessions.count > limit {
-            let oldest = sessions.sorted { $0.value.savedAt < $1.value.savedAt }.prefix(sessions.count - limit)
+            let oldest = sessions.sorted { $0.value.savedAt < $1.value.savedAt }
+                .prefix(sessions.count - limit)
             for (path, _) in oldest { sessions[path] = nil }
         }
         if let data = try? JSONEncoder().encode(sessions) {
@@ -40,8 +41,14 @@ enum ProjectSessionStore {
     }
 
     private static func all() -> [String: ProjectSession] {
-        guard let data = UserDefaults.standard.data(forKey: key) else { return [:] }
-        return (try? JSONDecoder().decode([String: ProjectSession].self, from: data)) ?? [:]
+        guard let data = UserDefaults.standard.data(forKey: key) else {
+            return [:]
+        }
+        return
+            (try? JSONDecoder().decode(
+                [String: ProjectSession].self,
+                from: data
+            )) ?? [:]
     }
 
     private static func path(of root: URL) -> String {

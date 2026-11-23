@@ -15,7 +15,8 @@ struct AppCommands: Commands {
     /// "Show Markdown" or "Show CSV" while the preview is up, to go back to the source.
     private var previewToggleTitle: String {
         guard let buffer = workspace?.activeBuffer, buffer.isShowingPreview,
-              let format = buffer.previewFormat else { return String(localized: "Show Preview") }
+            let format = buffer.previewFormat
+        else { return String(localized: "Show Preview") }
         return String(localized: "Show \(format.sourceName)")
     }
 
@@ -26,7 +27,10 @@ struct AppCommands: Commands {
         // About lives in Settings, next to the open-source licenses.
         CommandGroup(replacing: .appInfo) {
             Button("About Silica") {
-                UserDefaults.standard.set(SettingsView.Pane.about.rawValue, forKey: SettingsView.paneKey)
+                UserDefaults.standard.set(
+                    SettingsView.Pane.about.rawValue,
+                    forKey: SettingsView.paneKey
+                )
                 openWindow(id: WindowID.settings)
             }
 
@@ -52,8 +56,10 @@ struct AppCommands: Commands {
             }
             .keyboardShortcut("n")
 
-            Button("New File in Project…") { workspace?.beginNewItem(isDirectory: false) }
-                .disabled(workspace?.isStandalone != false)
+            Button("New File in Project…") {
+                workspace?.beginNewItem(isDirectory: false)
+            }
+            .disabled(workspace?.isStandalone != false)
 
             Button("New Folder") { workspace?.beginNewItem(isDirectory: true) }
                 .keyboardShortcut("n", modifiers: [.command, .option])
@@ -91,7 +97,10 @@ struct AppCommands: Commands {
         CommandGroup(replacing: .saveItem) {
             Button("Save") { workspace?.saveActive() }
                 .keyboardShortcut("s")
-                .disabled(workspace?.activeBuffer.map { $0.isDirty || $0.isUntitled } != true)
+                .disabled(
+                    workspace?.activeBuffer.map { $0.isDirty || $0.isUntitled }
+                        != true
+                )
 
             Button("Save As…") { workspace?.saveActiveAs() }
                 .keyboardShortcut("s", modifiers: [.command, .shift])
@@ -119,7 +128,11 @@ struct AppCommands: Commands {
         }
 
         CommandGroup(replacing: .sidebar) {
-            Button(workspace?.isSidebarVisible == false ? String(localized: "Show Sidebar") : String(localized: "Hide Sidebar")) {
+            Button(
+                workspace?.isSidebarVisible == false
+                    ? String(localized: "Show Sidebar")
+                    : String(localized: "Hide Sidebar")
+            ) {
                 workspace?.toggleSidebar()
             }
             .keyboardShortcut("s", modifiers: [.control, .command])
@@ -185,16 +198,22 @@ struct AppCommands: Commands {
         CommandGroup(after: .sidebar) {
             Divider()
 
-            Toggle("Word Wrap", isOn: Binding(
-                get: { settings.wrapsLines },
-                set: { settings.wrapsLines = $0 }
-            ))
+            Toggle(
+                "Word Wrap",
+                isOn: Binding(
+                    get: { settings.wrapsLines },
+                    set: { settings.wrapsLines = $0 }
+                )
+            )
             .keyboardShortcut("z", modifiers: .option)
 
-            Toggle("Minimap", isOn: Binding(
-                get: { settings.showsMinimap },
-                set: { settings.showsMinimap = $0 }
-            ))
+            Toggle(
+                "Minimap",
+                isOn: Binding(
+                    get: { settings.showsMinimap },
+                    set: { settings.showsMinimap = $0 }
+                )
+            )
 
             Divider()
 
@@ -221,21 +240,61 @@ struct AppCommands: Commands {
 
             Divider()
 
-            editorAction("Toggle Comment", #selector(EditorTextView.toggleComment(_:)), key: "/", modifiers: .command)
-            editorAction("Indent", #selector(EditorTextView.indentLines(_:)), key: "]", modifiers: .command)
-            editorAction("Outdent", #selector(EditorTextView.outdentLines(_:)), key: "[", modifiers: .command)
+            editorAction(
+                "Toggle Comment",
+                #selector(EditorTextView.toggleComment(_:)),
+                key: "/",
+                modifiers: .command
+            )
+            editorAction(
+                "Indent",
+                #selector(EditorTextView.indentLines(_:)),
+                key: "]",
+                modifiers: .command
+            )
+            editorAction(
+                "Outdent",
+                #selector(EditorTextView.outdentLines(_:)),
+                key: "[",
+                modifiers: .command
+            )
 
             Divider()
 
-            editorAction("Move Line Up", #selector(EditorTextView.moveLinesUp(_:)), key: .upArrow, modifiers: .option)
-            editorAction("Move Line Down", #selector(EditorTextView.moveLinesDown(_:)), key: .downArrow, modifiers: .option)
-            editorAction("Duplicate Line Up", #selector(EditorTextView.duplicateLinesUp(_:)), key: .upArrow, modifiers: [.option, .shift])
-            editorAction("Duplicate Line Down", #selector(EditorTextView.duplicateLinesDown(_:)), key: .downArrow, modifiers: [.option, .shift])
+            editorAction(
+                "Move Line Up",
+                #selector(EditorTextView.moveLinesUp(_:)),
+                key: .upArrow,
+                modifiers: .option
+            )
+            editorAction(
+                "Move Line Down",
+                #selector(EditorTextView.moveLinesDown(_:)),
+                key: .downArrow,
+                modifiers: .option
+            )
+            editorAction(
+                "Duplicate Line Up",
+                #selector(EditorTextView.duplicateLinesUp(_:)),
+                key: .upArrow,
+                modifiers: [.option, .shift]
+            )
+            editorAction(
+                "Duplicate Line Down",
+                #selector(EditorTextView.duplicateLinesDown(_:)),
+                key: .downArrow,
+                modifiers: [.option, .shift]
+            )
         }
     }
 
     /// A menu item that sends `action` to the focused editor through the responder chain.
-    private func editorAction(_ title: LocalizedStringKey, _ action: Selector, key: KeyEquivalent, modifiers: EventModifiers) -> some View {
+    private func editorAction(
+        _ title: LocalizedStringKey,
+        _ action: Selector,
+        key: KeyEquivalent,
+        modifiers: EventModifiers
+    ) -> some View {
         Button(title) { NSApp.sendAction(action, to: nil, from: nil) }
             .keyboardShortcut(key, modifiers: modifiers)
             .disabled(workspace?.activeBuffer?.textController == nil)

@@ -29,7 +29,11 @@ struct ProjectSearchView: View {
                 .textFieldStyle(.plain)
                 .focused($isFieldFocused)
                 .onKeyPress(.escape) {
-                    if model.query.isEmpty { workspace.showExplorer() } else { model.query = "" }
+                    if model.query.isEmpty {
+                        workspace.showExplorer()
+                    } else {
+                        model.query = ""
+                    }
                     return .handled
                 }
             Button {
@@ -37,20 +41,33 @@ struct ProjectSearchView: View {
             } label: {
                 Text("Aa")
                     .font(.callout.weight(.semibold))
-                    .foregroundStyle(model.isCaseSensitive ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                    .foregroundStyle(
+                        model.isCaseSensitive
+                            ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary)
+                    )
                     .frame(width: 24, height: 18)
                     .background {
                         if model.isCaseSensitive {
-                            RoundedRectangle(cornerRadius: 4).fill(Color.accentColor.opacity(0.18))
+                            RoundedRectangle(cornerRadius: 4).fill(
+                                Color.accentColor.opacity(0.18)
+                            )
                         }
                     }
             }
             .buttonStyle(.plain)
-            .help(model.isCaseSensitive ? String(localized: "Match Case: On") : String(localized: "Match Case: Off"))
+            .help(
+                model.isCaseSensitive
+                    ? String(localized: "Match Case: On")
+                    : String(localized: "Match Case: Off")
+            )
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 5)
-        .background(RoundedRectangle(cornerRadius: 7, style: .continuous).fill(.primary.opacity(0.07)))
+        .background(
+            RoundedRectangle(cornerRadius: 7, style: .continuous).fill(
+                .primary.opacity(0.07)
+            )
+        )
     }
 
     @ViewBuilder
@@ -67,10 +84,28 @@ struct ProjectSearchView: View {
                 if model.matchCount == 0 {
                     Text("No results")
                 } else {
-                    let results = model.matchCount == 1 ? String(localized: "1 result") : String(localized: "\(model.matchCount.formatted()) results")
-                    let files = model.results.count == 1 ? String(localized: "1 file") : String(localized: "\(model.results.count.formatted()) files")
+                    let results =
+                        model.matchCount == 1
+                        ? String(localized: "1 result")
+                        : String(
+                            localized: "\(model.matchCount.formatted()) results"
+                        )
+                    let files =
+                        model.results.count == 1
+                        ? String(localized: "1 file")
+                        : String(
+                            localized:
+                                "\(model.results.count.formatted()) files"
+                        )
                     let summary = String(localized: "\(results) in \(files)")
-                    Text(summary + (model.isTruncated ? String(localized: " (first \(ProjectSearch.maxMatches.formatted()) shown)") : ""))
+                    Text(
+                        summary
+                            + (model.isTruncated
+                                ? String(
+                                    localized:
+                                        " (first \(ProjectSearch.maxMatches.formatted()) shown)"
+                                ) : "")
+                    )
                 }
             }
             .font(.caption)
@@ -81,7 +116,10 @@ struct ProjectSearchView: View {
     private var results: some View {
         List(selection: $selection) {
             ForEach(model.results) { file in
-                FileHeaderRow(file: file, isCollapsed: model.collapsedFiles.contains(file.url)) {
+                FileHeaderRow(
+                    file: file,
+                    isCollapsed: model.collapsedFiles.contains(file.url)
+                ) {
                     if model.collapsedFiles.contains(file.url) {
                         model.collapsedFiles.remove(file.url)
                     } else {
@@ -101,7 +139,10 @@ struct ProjectSearchView: View {
         .scrollContentBackground(.hidden)
         .scrollIndicators(.never)
         .environment(\.sidebarRowSize, .small)
-        .environment(\.defaultMinListRowHeight, EditorSettings.shared.sidebarFontSize + 11)
+        .environment(
+            \.defaultMinListRowHeight,
+            EditorSettings.shared.sidebarFontSize + 11
+        )
         .onChange(of: selection) { _, id in
             guard let id else { return }
             for file in model.results {
@@ -130,8 +171,11 @@ private struct FileHeaderRow: View {
                     .contentShape(.rect)
             }
             .buttonStyle(.plain)
-            FileIcon(url: file.url, width: EditorSettings.shared.sidebarIconWidth)
-                .padding(.trailing, 2)
+            FileIcon(
+                url: file.url,
+                width: EditorSettings.shared.sidebarIconWidth
+            )
+            .padding(.trailing, 2)
             Text(file.url.lastPathComponent)
                 .lineLimit(1)
                 .layoutPriority(1)
@@ -172,7 +216,9 @@ private struct MatchRow: View {
     private var highlighted: AttributedString {
         let preview = match.preview as NSString
         let range = match.previewRange
-        guard range.location >= 0, NSMaxRange(range) <= preview.length else { return AttributedString(match.preview) }
+        guard range.location >= 0, NSMaxRange(range) <= preview.length else {
+            return AttributedString(match.preview)
+        }
         var result = AttributedString(preview.substring(to: range.location))
         result.foregroundColor = .secondary
         var hit = AttributedString(preview.substring(with: range))

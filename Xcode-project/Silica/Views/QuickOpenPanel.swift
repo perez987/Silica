@@ -51,23 +51,27 @@ private struct QuickOpenPanel: View {
             Image(systemName: "magnifyingglass")
                 .font(.title3)
                 .foregroundStyle(.secondary)
-            TextField("Search files by name (add :line to jump)", text: $model.query, selection: $fieldSelection)
-                .textFieldStyle(.plain)
-                .font(.title3)
-                .focused($isSearchFocused)
-                .onSubmit(openSelection)
-                .onKeyPress(.upArrow) {
-                    model.moveSelection(by: -1)
-                    return .handled
-                }
-                .onKeyPress(.downArrow) {
-                    model.moveSelection(by: 1)
-                    return .handled
-                }
-                .onKeyPress(.escape) {
-                    workspace.hideQuickOpen()
-                    return .handled
-                }
+            TextField(
+                "Search files by name (add :line to jump)",
+                text: $model.query,
+                selection: $fieldSelection
+            )
+            .textFieldStyle(.plain)
+            .font(.title3)
+            .focused($isSearchFocused)
+            .onSubmit(openSelection)
+            .onKeyPress(.upArrow) {
+                model.moveSelection(by: -1)
+                return .handled
+            }
+            .onKeyPress(.downArrow) {
+                model.moveSelection(by: 1)
+                return .handled
+            }
+            .onKeyPress(.escape) {
+                workspace.hideQuickOpen()
+                return .handled
+            }
             if model.isIndexing {
                 ProgressView()
                     .controlSize(.small)
@@ -90,26 +94,46 @@ private struct QuickOpenPanel: View {
             .padding(.horizontal, 14)
             .frame(height: Self.rowHeight + 8)
         } else if model.results.isEmpty {
-            Text(model.isIndexing ? String(localized: "Indexing files…") : String(localized: "No matching files"))
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 18)
+            Text(
+                model.isIndexing
+                    ? String(localized: "Indexing files…")
+                    : String(localized: "No matching files")
+            )
+            .foregroundStyle(.secondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
         } else {
             ScrollViewReader { proxy in
                 ScrollView {
                     LazyVStack(spacing: 0) {
-                        ForEach(Array(model.results.enumerated()), id: \.element.id) { index, result in
-                            QuickOpenRow(result: result, isSelected: index == model.selectedIndex)
-                                .frame(height: Self.rowHeight)
-                                .contentShape(.rect)
-                                .onTapGesture { workspace.openFromQuickOpen(result.item.url, line: model.lineTarget) }
-                                .id(result.id)
+                        ForEach(
+                            Array(model.results.enumerated()),
+                            id: \.element.id
+                        ) { index, result in
+                            QuickOpenRow(
+                                result: result,
+                                isSelected: index == model.selectedIndex
+                            )
+                            .frame(height: Self.rowHeight)
+                            .contentShape(.rect)
+                            .onTapGesture {
+                                workspace.openFromQuickOpen(
+                                    result.item.url,
+                                    line: model.lineTarget
+                                )
+                            }
+                            .id(result.id)
                         }
                     }
                     .padding(6)
                 }
                 .scrollIndicators(.never)
-                .frame(height: min(CGFloat(model.results.count) * Self.rowHeight + 12, Self.maxListHeight))
+                .frame(
+                    height: min(
+                        CGFloat(model.results.count) * Self.rowHeight + 12,
+                        Self.maxListHeight
+                    )
+                )
                 .onChange(of: model.selectedIndex) { _, index in
                     guard model.results.indices.contains(index) else { return }
                     proxy.scrollTo(model.results[index].id)
@@ -128,12 +152,20 @@ private struct QuickOpenPanel: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 guard !model.query.isEmpty else { return }
                 if let editor = NSApp.keyWindow?.firstResponder as? NSTextView,
-                   editor.string == model.query {
+                    editor.string == model.query
+                {
                     let length = (editor.string as NSString).length
-                    guard editor.selectedRange() == NSRange(location: 0, length: length) else { return }
-                    editor.setSelectedRange(NSRange(location: length, length: 0))
+                    guard
+                        editor.selectedRange()
+                            == NSRange(location: 0, length: length)
+                    else { return }
+                    editor.setSelectedRange(
+                        NSRange(location: length, length: 0)
+                    )
                 }
-                fieldSelection = TextSelection(insertionPoint: model.query.endIndex)
+                fieldSelection = TextSelection(
+                    insertionPoint: model.query.endIndex
+                )
             }
         }
     }
@@ -148,7 +180,9 @@ private struct QuickOpenPanel: View {
 
     private func openSelection() {
         if model.isGoToLine {
-            if let line = model.lineTarget { workspace.goToLineFromQuickOpen(line) }
+            if let line = model.lineTarget {
+                workspace.goToLineFromQuickOpen(line)
+            }
             return
         }
         guard let result = model.selectedResult else { return }
@@ -165,16 +199,26 @@ private struct QuickOpenRow: View {
         let matched = Set(result.positions)
         HStack(spacing: 8) {
             FileIcon(url: item.url)
-            Text(Self.highlight(item.scalars[item.nameStart...], matched: matched))
-                .lineLimit(1)
-                .layoutPriority(1)
+            Text(
+                Self.highlight(
+                    item.scalars[item.nameStart...],
+                    matched: matched
+                )
+            )
+            .lineLimit(1)
+            .layoutPriority(1)
             if item.nameStart > 0 {
                 // The containing folder, without its trailing slash.
-                Text(Self.highlight(item.scalars[..<(item.nameStart - 1)], matched: matched))
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.head)
+                Text(
+                    Self.highlight(
+                        item.scalars[..<(item.nameStart - 1)],
+                        matched: matched
+                    )
+                )
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .truncationMode(.head)
             }
             Spacer(minLength: 0)
             if result.isRecent {
@@ -194,7 +238,10 @@ private struct QuickOpenRow: View {
     }
 
     /// Bolds the matched characters and draws them in the primary color.
-    private static func highlight(_ scalars: ArraySlice<Unicode.Scalar>, matched: Set<Int>) -> AttributedString {
+    private static func highlight(
+        _ scalars: ArraySlice<Unicode.Scalar>,
+        matched: Set<Int>
+    ) -> AttributedString {
         var result = AttributedString()
         var run = String.UnicodeScalarView()
         var runIsMatched = false

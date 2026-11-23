@@ -21,9 +21,9 @@ final class QuickOpenModel {
 
     var query = "" {
         didSet {
-             guard query != oldValue else { return }
-             updateResults()
-         }
+            guard query != oldValue else { return }
+            updateResults()
+        }
     }
     private(set) var results: [QuickOpenResult] = []
     var selectedIndex = 0
@@ -47,13 +47,17 @@ final class QuickOpenModel {
 
     /// Sets the query (usually empty, ":" for Go to Line) and optionally rescans
     /// the project; the previous index is shown meanwhile.
-    func prepareForPresentation(activeFile: URL?, query: String = "", indexProject: Bool = true) {
+    func prepareForPresentation(
+        activeFile: URL?,
+        query: String = "",
+        indexProject: Bool = true
+    ) {
         self.activeFile = activeFile
         if self.query == query {
-             updateResults()
-         } else {
-             self.query = query
-         }
+            updateResults()
+        } else {
+            self.query = query
+        }
         presentationCount += 1
         if indexProject { reindex(activeFile: activeFile) }
     }
@@ -112,12 +116,20 @@ final class QuickOpenModel {
                 }
             }
             matches.sort { lhs, rhs in
-                if lhs.1.score != rhs.1.score { return lhs.1.score > rhs.1.score }
-                if lhs.0.path.count != rhs.0.path.count { return lhs.0.path.count < rhs.0.path.count }
+                if lhs.1.score != rhs.1.score {
+                    return lhs.1.score > rhs.1.score
+                }
+                if lhs.0.path.count != rhs.0.path.count {
+                    return lhs.0.path.count < rhs.0.path.count
+                }
                 return lhs.0.path < rhs.0.path
             }
             results = matches.prefix(Self.resultLimit).map {
-                QuickOpenResult(item: $0.0, positions: $0.1.positions, isRecent: false)
+                QuickOpenResult(
+                    item: $0.0,
+                    positions: $0.1.positions,
+                    isRecent: false
+                )
             }
         }
         selectedIndex = 0
@@ -125,14 +137,25 @@ final class QuickOpenModel {
 
     /// With no query: recently opened files (except the current one), then the rest by path.
     private func defaultResults() -> [QuickOpenResult] {
-        let byURL = Dictionary((items + ignoredRecentItems()).map { ($0.url, $0) }, uniquingKeysWith: { first, _ in first })
-        let recent = recentFiles
+        let byURL = Dictionary(
+            (items + ignoredRecentItems()).map { ($0.url, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
+        let recent =
+            recentFiles
             .filter { $0 != activeFile }
             .compactMap { byURL[$0] }
         let recentSet = Set(recent.map(\.url))
-        let rest = items.lazy.filter { !recentSet.contains($0.url) && $0.url != self.activeFile }
-        return (recent.map { QuickOpenResult(item: $0, positions: [], isRecent: true) }
-            + rest.prefix(Self.resultLimit).map { QuickOpenResult(item: $0, positions: [], isRecent: false) })
+        let rest = items.lazy.filter {
+            !recentSet.contains($0.url) && $0.url != self.activeFile
+        }
+        return
+            (recent.map {
+                QuickOpenResult(item: $0, positions: [], isRecent: true)
+            }
+            + rest.prefix(Self.resultLimit).map {
+                QuickOpenResult(item: $0, positions: [], isRecent: false)
+            })
             .prefix(Self.resultLimit)
             .map { $0 }
     }
@@ -144,8 +167,13 @@ final class QuickOpenModel {
         return recentFiles.compactMap { url in
             guard !indexedURLs.contains(url) else { return nil }
             let path = url.path(percentEncoded: false)
-            guard path.hasPrefix(rootPath + "/"), FileManager.default.fileExists(atPath: path) else { return nil }
-            return QuickOpenItem(url: url, path: String(path.dropFirst(rootPath.count + 1)))
+            guard path.hasPrefix(rootPath + "/"),
+                FileManager.default.fileExists(atPath: path)
+            else { return nil }
+            return QuickOpenItem(
+                url: url,
+                path: String(path.dropFirst(rootPath.count + 1))
+            )
         }
     }
 
@@ -165,7 +193,10 @@ final class QuickOpenModel {
             let selected = self.selectedResult?.id
             self.updateResults()
             // Keep the highlighted row if it is still there after the refresh.
-            if let selected, let index = self.results.firstIndex(where: { $0.id == selected }) {
+            if let selected,
+                let index = self.results.firstIndex(where: { $0.id == selected }
+                )
+            {
                 self.selectedIndex = index
             }
         }
@@ -179,24 +210,34 @@ nonisolated enum ProjectFileIndex {
     /// Always skipped, even without a .gitignore: version-control metadata,
     /// dependencies and build output.
     static let skippedFolders: Set<String> = [
-        ".git", ".hg", ".svn", "node_modules", ".build", ".swiftpm", "DerivedData", "Pods",
+        ".git", ".hg", ".svn", "node_modules", ".build", ".swiftpm",
+        "DerivedData", "Pods",
     ]
 
     static func scan(root: URL) -> [QuickOpenItem] {
         let rootPath = root.path(percentEncoded: false).trimmingTrailingSlash
-        guard let enumerator = FileManager().enumerator(
-            at: root,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: [],
-            errorHandler: { _, _ in true }
-        ) else { return [] }
+        guard
+            let enumerator = FileManager().enumerator(
+                at: root,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [],
+                errorHandler: { _, _ in true }
+            )
+        else { return [] }
 
         // Ignore rules in effect inside each folder, keyed by project-relative path.
         // The enumerator visits a folder before its contents, so a parent's entry
         // always exists when a child needs it.
         let rootRules = GitIgnoreStack()
-            .adding(GitIgnoreFile(base: "", url: root.appending(path: ".git/info/exclude")))
-            .adding(GitIgnoreFile(base: "", url: root.appending(path: ".gitignore")))
+            .adding(
+                GitIgnoreFile(
+                    base: "",
+                    url: root.appending(path: ".git/info/exclude")
+                )
+            )
+            .adding(
+                GitIgnoreFile(base: "", url: root.appending(path: ".gitignore"))
+            )
         var rulesByFolder: [String: GitIgnoreStack] = ["": rootRules]
 
         var items: [QuickOpenItem] = []
@@ -207,28 +248,43 @@ nonisolated enum ProjectFileIndex {
             guard path.hasPrefix(rootPath + "/") else { continue }
             let relative = String(path.dropFirst(rootPath.count + 1))
             let name = url.lastPathComponent
-            let parent = relative.lastIndex(of: "/").map { String(relative[..<$0]) } ?? ""
+            let parent =
+                relative.lastIndex(of: "/").map { String(relative[..<$0]) }
+                ?? ""
             let rules = rulesByFolder[parent] ?? rootRules
 
-            let isDirectory = (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
+            let isDirectory =
+                (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory)
+                ?? false
             if isDirectory {
-                if skippedFolders.contains(name) || rules.isIgnored(relative, isDirectory: true) {
+                if skippedFolders.contains(name)
+                    || rules.isIgnored(relative, isDirectory: true)
+                {
                     enumerator.skipDescendants()
                 } else {
                     rulesByFolder[relative] = rules.adding(
-                        GitIgnoreFile(base: relative, url: url.appending(path: ".gitignore"))
+                        GitIgnoreFile(
+                            base: relative,
+                            url: url.appending(path: ".gitignore")
+                        )
                     )
                 }
                 continue
             }
-            if name == ".DS_Store" || rules.isIgnored(relative, isDirectory: false) { continue }
+            if name == ".DS_Store"
+                || rules.isIgnored(relative, isDirectory: false)
+            {
+                continue
+            }
 
             // Same form as the explorer tree's URLs, so tabs aren't opened twice.
             let normalized = URL(filePath: path, directoryHint: .notDirectory)
             items.append(QuickOpenItem(url: normalized, path: relative))
             if items.count >= maxFiles { break }
         }
-        items.sort { $0.path.localizedStandardCompare($1.path) == .orderedAscending }
+        items.sort {
+            $0.path.localizedStandardCompare($1.path) == .orderedAscending
+        }
         return items
     }
 }

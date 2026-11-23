@@ -20,7 +20,9 @@ nonisolated enum TreeFilter {
             let components = item.path.split(separator: "/")
             guard let name = components.last else { continue }
             let nameMatches = name.lowercased().contains(needle)
-            let folderMatches = components.dropLast().contains { $0.lowercased().contains(needle) }
+            let folderMatches = components.dropLast().contains {
+                $0.lowercased().contains(needle)
+            }
             guard nameMatches || folderMatches else { continue }
             matches += 1
             var path = ""
@@ -33,8 +35,13 @@ nonisolated enum TreeFilter {
     }
 
     /// Where `query` appears in `name`, for highlighting.
-    static func matchRange(of query: String, in name: String) -> Range<String.Index>? {
+    static func matchRange(of query: String, in name: String) -> Range<
+        String.Index
+    >? {
         guard !query.isEmpty else { return nil }
-        return name.range(of: query, options: [.caseInsensitive, .diacriticInsensitive])
+        return name.range(
+            of: query,
+            options: [.caseInsensitive, .diacriticInsensitive]
+        )
     }
 }

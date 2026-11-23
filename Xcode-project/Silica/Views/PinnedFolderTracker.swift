@@ -99,22 +99,31 @@ final class PinnedFolderTracker {
         if table == nil, anchor?.window != nil, tableSearchesLeft > 0 {
             // The list may not have made its table yet.
             tableSearchesLeft -= 1
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in self?.scheduleUpdate() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                [weak self] in self?.scheduleUpdate()
+            }
         }
         // Keeps the last answer while the table and `rows` are out of step.
         guard let (pinned, contentLayout) = currentState() else { return }
         if pinned != self.pinned { self.pinned = pinned }
-        if let contentLayout, contentLayout != self.contentLayout { self.contentLayout = contentLayout }
+        if let contentLayout, contentLayout != self.contentLayout {
+            self.contentLayout = contentLayout
+        }
     }
 
     /// The y of the top of the visible tree in the table's coordinates.
     private func visibleTop(in table: NSTableView, anchor: NSView) -> CGFloat {
-        table.convert(NSPoint(x: anchor.bounds.minX, y: anchor.bounds.minY), from: anchor).y
+        table.convert(
+            NSPoint(x: anchor.bounds.minX, y: anchor.bounds.minY),
+            from: anchor
+        ).y
     }
 
     private func currentState() -> ([Pinned], ContentLayout?)? {
-        guard let table, let anchor, anchor.window != nil, table.window === anchor.window,
-              !rows.isEmpty else { return ([], nil) }
+        guard let table, let anchor, anchor.window != nil,
+            table.window === anchor.window,
+            !rows.isEmpty
+        else { return ([], nil) }
         // The table has one more row than `rows`: the spacer that ends the list.
         guard table.numberOfRows == rows.count + 1 else { return nil }
 
@@ -130,25 +139,42 @@ final class PinnedFolderTracker {
         while pinned.count < Self.maxPinned {
             let first = table.row(at: NSPoint(x: x, y: probe + 0.5))
             guard rows.indices.contains(first),
-                  let index = ancestor(of: first, depth: pinned.count),
-                  index > (pinned.last?.index ?? -1) else { break }
+                let index = ancestor(of: first, depth: pinned.count),
+                index > (pinned.last?.index ?? -1)
+            else { break }
             let rect = table.rect(ofRow: index)
             guard stackHeight + rect.height <= maxHeight else { break }
             if index == first {
                 // The row under the stack is itself a folder: pin it once it has
                 // started to scroll under the stack, if it has rows to stand for.
-                guard rows[index].isOpenFolder, lastDescendant(of: index) > index,
-                      rect.minY < top + stackHeight - 0.5 else { break }
+                guard rows[index].isOpenFolder,
+                    lastDescendant(of: index) > index,
+                    rect.minY < top + stackHeight - 0.5
+                else { break }
             }
             // The folder's last row pushes it out as it scrolls past.
-            let endBottom = table.rect(ofRow: lastDescendant(of: index)).maxY - top
+            let endBottom =
+                table.rect(ofRow: lastDescendant(of: index)).maxY - top
             guard endBottom > stackHeight else { break }
             let rowTop = min(stackHeight, endBottom - rect.height)
-            pinned.append(Pinned(index: index, slotTop: stackHeight, top: rowTop, height: rect.height))
+            pinned.append(
+                Pinned(
+                    index: index,
+                    slotTop: stackHeight,
+                    top: rowTop,
+                    height: rect.height
+                )
+            )
             stackHeight += rect.height
             probe = top + rowTop + rect.height
         }
-        let layout = pinned.first.flatMap { measureContentLayout(rowHeight: $0.height, in: table, anchor: anchor) }
+        let layout = pinned.first.flatMap {
+            measureContentLayout(
+                rowHeight: $0.height,
+                in: table,
+                anchor: anchor
+            )
+        }
         return (pinned, layout)
     }
 
@@ -163,19 +189,31 @@ final class PinnedFolderTracker {
     /// The last row inside the folder at `index`; `index` itself if it shows none.
     private func lastDescendant(of index: Int) -> Int {
         var last = index
-        while last + 1 < rows.count, rows[last + 1].depth > rows[index].depth { last += 1 }
+        while last + 1 < rows.count, rows[last + 1].depth > rows[index].depth {
+            last += 1
+        }
         return last
     }
 
     /// Measured from a visible row of the given height, which leaves out a taller
     /// row with a name field in it.
-    private func measureContentLayout(rowHeight: CGFloat, in table: NSTableView, anchor: NSView) -> ContentLayout? {
+    private func measureContentLayout(
+        rowHeight: CGFloat,
+        in table: NSTableView,
+        anchor: NSView
+    ) -> ContentLayout? {
         let visible = table.rows(in: table.visibleRect)
         guard visible.length > 0 else { return nil }
-        for row in visible.location..<(visible.location + visible.length) where row < rows.count {
+        for row in visible.location..<(visible.location + visible.length)
+        where row < rows.count {
             let rect = table.rect(ofRow: row)
             guard abs(rect.height - rowHeight) < 0.5,
-                  let cell = table.view(atColumn: 0, row: row, makeIfNecessary: false) else { continue }
+                let cell = table.view(
+                    atColumn: 0,
+                    row: row,
+                    makeIfNecessary: false
+                )
+            else { continue }
             let frame = anchor.convert(cell.bounds, from: cell)
             let rowTop = anchor.convert(rect, from: table).minY
             return ContentLayout(
@@ -199,22 +237,40 @@ final class PinnedFolderTracker {
     /// Scrolls a row out from under the pinned folders, to just below the ones that
     /// contain it. Does nothing when the row is already clear of them.
     func uncover(row index: Int) {
-        guard let table, let anchor, rows.indices.contains(index), table.numberOfRows == rows.count + 1 else { return }
+        guard let table, let anchor, rows.indices.contains(index),
+            table.numberOfRows == rows.count + 1
+        else { return }
         let rect = table.rect(ofRow: index)
         let top = visibleTop(in: table, anchor: anchor)
-        guard rect.minY < top + coveredHeight - 0.5, rect.maxY > top - rect.height else { return }
+        guard rect.minY < top + coveredHeight - 0.5,
+            rect.maxY > top - rect.height
+        else { return }
         let above = min(rows[index].depth, Self.maxPinned)
-        scroll(row: index, toOffset: CGFloat(above) * rect.height, animated: false)
+        scroll(
+            row: index,
+            toOffset: CGFloat(above) * rect.height,
+            animated: false
+        )
     }
 
-    private func scroll(row index: Int, toOffset offset: CGFloat, animated: Bool) {
+    private func scroll(
+        row index: Int,
+        toOffset offset: CGFloat,
+        animated: Bool
+    ) {
         guard let table, let anchor, let scrollView = table.enclosingScrollView,
-              index < table.numberOfRows else { return }
+            index < table.numberOfRows
+        else { return }
         let clipView = scrollView.contentView
-        let delta = table.rect(ofRow: index).minY - (visibleTop(in: table, anchor: anchor) + offset)
+        let delta =
+            table.rect(ofRow: index).minY
+            - (visibleTop(in: table, anchor: anchor) + offset)
         var origin = clipView.bounds.origin
         origin.y += delta
-        origin = clipView.constrainBoundsRect(NSRect(origin: origin, size: clipView.bounds.size)).origin
+        origin =
+            clipView.constrainBoundsRect(
+                NSRect(origin: origin, size: clipView.bounds.size)
+            ).origin
         if animated {
             NSAnimationContext.runAnimationGroup { context in
                 context.duration = 0.2
@@ -233,11 +289,16 @@ final class PinnedFolderTracker {
     /// wouldn't reach the list while the pointer is on them: pass it on.
     private func forwardScrollEvents() {
         guard scrollMonitor == nil else { return }
-        scrollMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
-            guard let self, let anchor, let scrollView = table?.enclosingScrollView,
-                  !pinned.isEmpty, event.window === anchor.window else { return event }
+        scrollMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel)
+        { [weak self] event in
+            guard let self, let anchor,
+                let scrollView = table?.enclosingScrollView,
+                !pinned.isEmpty, event.window === anchor.window
+            else { return event }
             let point = anchor.convert(event.locationInWindow, from: nil)
-            guard anchor.bounds.contains(point), point.y < coveredHeight else { return event }
+            guard anchor.bounds.contains(point), point.y < coveredHeight else {
+                return event
+            }
             scrollView.scrollWheel(with: event)
             return nil
         }
@@ -261,7 +322,9 @@ final class PinnedFolderTracker {
             found = Self.table(in: view, overlapping: anchorFrame)
             ancestor = view.superview
         }
-        guard let found, let scrollView = found.enclosingScrollView else { return }
+        guard let found, let scrollView = found.enclosingScrollView else {
+            return
+        }
         table = found
         tableSearchesLeft = 0
         forwardScrollEvents()
@@ -270,20 +333,37 @@ final class PinnedFolderTracker {
         clipView.postsBoundsChangedNotifications = true
         found.postsFrameChangedNotifications = true
         let center = NotificationCenter.default
-        let onChange: (Notification) -> Void = { [weak self] _ in self?.update() }
+        let onChange: (Notification) -> Void = { [weak self] _ in self?.update()
+        }
         observers = [
-            center.addObserver(forName: NSView.boundsDidChangeNotification, object: clipView, queue: .main, using: onChange),
-            center.addObserver(forName: NSView.frameDidChangeNotification, object: found, queue: .main, using: onChange),
+            center.addObserver(
+                forName: NSView.boundsDidChangeNotification,
+                object: clipView,
+                queue: .main,
+                using: onChange
+            ),
+            center.addObserver(
+                forName: NSView.frameDidChangeNotification,
+                object: found,
+                queue: .main,
+                using: onChange
+            ),
         ]
     }
 
-    private static func table(in view: NSView, overlapping frame: CGRect) -> NSTableView? {
+    private static func table(in view: NSView, overlapping frame: CGRect)
+        -> NSTableView?
+    {
         if let table = view as? NSTableView {
             guard let scrollView = table.enclosingScrollView else { return nil }
-            return scrollView.convert(scrollView.bounds, to: nil).intersects(frame) ? table : nil
+            return scrollView.convert(scrollView.bounds, to: nil).intersects(
+                frame
+            ) ? table : nil
         }
         for subview in view.subviews {
-            if let table = table(in: subview, overlapping: frame) { return table }
+            if let table = table(in: subview, overlapping: frame) {
+                return table
+            }
         }
         return nil
     }

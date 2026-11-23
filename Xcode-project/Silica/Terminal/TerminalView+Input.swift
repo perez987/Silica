@@ -26,8 +26,12 @@ extension TerminalView {
 
     override func keyDown(with event: NSEvent) {
         guard let session, session.terminal != nil else { return }
-        let modifiers = event.modifierFlags.intersection([.command, .option, .control, .shift])
-        if !hasMarkedText(), let text = lineEditingText(for: event, modifiers: modifiers) {
+        let modifiers = event.modifierFlags.intersection([
+            .command, .option, .control, .shift,
+        ])
+        if !hasMarkedText(),
+            let text = lineEditingText(for: event, modifiers: modifiers)
+        {
             session.send(text)
             didType()
             return
@@ -44,12 +48,19 @@ extension TerminalView {
         let committed = keyTextAccumulator ?? []
         keyTextAccumulator = nil
 
-        let action = event.isARepeat ? GHOSTTY_KEY_ACTION_REPEAT : GHOSTTY_KEY_ACTION_PRESS
+        let action =
+            event.isARepeat
+            ? GHOSTTY_KEY_ACTION_REPEAT : GHOSTTY_KEY_ACTION_PRESS
         if committed.isEmpty {
             // No text: a key like Return or an arrow, a key with Control, or a press
             // that only went into the composition, which the encoder is told so
             // that Delete or Return there isn't sent on to the shell.
-            sendKey(event, action: action, text: Self.text(of: event), isComposing: hasMarkedText() || hadMarkedText)
+            sendKey(
+                event,
+                action: action,
+                text: Self.text(of: event),
+                isComposing: hasMarkedText() || hadMarkedText
+            )
         } else {
             for text in committed {
                 sendKey(event, action: action, text: text)
@@ -66,7 +77,10 @@ extension TerminalView {
     /// shells have for the same: ⌥← and ⌥→ by word, ⌘← and ⌘→ to the ends, ⌘⌫ to
     /// delete to the start. Not for programs that read the keyboard in full (the
     /// Kitty protocol), which make their own sense of these keys.
-    private func lineEditingText(for event: NSEvent, modifiers: NSEvent.ModifierFlags) -> String? {
+    private func lineEditingText(
+        for event: NSEvent,
+        modifiers: NSEvent.ModifierFlags
+    ) -> String? {
         guard kittyKeyboardFlags == 0 else { return nil }
         switch (Int(event.keyCode), modifiers) {
         case (kVK_LeftArrow, .option): return "\u{1B}b"
@@ -80,25 +94,47 @@ extension TerminalView {
 
     private var kittyKeyboardFlags: UInt8 {
         var flags: UInt8 = 0
-        ghostty_terminal_get(session?.terminal, GHOSTTY_TERMINAL_DATA_KITTY_KEYBOARD_FLAGS, &flags)
+        ghostty_terminal_get(
+            session?.terminal,
+            GHOSTTY_TERMINAL_DATA_KITTY_KEYBOARD_FLAGS,
+            &flags
+        )
         return flags
     }
 
     /// The text of a key press for the encoder: what the key types without Control,
     /// which the encoder applies itself. `nil` for keys that type nothing.
     private static func text(of event: NSEvent) -> String? {
-        guard let characters = event.characters, !characters.isEmpty else { return nil }
-        guard characters.unicodeScalars.count == 1, let scalar = characters.unicodeScalars.first else { return characters }
+        guard let characters = event.characters, !characters.isEmpty else {
+            return nil
+        }
+        guard characters.unicodeScalars.count == 1,
+            let scalar = characters.unicodeScalars.first
+        else { return characters }
         if scalar.isControlOrFunctionKey {
-            guard let plain = event.characters(byApplyingModifiers: event.modifierFlags.subtracting(.control)),
-                  plain.unicodeScalars.count == 1, plain.unicodeScalars.first?.isControlOrFunctionKey == false else { return nil }
+            guard
+                let plain = event.characters(
+                    byApplyingModifiers: event.modifierFlags.subtracting(
+                        .control
+                    )
+                ),
+                plain.unicodeScalars.count == 1,
+                plain.unicodeScalars.first?.isControlOrFunctionKey == false
+            else { return nil }
             return plain
         }
         return characters
     }
 
-    private func sendKey(_ event: NSEvent, action: GhosttyKeyAction, text: String?, isComposing: Bool = false) {
-        guard let session, let terminal = session.terminal, let keyEncoder, let keyEvent else { return }
+    private func sendKey(
+        _ event: NSEvent,
+        action: GhosttyKeyAction,
+        text: String?,
+        isComposing: Bool = false
+    ) {
+        guard let session, let terminal = session.terminal, let keyEncoder,
+            let keyEvent
+        else { return }
         // The modes that change what keys send: application cursor keys, the Kitty
         // keyboard protocol and so on.
         ghostty_key_encoder_set_from_terminal(keyEncoder, terminal)
@@ -106,25 +142,56 @@ extension TerminalView {
         let mods = Self.mods(event.modifierFlags)
         let hasText = text?.isEmpty == false
         ghostty_key_event_set_action(keyEvent, action)
-        ghostty_key_event_set_key(keyEvent, Self.key(forKeyCode: Int(event.keyCode)))
+        ghostty_key_event_set_key(
+            keyEvent,
+            Self.key(forKeyCode: Int(event.keyCode))
+        )
         ghostty_key_event_set_mods(keyEvent, mods)
         // Shift and Option went into making the text, so they aren't sent again as
         // modifiers: ⌥B is "∫", not Alt+B.
-        ghostty_key_event_set_consumed_mods(keyEvent, hasText ? mods & GhosttyMods(GHOSTTY_MODS_SHIFT | GHOSTTY_MODS_ALT) : 0)
+        ghostty_key_event_set_consumed_mods(
+            keyEvent,
+            hasText
+                ? mods & GhosttyMods(GHOSTTY_MODS_SHIFT | GHOSTTY_MODS_ALT) : 0
+        )
         ghostty_key_event_set_composing(keyEvent, isComposing)
-        ghostty_key_event_set_unshifted_codepoint(keyEvent, event.characters(byApplyingModifiers: [])?.unicodeScalars.first?.value ?? 0)
+        ghostty_key_event_set_unshifted_codepoint(
+            keyEvent,
+            event.characters(byApplyingModifiers: [])?.unicodeScalars.first?
+                .value ?? 0
+        )
 
         let utf8 = Array((text ?? "").utf8)
         var output = [UInt8](repeating: 0, count: 64)
         var count = 0
         let result = utf8.withUnsafeBufferPointer { utf8 -> GhosttyResult in
             // The event borrows the text, which has to outlive the encoding.
-            ghostty_key_event_set_utf8(keyEvent, GhosttyString(ptr: utf8.baseAddress, len: utf8.count))
-            defer { ghostty_key_event_set_utf8(keyEvent, GhosttyString(ptr: nil, len: 0)) }
-            var result = ghostty_key_encoder_encode(keyEncoder, keyEvent, &output, output.count, &count)
+            ghostty_key_event_set_utf8(
+                keyEvent,
+                GhosttyString(ptr: utf8.baseAddress, len: utf8.count)
+            )
+            defer {
+                ghostty_key_event_set_utf8(
+                    keyEvent,
+                    GhosttyString(ptr: nil, len: 0)
+                )
+            }
+            var result = ghostty_key_encoder_encode(
+                keyEncoder,
+                keyEvent,
+                &output,
+                output.count,
+                &count
+            )
             if result == GHOSTTY_OUT_OF_SPACE {
                 output = [UInt8](repeating: 0, count: count)
-                result = ghostty_key_encoder_encode(keyEncoder, keyEvent, &output, output.count, &count)
+                result = ghostty_key_encoder_encode(
+                    keyEncoder,
+                    keyEvent,
+                    &output,
+                    output.count,
+                    &count
+                )
             }
             return result
         }
@@ -135,9 +202,12 @@ extension TerminalView {
         // form (Control-[ as a key of its own rather than Escape), which shells and
         // editors that didn't ask for it don't read. They get the control character
         // the Mac keyboard has always sent.
-        if kittyKeyboardFlags == 0, bytes.starts(with: [0x1B, 0x5B]), bytes.last == UInt8(ascii: "u"),
-           let characters = event.characters, characters.unicodeScalars.count == 1,
-           let scalar = characters.unicodeScalars.first, scalar.value < 0x20 {
+        if kittyKeyboardFlags == 0, bytes.starts(with: [0x1B, 0x5B]),
+            bytes.last == UInt8(ascii: "u"),
+            let characters = event.characters,
+            characters.unicodeScalars.count == 1,
+            let scalar = characters.unicodeScalars.first, scalar.value < 0x20
+        {
             bytes = Data(characters.utf8)
         }
         session.send(bytes)
@@ -153,7 +223,8 @@ extension TerminalView {
         NSCursor.setHiddenUntilMouseMoves(true)
     }
 
-    fileprivate static func mods(_ flags: NSEvent.ModifierFlags) -> GhosttyMods {
+    fileprivate static func mods(_ flags: NSEvent.ModifierFlags) -> GhosttyMods
+    {
         var mods: Int32 = 0
         if flags.contains(.shift) { mods |= GHOSTTY_MODS_SHIFT }
         if flags.contains(.control) { mods |= GHOSTTY_MODS_CTRL }
@@ -274,10 +345,10 @@ extension TerminalView {
     }
 }
 
-private extension Unicode.Scalar {
+extension Unicode.Scalar {
     /// A control character, or one of the private-use code points AppKit gives the
     /// arrow and function keys: not text to type.
-    var isControlOrFunctionKey: Bool {
+    fileprivate var isControlOrFunctionKey: Bool {
         value < 0x20 || value == 0x7F || (0xF700...0xF8FF).contains(value)
     }
 }
@@ -286,7 +357,8 @@ private extension Unicode.Scalar {
 
 extension TerminalView: NSTextInputClient {
     func insertText(_ string: Any, replacementRange: NSRange) {
-        let text = (string as? NSAttributedString)?.string ?? string as? String ?? ""
+        let text =
+            (string as? NSAttributedString)?.string ?? string as? String ?? ""
         // Committing ends the composition.
         markedText = ""
         guard !text.isEmpty else { return }
@@ -299,8 +371,13 @@ extension TerminalView: NSTextInputClient {
         }
     }
 
-    func setMarkedText(_ string: Any, selectedRange: NSRange, replacementRange: NSRange) {
-        markedText = (string as? NSAttributedString)?.string ?? string as? String ?? ""
+    func setMarkedText(
+        _ string: Any,
+        selectedRange: NSRange,
+        replacementRange: NSRange
+    ) {
+        markedText =
+            (string as? NSAttributedString)?.string ?? string as? String ?? ""
     }
 
     func unmarkText() {
@@ -312,14 +389,19 @@ extension TerminalView: NSTextInputClient {
     }
 
     func markedRange() -> NSRange {
-        markedText.isEmpty ? NSRange(location: NSNotFound, length: 0) : NSRange(location: 0, length: markedText.utf16.count)
+        markedText.isEmpty
+            ? NSRange(location: NSNotFound, length: 0)
+            : NSRange(location: 0, length: markedText.utf16.count)
     }
 
     func selectedRange() -> NSRange {
         NSRange(location: 0, length: 0)
     }
 
-    func attributedSubstring(forProposedRange range: NSRange, actualRange: NSRangePointer?) -> NSAttributedString? {
+    func attributedSubstring(
+        forProposedRange range: NSRange,
+        actualRange: NSRangePointer?
+    ) -> NSAttributedString? {
         nil
     }
 
@@ -328,7 +410,10 @@ extension TerminalView: NSTextInputClient {
     }
 
     /// Where the input method puts its candidate window: by the cursor.
-    func firstRect(forCharacterRange range: NSRange, actualRange: NSRangePointer?) -> NSRect {
+    func firstRect(
+        forCharacterRange range: NSRange,
+        actualRange: NSRangePointer?
+    ) -> NSRect {
         guard let window else { return .zero }
         return window.convertToScreen(convert(cursorRect, to: nil))
     }
@@ -357,11 +442,17 @@ extension TerminalView {
         window?.makeFirstResponder(self)
         // A ⌘ click on a link follows it, whoever has the mouse: programs aren't
         // told about ⌘ in any case.
-        if event.modifierFlags.contains(.command), let link = link(at: convert(event.locationInWindow, from: nil)) {
+        if event.modifierFlags.contains(.command),
+            let link = link(at: convert(event.locationInWindow, from: nil))
+        {
             pressedLink = link
         } else if programTakesMouse(event) {
             pressedMouseButtons |= 1
-            sendMouse(GHOSTTY_MOUSE_ACTION_PRESS, button: GHOSTTY_MOUSE_BUTTON_LEFT, event: event)
+            sendMouse(
+                GHOSTTY_MOUSE_ACTION_PRESS,
+                button: GHOSTTY_MOUSE_BUTTON_LEFT,
+                event: event
+            )
         } else {
             beginSelection(with: event)
         }
@@ -371,20 +462,33 @@ extension TerminalView {
         if pressedLink != nil {
             // Dragging away from a link and letting go there leaves it be.
         } else if pressedMouseButtons & 1 != 0 {
-            sendMouse(GHOSTTY_MOUSE_ACTION_MOTION, button: GHOSTTY_MOUSE_BUTTON_LEFT, event: event)
+            sendMouse(
+                GHOSTTY_MOUSE_ACTION_MOTION,
+                button: GHOSTTY_MOUSE_BUTTON_LEFT,
+                event: event
+            )
         } else {
             lastDragLocation = convert(event.locationInWindow, from: nil)
-            continueSelection(isRectangle: event.modifierFlags.contains(.option))
+            continueSelection(
+                isRectangle: event.modifierFlags.contains(.option)
+            )
         }
     }
 
     override func mouseUp(with event: NSEvent) {
         if let link = pressedLink {
             pressedLink = nil
-            if self.link(at: convert(event.locationInWindow, from: nil)) == link { open(link) }
+            if self.link(at: convert(event.locationInWindow, from: nil)) == link
+            {
+                open(link)
+            }
         } else if pressedMouseButtons & 1 != 0 {
             pressedMouseButtons &= ~1
-            sendMouse(GHOSTTY_MOUSE_ACTION_RELEASE, button: GHOSTTY_MOUSE_BUTTON_LEFT, event: event)
+            sendMouse(
+                GHOSTTY_MOUSE_ACTION_RELEASE,
+                button: GHOSTTY_MOUSE_BUTTON_LEFT,
+                event: event
+            )
         } else {
             endSelection(with: event)
         }
@@ -393,7 +497,11 @@ extension TerminalView {
     override func rightMouseDown(with event: NSEvent) {
         if programTakesMouse(event) {
             pressedMouseButtons |= 2
-            sendMouse(GHOSTTY_MOUSE_ACTION_PRESS, button: GHOSTTY_MOUSE_BUTTON_RIGHT, event: event)
+            sendMouse(
+                GHOSTTY_MOUSE_ACTION_PRESS,
+                button: GHOSTTY_MOUSE_BUTTON_RIGHT,
+                event: event
+            )
         } else {
             // Shows the context menu.
             super.rightMouseDown(with: event)
@@ -402,14 +510,22 @@ extension TerminalView {
 
     override func rightMouseDragged(with event: NSEvent) {
         if pressedMouseButtons & 2 != 0 {
-            sendMouse(GHOSTTY_MOUSE_ACTION_MOTION, button: GHOSTTY_MOUSE_BUTTON_RIGHT, event: event)
+            sendMouse(
+                GHOSTTY_MOUSE_ACTION_MOTION,
+                button: GHOSTTY_MOUSE_BUTTON_RIGHT,
+                event: event
+            )
         }
     }
 
     override func rightMouseUp(with event: NSEvent) {
         if pressedMouseButtons & 2 != 0 {
             pressedMouseButtons &= ~2
-            sendMouse(GHOSTTY_MOUSE_ACTION_RELEASE, button: GHOSTTY_MOUSE_BUTTON_RIGHT, event: event)
+            sendMouse(
+                GHOSTTY_MOUSE_ACTION_RELEASE,
+                button: GHOSTTY_MOUSE_BUTTON_RIGHT,
+                event: event
+            )
         } else {
             super.rightMouseUp(with: event)
         }
@@ -418,19 +534,31 @@ extension TerminalView {
     override func otherMouseDown(with event: NSEvent) {
         guard event.buttonNumber == 2, programTakesMouse(event) else { return }
         pressedMouseButtons |= 4
-        sendMouse(GHOSTTY_MOUSE_ACTION_PRESS, button: GHOSTTY_MOUSE_BUTTON_MIDDLE, event: event)
+        sendMouse(
+            GHOSTTY_MOUSE_ACTION_PRESS,
+            button: GHOSTTY_MOUSE_BUTTON_MIDDLE,
+            event: event
+        )
     }
 
     override func otherMouseDragged(with event: NSEvent) {
         if pressedMouseButtons & 4 != 0 {
-            sendMouse(GHOSTTY_MOUSE_ACTION_MOTION, button: GHOSTTY_MOUSE_BUTTON_MIDDLE, event: event)
+            sendMouse(
+                GHOSTTY_MOUSE_ACTION_MOTION,
+                button: GHOSTTY_MOUSE_BUTTON_MIDDLE,
+                event: event
+            )
         }
     }
 
     override func otherMouseUp(with event: NSEvent) {
         guard pressedMouseButtons & 4 != 0 else { return }
         pressedMouseButtons &= ~4
-        sendMouse(GHOSTTY_MOUSE_ACTION_RELEASE, button: GHOSTTY_MOUSE_BUTTON_MIDDLE, event: event)
+        sendMouse(
+            GHOSTTY_MOUSE_ACTION_RELEASE,
+            button: GHOSTTY_MOUSE_BUTTON_MIDDLE,
+            event: event
+        )
     }
 
     override func mouseMoved(with event: NSEvent) {
@@ -444,17 +572,30 @@ extension TerminalView {
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         trackingAreas.forEach(removeTrackingArea)
-        addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseMoved, .mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect], owner: self))
+        addTrackingArea(
+            NSTrackingArea(
+                rect: .zero,
+                options: [
+                    .mouseMoved, .mouseEnteredAndExited, .activeInKeyWindow,
+                    .inVisibleRect,
+                ],
+                owner: self
+            )
+        )
     }
 
     override func resetCursorRects() {
-        addCursorRect(bounds, cursor: hoveredLink == nil ? .iBeam : .pointingHand)
+        addCursorRect(
+            bounds,
+            cursor: hoveredLink == nil ? .iBeam : .pointingHand
+        )
     }
 
     override func scrollWheel(with event: NSEvent) {
         guard let session, session.terminal != nil else { return }
         // A trackpad reports points; a wheel reports notches, taken as three rows each.
-        scrollRemainder += event.hasPreciseScrollingDeltas
+        scrollRemainder +=
+            event.hasPreciseScrollingDeltas
             ? event.scrollingDeltaY / cellSize.height
             : event.scrollingDeltaY * 3
         let rows = Int(scrollRemainder.rounded(.towardZero))
@@ -465,28 +606,50 @@ extension TerminalView {
 
         if programTakesMouse(event) {
             // To a program the wheel is two more buttons.
-            let button = rows > 0 ? GHOSTTY_MOUSE_BUTTON_FOUR : GHOSTTY_MOUSE_BUTTON_FIVE
+            let button =
+                rows > 0 ? GHOSTTY_MOUSE_BUTTON_FOUR : GHOSTTY_MOUSE_BUTTON_FIVE
             for _ in 0..<steps {
-                sendMouse(GHOSTTY_MOUSE_ACTION_PRESS, button: button, event: event)
+                sendMouse(
+                    GHOSTTY_MOUSE_ACTION_PRESS,
+                    button: button,
+                    event: event
+                )
             }
         } else if session.isAlternateScreen {
             // A full-screen program has no history to scroll. One that didn't ask for
             // the mouse gets arrow keys, so pagers and editors scroll all the same.
-            guard session.isModeSet(TerminalMode.alternateScroll) else { return }
-            let introducer = session.isModeSet(TerminalMode.cursorKeys) ? "\u{1B}O" : "\u{1B}["
-            session.send(String(repeating: introducer + (rows > 0 ? "A" : "B"), count: steps))
+            guard session.isModeSet(TerminalMode.alternateScroll) else {
+                return
+            }
+            let introducer =
+                session.isModeSet(TerminalMode.cursorKeys)
+                ? "\u{1B}O" : "\u{1B}["
+            session.send(
+                String(
+                    repeating: introducer + (rows > 0 ? "A" : "B"),
+                    count: steps
+                )
+            )
         } else {
             session.scroll(byRows: -rows)
         }
     }
 
-    private func sendMouse(_ action: GhosttyMouseAction, button: GhosttyMouseButton?, event: NSEvent) {
-        guard let session, let terminal = session.terminal, let mouseEncoder, let mouseEvent else { return }
+    private func sendMouse(
+        _ action: GhosttyMouseAction,
+        button: GhosttyMouseButton?,
+        event: NSEvent
+    ) {
+        guard let session, let terminal = session.terminal, let mouseEncoder,
+            let mouseEvent
+        else { return }
         // Which events the program wants and in what format.
         ghostty_mouse_encoder_set_from_terminal(mouseEncoder, terminal)
 
         // In pixels, as everything else the encoder is told.
-        func pixels(_ points: CGFloat) -> UInt32 { UInt32(max(points * scale, 0).rounded()) }
+        func pixels(_ points: CGFloat) -> UInt32 {
+            UInt32(max(points * scale, 0).rounded())
+        }
         var size = GhosttyMouseEncoderSize()
         size.size = MemoryLayout<GhosttyMouseEncoderSize>.size
         size.screen_width = pixels(bounds.width)
@@ -495,11 +658,23 @@ extension TerminalView {
         size.cell_height = pixels(cellSize.height)
         size.padding_left = pixels(Self.inset.width)
         size.padding_top = pixels(Self.inset.height)
-        size.padding_right = pixels(bounds.width - Self.inset.width - CGFloat(columns) * cellSize.width)
-        size.padding_bottom = pixels(bounds.height - Self.inset.height - CGFloat(rows) * cellSize.height)
-        ghostty_mouse_encoder_set(mouseEncoder, GHOSTTY_MOUSE_ENCODER_OPT_SIZE, &size)
+        size.padding_right = pixels(
+            bounds.width - Self.inset.width - CGFloat(columns) * cellSize.width
+        )
+        size.padding_bottom = pixels(
+            bounds.height - Self.inset.height - CGFloat(rows) * cellSize.height
+        )
+        ghostty_mouse_encoder_set(
+            mouseEncoder,
+            GHOSTTY_MOUSE_ENCODER_OPT_SIZE,
+            &size
+        )
         var isAnyButtonPressed = pressedMouseButtons != 0
-        ghostty_mouse_encoder_set(mouseEncoder, GHOSTTY_MOUSE_ENCODER_OPT_ANY_BUTTON_PRESSED, &isAnyButtonPressed)
+        ghostty_mouse_encoder_set(
+            mouseEncoder,
+            GHOSTTY_MOUSE_ENCODER_OPT_ANY_BUTTON_PRESSED,
+            &isAnyButtonPressed
+        )
 
         let point = convert(event.locationInWindow, from: nil)
         ghostty_mouse_event_set_action(mouseEvent, action)
@@ -509,11 +684,25 @@ extension TerminalView {
             ghostty_mouse_event_clear_button(mouseEvent)
         }
         ghostty_mouse_event_set_mods(mouseEvent, Self.mods(event.modifierFlags))
-        ghostty_mouse_event_set_position(mouseEvent, GhosttyMousePosition(x: Float(point.x * scale), y: Float(point.y * scale)))
+        ghostty_mouse_event_set_position(
+            mouseEvent,
+            GhosttyMousePosition(
+                x: Float(point.x * scale),
+                y: Float(point.y * scale)
+            )
+        )
 
         var output = [UInt8](repeating: 0, count: 64)
         var count = 0
-        guard ghostty_mouse_encoder_encode(mouseEncoder, mouseEvent, &output, output.count, &count) == GHOSTTY_SUCCESS, count > 0 else { return }
+        guard
+            ghostty_mouse_encoder_encode(
+                mouseEncoder,
+                mouseEvent,
+                &output,
+                output.count,
+                &count
+            ) == GHOSTTY_SUCCESS, count > 0
+        else { return }
         session.send(Data(output.prefix(count)))
     }
 }
@@ -529,9 +718,19 @@ extension TerminalView {
     private func gridRef(at point: CGPoint) -> GhosttyGridRef? {
         guard let terminal = session?.terminal else { return nil }
         let cell = cell(at: point)
-        let coordinate = GhosttyPointCoordinate(x: UInt16(clamping: cell.column), y: UInt32(clamping: cell.row))
+        let coordinate = GhosttyPointCoordinate(
+            x: UInt16(clamping: cell.column),
+            y: UInt32(clamping: cell.row)
+        )
         var ref = GhosttyGridRef()
-        let result = ghostty_terminal_grid_ref(terminal, GhosttyPoint(tag: GHOSTTY_POINT_TAG_VIEWPORT, value: .init(coordinate: coordinate)), &ref)
+        let result = ghostty_terminal_grid_ref(
+            terminal,
+            GhosttyPoint(
+                tag: GHOSTTY_POINT_TAG_VIEWPORT,
+                value: .init(coordinate: coordinate)
+            ),
+            &ref
+        )
         return result == GHOSTTY_SUCCESS ? ref : nil
     }
 
@@ -545,11 +744,16 @@ extension TerminalView {
     }
 
     private func surfacePosition(_ point: CGPoint) -> GhosttySurfacePosition {
-        GhosttySurfacePosition(x: Double(point.x * scale), y: Double(point.y * scale))
+        GhosttySurfacePosition(
+            x: Double(point.x * scale),
+            y: Double(point.y * scale)
+        )
     }
 
     private func beginSelection(with event: NSEvent) {
-        guard let session, let terminal = session.terminal, let selectionGesture, let selectionPress else { return }
+        guard let session, let terminal = session.terminal,
+            let selectionGesture, let selectionPress
+        else { return }
         let point = convert(event.locationInWindow, from: nil)
         lastDragLocation = point
         guard var ref = gridRef(at: point) else { return }
@@ -559,15 +763,44 @@ extension TerminalView {
         var interval = UInt64(NSEvent.doubleClickInterval * 1_000_000_000)
         var distance = Double(4 * scale)
         var isRectangle = event.modifierFlags.contains(.option)
-        ghostty_selection_gesture_event_set(selectionPress, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_REF, &ref)
-        ghostty_selection_gesture_event_set(selectionPress, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_POSITION, &position)
-        ghostty_selection_gesture_event_set(selectionPress, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_TIME_NS, &time)
-        ghostty_selection_gesture_event_set(selectionPress, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_REPEAT_INTERVAL_NS, &interval)
-        ghostty_selection_gesture_event_set(selectionPress, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_REPEAT_DISTANCE, &distance)
-        ghostty_selection_gesture_event_set(selectionPress, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_RECTANGLE, &isRectangle)
+        ghostty_selection_gesture_event_set(
+            selectionPress,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_REF,
+            &ref
+        )
+        ghostty_selection_gesture_event_set(
+            selectionPress,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_POSITION,
+            &position
+        )
+        ghostty_selection_gesture_event_set(
+            selectionPress,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_TIME_NS,
+            &time
+        )
+        ghostty_selection_gesture_event_set(
+            selectionPress,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_REPEAT_INTERVAL_NS,
+            &interval
+        )
+        ghostty_selection_gesture_event_set(
+            selectionPress,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_REPEAT_DISTANCE,
+            &distance
+        )
+        ghostty_selection_gesture_event_set(
+            selectionPress,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_RECTANGLE,
+            &isRectangle
+        )
 
         var selection = GhosttySelection()
-        if ghostty_selection_gesture_event(selectionGesture, terminal, selectionPress, &selection) == GHOSTTY_SUCCESS {
+        if ghostty_selection_gesture_event(
+            selectionGesture,
+            terminal,
+            selectionPress,
+            &selection
+        ) == GHOSTTY_SUCCESS {
             session.select(selection)
         } else {
             // A single click selects nothing, and drops what was selected.
@@ -576,29 +809,60 @@ extension TerminalView {
     }
 
     private func continueSelection(isRectangle: Bool) {
-        guard let session, let terminal = session.terminal, let selectionGesture, let selectionDrag,
-              var ref = gridRef(at: lastDragLocation) else { return }
+        guard let session, let terminal = session.terminal,
+            let selectionGesture, let selectionDrag,
+            var ref = gridRef(at: lastDragLocation)
+        else { return }
         var position = surfacePosition(lastDragLocation)
         var geometry = selectionGeometry
         var isRectangle = isRectangle
-        ghostty_selection_gesture_event_set(selectionDrag, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_REF, &ref)
-        ghostty_selection_gesture_event_set(selectionDrag, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_POSITION, &position)
-        ghostty_selection_gesture_event_set(selectionDrag, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_GEOMETRY, &geometry)
-        ghostty_selection_gesture_event_set(selectionDrag, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_RECTANGLE, &isRectangle)
+        ghostty_selection_gesture_event_set(
+            selectionDrag,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_REF,
+            &ref
+        )
+        ghostty_selection_gesture_event_set(
+            selectionDrag,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_POSITION,
+            &position
+        )
+        ghostty_selection_gesture_event_set(
+            selectionDrag,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_GEOMETRY,
+            &geometry
+        )
+        ghostty_selection_gesture_event_set(
+            selectionDrag,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_RECTANGLE,
+            &isRectangle
+        )
         var selection = GhosttySelection()
-        if ghostty_selection_gesture_event(selectionGesture, terminal, selectionDrag, &selection) == GHOSTTY_SUCCESS {
+        if ghostty_selection_gesture_event(
+            selectionGesture,
+            terminal,
+            selectionDrag,
+            &selection
+        ) == GHOSTTY_SUCCESS {
             session.select(selection)
         }
 
         // Past the top or bottom edge, the history scrolls under the pointer for
         // as long as it's held there.
         var direction = GHOSTTY_SELECTION_GESTURE_AUTOSCROLL_NONE
-        ghostty_selection_gesture_get(selectionGesture, terminal, GHOSTTY_SELECTION_GESTURE_DATA_AUTOSCROLL, &direction)
+        ghostty_selection_gesture_get(
+            selectionGesture,
+            terminal,
+            GHOSTTY_SELECTION_GESTURE_DATA_AUTOSCROLL,
+            &direction
+        )
         if direction == GHOSTTY_SELECTION_GESTURE_AUTOSCROLL_NONE {
             stopAutoscroll()
         } else if autoscrollTimer == nil {
-            let timer = Timer(timeInterval: 0.04, repeats: true) { [weak self] _ in
-                MainActor.assumeIsolated { self?.autoscroll(isRectangle: isRectangle) }
+            let timer = Timer(timeInterval: 0.04, repeats: true) {
+                [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.autoscroll(isRectangle: isRectangle)
+                }
             }
             RunLoop.main.add(timer, forMode: .common)
             autoscrollTimer = timer
@@ -606,22 +870,48 @@ extension TerminalView {
     }
 
     private func autoscroll(isRectangle: Bool) {
-        guard let session, let terminal = session.terminal, let selectionGesture, let selectionTick else {
+        guard let session, let terminal = session.terminal,
+            let selectionGesture, let selectionTick
+        else {
             stopAutoscroll()
             return
         }
         let cell = cell(at: lastDragLocation)
-        var viewport = GhosttyPointCoordinate(x: UInt16(clamping: cell.column), y: UInt32(clamping: cell.row))
+        var viewport = GhosttyPointCoordinate(
+            x: UInt16(clamping: cell.column),
+            y: UInt32(clamping: cell.row)
+        )
         var position = surfacePosition(lastDragLocation)
         var geometry = selectionGeometry
         var isRectangle = isRectangle
-        ghostty_selection_gesture_event_set(selectionTick, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_VIEWPORT, &viewport)
-        ghostty_selection_gesture_event_set(selectionTick, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_POSITION, &position)
-        ghostty_selection_gesture_event_set(selectionTick, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_GEOMETRY, &geometry)
-        ghostty_selection_gesture_event_set(selectionTick, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_RECTANGLE, &isRectangle)
+        ghostty_selection_gesture_event_set(
+            selectionTick,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_VIEWPORT,
+            &viewport
+        )
+        ghostty_selection_gesture_event_set(
+            selectionTick,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_POSITION,
+            &position
+        )
+        ghostty_selection_gesture_event_set(
+            selectionTick,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_GEOMETRY,
+            &geometry
+        )
+        ghostty_selection_gesture_event_set(
+            selectionTick,
+            GHOSTTY_SELECTION_GESTURE_EVENT_OPT_RECTANGLE,
+            &isRectangle
+        )
         // Scrolls one row and extends the selection to the pointer.
         var selection = GhosttySelection()
-        if ghostty_selection_gesture_event(selectionGesture, terminal, selectionTick, &selection) == GHOSTTY_SUCCESS {
+        if ghostty_selection_gesture_event(
+            selectionGesture,
+            terminal,
+            selectionTick,
+            &selection
+        ) == GHOSTTY_SUCCESS {
             session.select(selection)
         } else {
             stopAutoscroll()
@@ -635,11 +925,22 @@ extension TerminalView {
 
     private func endSelection(with event: NSEvent) {
         stopAutoscroll()
-        guard let terminal = session?.terminal, let selectionGesture, let selectionRelease else { return }
+        guard let terminal = session?.terminal, let selectionGesture,
+            let selectionRelease
+        else { return }
         if var ref = gridRef(at: convert(event.locationInWindow, from: nil)) {
-            ghostty_selection_gesture_event_set(selectionRelease, GHOSTTY_SELECTION_GESTURE_EVENT_OPT_REF, &ref)
+            ghostty_selection_gesture_event_set(
+                selectionRelease,
+                GHOSTTY_SELECTION_GESTURE_EVENT_OPT_REF,
+                &ref
+            )
         }
-        ghostty_selection_gesture_event(selectionGesture, terminal, selectionRelease, nil)
+        ghostty_selection_gesture_event(
+            selectionGesture,
+            terminal,
+            selectionRelease,
+            nil
+        )
     }
 }
 
@@ -664,11 +965,14 @@ extension TerminalView: NSUserInterfaceValidations {
         session?.clear()
     }
 
-    func validateUserInterfaceItem(_ item: any NSValidatedUserInterfaceItem) -> Bool {
+    func validateUserInterfaceItem(_ item: any NSValidatedUserInterfaceItem)
+        -> Bool
+    {
         switch item.action {
         case #selector(copy(_:)): session?.hasSelection == true
         case #selector(paste(_:)): Self.pasteableText(from: .general) != nil
-        case #selector(selectAll(_:)), #selector(clearTerminal(_:)): session?.terminal != nil
+        case #selector(selectAll(_:)), #selector(clearTerminal(_:)):
+            session?.terminal != nil
         default: true
         }
     }
@@ -676,24 +980,56 @@ extension TerminalView: NSUserInterfaceValidations {
     override func menu(for event: NSEvent) -> NSMenu? {
         let menu = NSMenu()
         if let link = link(at: convert(event.locationInWindow, from: nil)) {
-            let open = menu.addItem(withTitle: link.url.isFileURL ? String(localized: "Open File") : String(localized: "Open Link"), action: #selector(openLink(_:)), keyEquivalent: "")
-            let copy = menu.addItem(withTitle: link.url.isFileURL ? String(localized: "Copy Path") : String(localized: "Copy Link"), action: #selector(copyLink(_:)), keyEquivalent: "")
+            let open = menu.addItem(
+                withTitle: link.url.isFileURL
+                    ? String(localized: "Open File")
+                    : String(localized: "Open Link"),
+                action: #selector(openLink(_:)),
+                keyEquivalent: ""
+            )
+            let copy = menu.addItem(
+                withTitle: link.url.isFileURL
+                    ? String(localized: "Copy Path")
+                    : String(localized: "Copy Link"),
+                action: #selector(copyLink(_:)),
+                keyEquivalent: ""
+            )
             open.representedObject = link
             copy.representedObject = link
             menu.addItem(.separator())
         }
-        menu.addItem(withTitle: String(localized: "Copy"), action: #selector(copy(_:)), keyEquivalent: "")
-        menu.addItem(withTitle: String(localized: "Paste"), action: #selector(paste(_:)), keyEquivalent: "")
-        menu.addItem(withTitle: String(localized: "Select All"), action: #selector(selectAll(_:)), keyEquivalent: "")
+        menu.addItem(
+            withTitle: String(localized: "Copy"),
+            action: #selector(copy(_:)),
+            keyEquivalent: ""
+        )
+        menu.addItem(
+            withTitle: String(localized: "Paste"),
+            action: #selector(paste(_:)),
+            keyEquivalent: ""
+        )
+        menu.addItem(
+            withTitle: String(localized: "Select All"),
+            action: #selector(selectAll(_:)),
+            keyEquivalent: ""
+        )
         menu.addItem(.separator())
-        menu.addItem(withTitle: String(localized: "Clear"), action: #selector(clearTerminal(_:)), keyEquivalent: "")
+        menu.addItem(
+            withTitle: String(localized: "Clear"),
+            action: #selector(clearTerminal(_:)),
+            keyEquivalent: ""
+        )
         menu.items.forEach { $0.target = self }
         return menu
     }
 
     /// Text from a pasteboard: copied files and folders paste as their paths.
-    private static func pasteableText(from pasteboard: NSPasteboard) -> String? {
-        if let urls = pasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL], !urls.isEmpty {
+    private static func pasteableText(from pasteboard: NSPasteboard) -> String?
+    {
+        if let urls = pasteboard.readObjects(
+            forClasses: [NSURL.self],
+            options: [.urlReadingFileURLsOnly: true]
+        ) as? [URL], !urls.isEmpty {
             return urls.map { shellEscaped($0.path) }.joined(separator: " ")
         }
         return pasteboard.string(forType: .string)
@@ -702,7 +1038,9 @@ extension TerminalView: NSUserInterfaceValidations {
     /// A path as it's typed at a shell prompt, with a backslash before each
     /// character the shell would otherwise read as its own.
     private static func shellEscaped(_ path: String) -> String {
-        let plain = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "/._-+:@%,=~"))
+        let plain = CharacterSet.alphanumerics.union(
+            CharacterSet(charactersIn: "/._-+:@%,=~")
+        )
         return path.unicodeScalars.reduce(into: "") { escaped, scalar in
             if !plain.contains(scalar) { escaped.append("\\") }
             escaped.unicodeScalars.append(scalar)
@@ -711,12 +1049,17 @@ extension TerminalView: NSUserInterfaceValidations {
 
     private func pasteText(_ text: String) {
         guard let session else { return }
-        guard session.paste(text) == .needsConfirmation, let window else { return }
+        guard session.paste(text) == .needsConfirmation, let window else {
+            return
+        }
         // A program that hasn't asked for pastes to be marked as such (a shell at
         // its prompt has) can't tell pasted lines from typed ones, and runs each.
         let alert = NSAlert()
         alert.messageText = String(localized: "Paste text with several lines?")
-        alert.informativeText = String(localized: "Each line is run as it’s pasted, as if you had typed it and pressed Return.")
+        alert.informativeText = String(
+            localized:
+                "Each line is run as it’s pasted, as if you had typed it and pressed Return."
+        )
         alert.addButton(withTitle: String(localized: "Paste"))
         alert.addButton(withTitle: String(localized: "Cancel"))
         alert.beginSheetModal(for: window) { [weak self] response in
@@ -728,13 +1071,16 @@ extension TerminalView: NSUserInterfaceValidations {
 
     // MARK: Dropped files
 
-    override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
+    override func draggingEntered(_ sender: any NSDraggingInfo)
+        -> NSDragOperation
+    {
         session?.terminal != nil ? .copy : []
     }
 
     /// A file dragged from the Finder types its path.
     override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
-        guard let text = Self.pasteableText(from: sender.draggingPasteboard) else { return false }
+        guard let text = Self.pasteableText(from: sender.draggingPasteboard)
+        else { return false }
         window?.makeFirstResponder(self)
         pasteText(text + " ")
         return true

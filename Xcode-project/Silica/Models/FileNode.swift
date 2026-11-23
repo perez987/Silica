@@ -35,18 +35,33 @@ final class FileNode: Identifiable {
     /// The project root, with the repository's `.git/info/exclude` rules.
     convenience init(root url: URL) {
         let rules = GitIgnoreStack()
-            .adding(GitIgnoreFile(base: "", url: url.appending(path: ".git/info/exclude")))
-        let isRepository = FileManager.default.fileExists(atPath: url.appending(path: ".git").path(percentEncoded: false))
+            .adding(
+                GitIgnoreFile(
+                    base: "",
+                    url: url.appending(path: ".git/info/exclude")
+                )
+            )
+        let isRepository = FileManager.default.fileExists(
+            atPath: url.appending(path: ".git").path(percentEncoded: false)
+        )
         self.init(
-            url: url, isDirectory: true, relativePath: "", isIgnored: false,
-            dimsDotfiles: !isRepository, inheritedRules: rules
+            url: url,
+            isDirectory: true,
+            relativePath: "",
+            isIgnored: false,
+            dimsDotfiles: !isRepository,
+            inheritedRules: rules
         )
     }
 
     private init(
-         url: URL, isDirectory: Bool, relativePath: String, isIgnored: Bool,
-         dimsDotfiles: Bool, inheritedRules: GitIgnoreStack
-     ) {
+        url: URL,
+        isDirectory: Bool,
+        relativePath: String,
+        isIgnored: Bool,
+        dimsDotfiles: Bool,
+        inheritedRules: GitIgnoreStack
+    ) {
         self.url = url
         self.name = url.lastPathComponent
         self.isDirectory = isDirectory
@@ -66,7 +81,10 @@ final class FileNode: Identifiable {
     func reload() {
         guard isDirectory, let old = children else { return }
         childRules = nil
-        let existing = Dictionary(old.map { ($0.url, $0) }, uniquingKeysWith: { first, _ in first })
+        let existing = Dictionary(
+            old.map { ($0.url, $0) },
+            uniquingKeysWith: { first, _ in first }
+        )
         let fresh = contents().map { node in
             guard let kept = existing[node.url] else { return node }
             kept.isIgnored = node.isIgnored
@@ -88,42 +106,54 @@ final class FileNode: Identifiable {
 
     private func rulesForChildren() -> GitIgnoreStack {
         if let childRules { return childRules }
-        let rules = inheritedRules.adding(GitIgnoreFile(base: relativePath, url: url.appending(path: ".gitignore")))
+        let rules = inheritedRules.adding(
+            GitIgnoreFile(
+                base: relativePath,
+                url: url.appending(path: ".gitignore")
+            )
+        )
         childRules = rules
         return rules
     }
 
     private func contents() -> [FileNode] {
         let keys: [URLResourceKey] = [.isDirectoryKey]
-        let urls = (try? FileManager.default.contentsOfDirectory(
-            at: url,
-            includingPropertiesForKeys: keys,
-            options: []
-        )) ?? []
+        let urls =
+            (try? FileManager.default.contentsOfDirectory(
+                at: url,
+                includingPropertiesForKeys: keys,
+                options: []
+            )) ?? []
         let rules = rulesForChildren()
 
-        return urls
+        return
+            urls
             .filter { !Self.hiddenNames.contains($0.lastPathComponent) }
             .map { childURL in
-                let isDir = (try? childURL.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
+                let isDir =
+                    (try? childURL.resourceValues(forKeys: [.isDirectoryKey])
+                        .isDirectory) ?? false
                 let normalized = URL(
                     filePath: childURL.path(percentEncoded: false),
                     directoryHint: isDir ? .isDirectory : .notDirectory
                 )
                 let name = childURL.lastPathComponent
-                let path = relativePath.isEmpty ? name : relativePath + "/" + name
+                let path =
+                    relativePath.isEmpty ? name : relativePath + "/" + name
                 return FileNode(
                     url: normalized,
                     isDirectory: isDir,
                     relativePath: path,
-                    isIgnored: isIgnored || rules.isIgnored(path, isDirectory: isDir),
+                    isIgnored: isIgnored
+                        || rules.isIgnored(path, isDirectory: isDir),
                     dimsDotfiles: dimsDotfiles,
                     inheritedRules: rules
                 )
             }
             .sorted { lhs, rhs in
                 if lhs.isDirectory != rhs.isDirectory { return lhs.isDirectory }
-                return lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+                return lhs.name.localizedStandardCompare(rhs.name)
+                    == .orderedAscending
             }
     }
 }

@@ -15,21 +15,29 @@ final class ProjectWatcher {
             version: 0,
             // Released in `stop()`, so the stream never outlives its watcher.
             info: Unmanaged.passRetained(self).toOpaque(),
-            retain: nil, release: nil, copyDescription: nil
+            retain: nil,
+            release: nil,
+            copyDescription: nil
         )
         let callback: FSEventStreamCallback = { _, info, count, paths, _, _ in
             guard let info else { return }
-            let watcher = Unmanaged<ProjectWatcher>.fromOpaque(info).takeUnretainedValue()
-            let changed = (unsafeBitCast(paths, to: NSArray.self) as? [String]) ?? []
+            let watcher = Unmanaged<ProjectWatcher>.fromOpaque(info)
+                .takeUnretainedValue()
+            let changed =
+                (unsafeBitCast(paths, to: NSArray.self) as? [String]) ?? []
             MainActor.assumeIsolated { watcher.handle(changed) }
         }
-        guard let stream = FSEventStreamCreate(
-            nil, callback, &context,
-            [url.path(percentEncoded: false)] as CFArray,
-            FSEventStreamEventId(kFSEventStreamEventIdSinceNow),
-            0.3,
-            FSEventStreamCreateFlags(kFSEventStreamCreateFlagUseCFTypes)
-        ) else {
+        guard
+            let stream = FSEventStreamCreate(
+                nil,
+                callback,
+                &context,
+                [url.path(percentEncoded: false)] as CFArray,
+                FSEventStreamEventId(kFSEventStreamEventIdSinceNow),
+                0.3,
+                FSEventStreamCreateFlags(kFSEventStreamCreateFlagUseCFTypes)
+            )
+        else {
             Unmanaged.passUnretained(self).release()
             return
         }

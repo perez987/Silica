@@ -52,12 +52,18 @@ struct UnsavedChangesGuard: NSViewRepresentable {
         /// Puts the proxy in front of the window's delegate, again if SwiftUI has
         /// replaced it since.
         func installDelegateProxy() {
-            guard let window, proxy == nil || window.delegate !== proxy else { return }
+            guard let window, proxy == nil || window.delegate !== proxy else {
+                return
+            }
             let proxy = WindowDelegateProxy(
                 original: window.delegate,
-                needsConfirmation: { [weak self] in self?.workspace?.hasUnsavedChanges == true },
+                needsConfirmation: { [weak self] in
+                    self?.workspace?.hasUnsavedChanges == true
+                },
                 confirm: { [weak self] window, proceed in
-                    guard let workspace = self?.workspace else { return proceed(true) }
+                    guard let workspace = self?.workspace else {
+                        return proceed(true)
+                    }
                     workspace.confirmClosing(in: window, completion: proceed)
                 }
             )
@@ -76,12 +82,18 @@ struct UnsavedChangesGuard: NSViewRepresentable {
         static var hasUnsavedChanges: Bool { !pending.isEmpty }
 
         private static var pending: [GuardView] {
-            all.allObjects.filter { $0.window != nil && $0.workspace?.hasUnsavedChanges == true }
+            all.allObjects.filter {
+                $0.window != nil && $0.workspace?.hasUnsavedChanges == true
+            }
         }
 
-        private static func confirm(_ views: ArraySlice<GuardView>, completion: @escaping (Bool) -> Void) {
+        private static func confirm(
+            _ views: ArraySlice<GuardView>,
+            completion: @escaping (Bool) -> Void
+        ) {
             guard let view = views.first else { return completion(true) }
-            guard let window = view.window, let workspace = view.workspace else {
+            guard let window = view.window, let workspace = view.workspace
+            else {
                 return confirm(views.dropFirst(), completion: completion)
             }
             if window.isMiniaturized { window.deminiaturize(nil) }
@@ -136,10 +148,12 @@ final class WindowDelegateProxy: NSObject, NSWindowDelegate {
     }
 
     override func responds(to selector: Selector!) -> Bool {
-        super.responds(to: selector) || (original?.responds(to: selector) ?? false)
+        super.responds(to: selector)
+            || (original?.responds(to: selector) ?? false)
     }
 
     override func forwardingTarget(for selector: Selector!) -> Any? {
-        original?.responds(to: selector) == true ? original : super.forwardingTarget(for: selector)
+        original?.responds(to: selector) == true
+            ? original : super.forwardingTarget(for: selector)
     }
 }

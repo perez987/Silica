@@ -24,7 +24,10 @@ final class TextController: NSObject, NSTextViewDelegate {
         let contentSize = scrollView.contentSize
         textView.frame = NSRect(origin: .zero, size: contentSize)
         textView.minSize = .zero
-        textView.maxSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude)
+        textView.maxSize = NSSize(
+            width: CGFloat.greatestFiniteMagnitude,
+            height: .greatestFiniteMagnitude
+        )
         textView.isVerticallyResizable = true
         scrollView.documentView = textView
 
@@ -59,7 +62,11 @@ final class TextController: NSObject, NSTextViewDelegate {
         textView.setSelectedRange(NSRange(location: 0, length: 0))
         textView.delegate = self
 
-        let ruler = LineNumberRulerView(textView: textView, scrollView: scrollView, editorFontSize: fontSize)
+        let ruler = LineNumberRulerView(
+            textView: textView,
+            scrollView: scrollView,
+            editorFontSize: fontSize
+        )
         scrollView.verticalRulerView = ruler
         scrollView.hasVerticalRuler = true
         scrollView.rulersVisible = EditorSettings.shared.showsLineNumbers
@@ -70,31 +77,44 @@ final class TextController: NSObject, NSTextViewDelegate {
         view.showsMinimap = EditorSettings.shared.showsMinimap
 
         if let language {
-            highlighter = SyntaxHighlighter(textView: textView, language: language)
+            highlighter = SyntaxHighlighter(
+                textView: textView,
+                language: language
+            )
             highlighter?.highlightNow()
         }
         applyWrapping()
 
         NotificationCenter.default.addObserver(
-            self, selector: #selector(fontSizeDidChange),
-            name: .editorFontSizeDidChange, object: nil
+            self,
+            selector: #selector(fontSizeDidChange),
+            name: .editorFontSizeDidChange,
+            object: nil
         )
         NotificationCenter.default.addObserver(
-            self, selector: #selector(applyWrapping),
-            name: .editorWrapDidChange, object: nil
+            self,
+            selector: #selector(applyWrapping),
+            name: .editorWrapDidChange,
+            object: nil
         )
         NotificationCenter.default.addObserver(
-            self, selector: #selector(settingsDidChange),
-            name: .editorSettingsDidChange, object: nil
+            self,
+            selector: #selector(settingsDidChange),
+            name: .editorSettingsDidChange,
+            object: nil
         )
         NotificationCenter.default.addObserver(
-            self, selector: #selector(syntaxThemeDidChange),
-            name: .syntaxThemeDidChange, object: nil
+            self,
+            selector: #selector(syntaxThemeDidChange),
+            name: .syntaxThemeDidChange,
+            object: nil
         )
         scrollView.contentView.postsBoundsChangedNotifications = true
         NotificationCenter.default.addObserver(
-            self, selector: #selector(updateGutterMask),
-            name: NSView.boundsDidChangeNotification, object: scrollView.contentView
+            self,
+            selector: #selector(updateGutterMask),
+            name: NSView.boundsDidChangeNotification,
+            object: scrollView.contentView
         )
     }
 
@@ -103,7 +123,9 @@ final class TextController: NSObject, NSTextViewDelegate {
         let string = text as NSString
         let newline = string.range(of: "\n")
         if newline.location != NSNotFound {
-            return newline.location > 0 && string.character(at: newline.location - 1) == 0x0D ? "\r\n" : "\n"
+            return newline.location > 0
+                && string.character(at: newline.location - 1) == 0x0D
+                ? "\r\n" : "\n"
         }
         return string.range(of: "\r").location != NSNotFound ? "\r" : "\n"
     }
@@ -115,12 +137,19 @@ final class TextController: NSObject, NSTextViewDelegate {
         guard language != textView.language else { return }
         textView.language = language
         if let language {
-            highlighter = SyntaxHighlighter(textView: textView, language: language)
+            highlighter = SyntaxHighlighter(
+                textView: textView,
+                language: language
+            )
             highlighter?.highlightNow()
         } else {
             highlighter = nil
             if let storage = textView.textStorage {
-                storage.addAttribute(.foregroundColor, value: NSColor.labelColor, range: NSRange(location: 0, length: storage.length))
+                storage.addAttribute(
+                    .foregroundColor,
+                    value: NSColor.labelColor,
+                    range: NSRange(location: 0, length: storage.length)
+                )
             }
         }
     }
@@ -130,20 +159,27 @@ final class TextController: NSObject, NSTextViewDelegate {
     /// Wraps lines to the view's width, or lets them run on and scroll sideways.
     @objc private func applyWrapping() {
         // The gutter floats over the scrolling area, so it isn't counted out of contentSize.
-        let gutter = scrollView.rulersVisible ? (lineNumbers?.ruleThickness ?? 0) : 0
+        let gutter =
+            scrollView.rulersVisible ? (lineNumbers?.ruleThickness ?? 0) : 0
         let width = max(0, scrollView.contentSize.width - gutter)
         if EditorSettings.shared.wrapsLines {
             textView.isHorizontallyResizable = false
             textView.autoresizingMask = [.width]
             textView.textContainer?.widthTracksTextView = true
             textView.frame.size.width = width
-            textView.textContainer?.containerSize = NSSize(width: width, height: .greatestFiniteMagnitude)
+            textView.textContainer?.containerSize = NSSize(
+                width: width,
+                height: .greatestFiniteMagnitude
+            )
             // Back to the left edge if the view had scrolled sideways. (The text view's
             // own x = 0, which sits right of the gutter.)
             textView.scroll(NSPoint(x: 0, y: textView.visibleRect.minY))
         } else {
             textView.textContainer?.widthTracksTextView = false
-            textView.textContainer?.containerSize = NSSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude)
+            textView.textContainer?.containerSize = NSSize(
+                width: CGFloat.greatestFiniteMagnitude,
+                height: .greatestFiniteMagnitude
+            )
             textView.isHorizontallyResizable = true
             textView.autoresizingMask = []
         }
@@ -161,8 +197,11 @@ final class TextController: NSObject, NSTextViewDelegate {
     /// The line-number gutter floats over the left edge of the scrolling area, so text
     /// scrolled sideways (wrapping off) would show through it; hide that strip.
     @objc private func updateGutterMask() {
-        let gutter = scrollView.rulersVisible ? (lineNumbers?.ruleThickness ?? 0) : 0
-        textView.maskOutGutter(startingAt: scrollView.contentView.bounds.minX + gutter)
+        let gutter =
+            scrollView.rulersVisible ? (lineNumbers?.ruleThickness ?? 0) : 0
+        textView.maskOutGutter(
+            startingAt: scrollView.contentView.bounds.minX + gutter
+        )
     }
 
     // MARK: Restoring position
@@ -177,7 +216,9 @@ final class TextController: NSObject, NSTextViewDelegate {
     func restorePosition(cursor: Int?, topLine: Int?) {
         if let cursor {
             let length = (textView.string as NSString).length
-            textView.setSelectedRange(NSRange(location: min(max(cursor, 0), length), length: 0))
+            textView.setSelectedRange(
+                NSRange(location: min(max(cursor, 0), length), length: 0)
+            )
         }
         pendingTopLine = topLine
     }
@@ -223,10 +264,14 @@ final class TextController: NSObject, NSTextViewDelegate {
     var lineCount: Int { lineNumbers?.lineCount ?? 1 }
 
     /// The 1-based line containing the UTF-16 `offset`.
-    func lineNumber(at offset: Int) -> Int { lineNumbers?.lineNumber(at: offset) ?? 1 }
+    func lineNumber(at offset: Int) -> Int {
+        lineNumbers?.lineNumber(at: offset) ?? 1
+    }
 
     /// Where the 1-based `line` starts.
-    func offset(ofLine line: Int) -> Int { lineNumbers?.offset(ofLine: line) ?? 0 }
+    func offset(ofLine line: Int) -> Int {
+        lineNumbers?.offset(ofLine: line) ?? 0
+    }
 
     // MARK: Scrolling (for the minimap)
 
@@ -244,21 +289,33 @@ final class TextController: NSObject, NSTextViewDelegate {
     /// Scrolls vertically, keeping any sideways scroll.
     func setScrollY(_ y: CGFloat) {
         let clipView = scrollView.contentView
-        clipView.scroll(to: NSPoint(x: clipView.bounds.minX, y: min(max(y, 0), maxScrollY)))
+        clipView.scroll(
+            to: NSPoint(x: clipView.bounds.minX, y: min(max(y, 0), maxScrollY))
+        )
         scrollView.reflectScrolledClipView(clipView)
     }
 
     /// The 1-based lines at least partly on screen.
     func visibleLineRange() -> ClosedRange<Int> {
         guard let layoutManager = textView.textLayoutManager,
-              let contentManager = layoutManager.textContentManager else { return 1...1 }
+            let contentManager = layoutManager.textContentManager
+        else { return 1...1 }
         let origin = textView.textContainerOrigin
         let visible = textView.visibleRect
         let documentStart = layoutManager.documentRange.location
         func line(atY y: CGFloat) -> Int? {
-            guard let fragment = layoutManager.textLayoutFragment(for: CGPoint(x: 0, y: max(0, y - origin.y))) else { return nil }
+            guard
+                let fragment = layoutManager.textLayoutFragment(
+                    for: CGPoint(x: 0, y: max(0, y - origin.y))
+                )
+            else { return nil }
             // A layout fragment is one paragraph, so one logical line however it wraps.
-            return lineNumber(at: contentManager.offset(from: documentStart, to: fragment.rangeInElement.location))
+            return lineNumber(
+                at: contentManager.offset(
+                    from: documentStart,
+                    to: fragment.rangeInElement.location
+                )
+            )
         }
         let first = line(atY: visible.minY + 1) ?? 1
         let last = line(atY: visible.maxY - 1) ?? lineCount
@@ -268,13 +325,23 @@ final class TextController: NSObject, NSTextViewDelegate {
     /// Scrolls so the 1-based `line` is in the middle of the editor.
     func center(line: Int) {
         guard let layoutManager = textView.textLayoutManager,
-              let contentManager = layoutManager.textContentManager,
-              let location = contentManager.location(layoutManager.documentRange.location, offsetBy: offset(ofLine: line)),
-              let range = NSTextRange(location: layoutManager.documentRange.location, end: location) else { return }
+            let contentManager = layoutManager.textContentManager,
+            let location = contentManager.location(
+                layoutManager.documentRange.location,
+                offsetBy: offset(ofLine: line)
+            ),
+            let range = NSTextRange(
+                location: layoutManager.documentRange.location,
+                end: location
+            )
+        else { return }
         layoutManager.ensureLayout(for: range)
-        guard let fragment = layoutManager.textLayoutFragment(for: location) else { return }
+        guard let fragment = layoutManager.textLayoutFragment(for: location)
+        else { return }
         let frame = fragment.layoutFragmentFrame
-        let midY = frame.minY + textView.textContainerOrigin.y + min(frame.height, 20) / 2
+        let midY =
+            frame.minY + textView.textContainerOrigin.y + min(frame.height, 20)
+            / 2
         setScrollY(midY - scrollView.contentView.bounds.height / 2)
     }
 
@@ -306,7 +373,9 @@ final class TextController: NSObject, NSTextViewDelegate {
         )
         if buffer.cursor != status { buffer.cursor = status }
         let indentation = textView.indentation
-        if buffer.indentation != indentation { buffer.indentation = indentation }
+        if buffer.indentation != indentation {
+            buffer.indentation = indentation
+        }
     }
 
     private static func font(ofSize size: CGFloat) -> NSFont {
@@ -319,13 +388,18 @@ final class TextController: NSObject, NSTextViewDelegate {
         let paragraph = NSMutableParagraphStyle()
         paragraph.lineHeightMultiple = 1.15
         paragraph.tabStops = []
-        paragraph.defaultTabInterval = (" " as NSString).size(withAttributes: [.font: font]).width
+        paragraph.defaultTabInterval =
+            (" " as NSString).size(withAttributes: [.font: font]).width
             * CGFloat(EditorTextView.tabWidth)
         textView.defaultParagraphStyle = paragraph
         textView.typingAttributes[.paragraphStyle] = paragraph
         if let storage = textView.textStorage {
             // Directly on the storage, so it isn't an undoable edit.
-            storage.addAttribute(.paragraphStyle, value: paragraph, range: NSRange(location: 0, length: storage.length))
+            storage.addAttribute(
+                .paragraphStyle,
+                value: paragraph,
+                range: NSRange(location: 0, length: storage.length)
+            )
         }
     }
 
@@ -385,22 +459,43 @@ final class TextController: NSObject, NSTextViewDelegate {
         let new = newText as NSString
         let shared = min(old.length, new.length)
         var prefix = 0
-        while prefix < shared, old.character(at: prefix) == new.character(at: prefix) { prefix += 1 }
+        while prefix < shared,
+            old.character(at: prefix) == new.character(at: prefix)
+        { prefix += 1 }
         // Don't cut a surrogate pair in half.
-        if prefix > 0, prefix < shared, UTF16.isLeadSurrogate(old.character(at: prefix - 1)) { prefix -= 1 }
+        if prefix > 0, prefix < shared,
+            UTF16.isLeadSurrogate(old.character(at: prefix - 1))
+        {
+            prefix -= 1
+        }
         var suffix = 0
         while suffix < shared - prefix,
-              old.character(at: old.length - 1 - suffix) == new.character(at: new.length - 1 - suffix) { suffix += 1 }
-        if suffix > 0, suffix < shared - prefix, UTF16.isTrailSurrogate(old.character(at: old.length - suffix)) { suffix -= 1 }
+            old.character(at: old.length - 1 - suffix)
+                == new.character(at: new.length - 1 - suffix)
+        { suffix += 1 }
+        if suffix > 0, suffix < shared - prefix,
+            UTF16.isTrailSurrogate(old.character(at: old.length - suffix))
+        {
+            suffix -= 1
+        }
 
-        let range = NSRange(location: prefix, length: old.length - prefix - suffix)
-        let replacement = new.substring(with: NSRange(location: prefix, length: new.length - prefix - suffix))
+        let range = NSRange(
+            location: prefix,
+            length: old.length - prefix - suffix
+        )
+        let replacement = new.substring(
+            with: NSRange(
+                location: prefix,
+                length: new.length - prefix - suffix
+            )
+        )
         guard range.length > 0 || !replacement.isEmpty else { return }
 
         isReplacingText = true
         defer { isReplacingText = false }
         textView.redetectIndentation()
-        if textView.shouldChangeText(in: range, replacementString: replacement) {
+        if textView.shouldChangeText(in: range, replacementString: replacement)
+        {
             textView.replaceCharacters(in: range, with: replacement)
             textView.didChangeText()
             textView.undoManager?.setActionName("Revert")
@@ -417,12 +512,23 @@ final class TextController: NSObject, NSTextViewDelegate {
     /// The 1-based line shown at the top of the editor.
     func topVisibleLine() -> Int {
         guard let layoutManager = textView.textLayoutManager,
-              let contentManager = layoutManager.textContentManager else { return 1 }
+            let contentManager = layoutManager.textContentManager
+        else { return 1 }
         // A point into the view, so pixel rounding at a line boundary doesn't pick the
         // line above.
-        let y = max(0, textView.visibleRect.minY - textView.textContainerOrigin.y + 1)
-        guard let fragment = layoutManager.textLayoutFragment(for: CGPoint(x: 0, y: y)) else { return 1 }
-        let offset = contentManager.offset(from: layoutManager.documentRange.location, to: fragment.rangeInElement.location)
+        let y = max(
+            0,
+            textView.visibleRect.minY - textView.textContainerOrigin.y + 1
+        )
+        guard
+            let fragment = layoutManager.textLayoutFragment(
+                for: CGPoint(x: 0, y: y)
+            )
+        else { return 1 }
+        let offset = contentManager.offset(
+            from: layoutManager.documentRange.location,
+            to: fragment.rangeInElement.location
+        )
         let text = textView.string as NSString
         var line = 1
         var index = 0
@@ -441,18 +547,33 @@ final class TextController: NSObject, NSTextViewDelegate {
         var offset = 0
         var current = 1
         while current < line, offset < text.length {
-            offset = NSMaxRange(text.lineRange(for: NSRange(location: offset, length: 0)))
+            offset = NSMaxRange(
+                text.lineRange(for: NSRange(location: offset, length: 0))
+            )
             current += 1
         }
         guard let layoutManager = textView.textLayoutManager,
-              let contentManager = layoutManager.textContentManager,
-              let location = contentManager.location(layoutManager.documentRange.location, offsetBy: offset),
-              let range = NSTextRange(location: layoutManager.documentRange.location, end: location) else { return }
+            let contentManager = layoutManager.textContentManager,
+            let location = contentManager.location(
+                layoutManager.documentRange.location,
+                offsetBy: offset
+            ),
+            let range = NSTextRange(
+                location: layoutManager.documentRange.location,
+                end: location
+            )
+        else { return }
         layoutManager.ensureLayout(for: range)
         if let fragment = layoutManager.textLayoutFragment(for: location) {
             // Fragment frames don't include the text container's inset; the view does.
             // Matches `topVisibleLine()`, so saving and restoring doesn't drift.
-            textView.scroll(NSPoint(x: 0, y: fragment.layoutFragmentFrame.minY + textView.textContainerOrigin.y))
+            textView.scroll(
+                NSPoint(
+                    x: 0,
+                    y: fragment.layoutFragmentFrame.minY
+                        + textView.textContainerOrigin.y
+                )
+            )
         }
     }
 }
@@ -500,7 +621,8 @@ final class EditorScrollView: NSScrollView {
         let distanceFromTop = contentView.bounds.minY + oldInset
         change()
         let newInset = contentView.contentInsets.top
-        guard newInset != oldInset, distanceFromTop < max(oldInset, newInset) else { return }
+        guard newInset != oldInset, distanceFromTop < max(oldInset, newInset)
+        else { return }
         let y = distanceFromTop - newInset
         guard contentView.bounds.minY != y else { return }
         contentView.scroll(to: NSPoint(x: contentView.bounds.minX, y: y))
@@ -550,9 +672,20 @@ final class EditorContainerView: NSView {
 
     override func layout() {
         super.layout()
-        let minimapWidth = showsMinimap && minimap != nil ? MinimapView.width : 0
-        scrollView.frame = NSRect(x: 0, y: 0, width: max(0, bounds.width - minimapWidth), height: bounds.height)
+        let minimapWidth =
+            showsMinimap && minimap != nil ? MinimapView.width : 0
+        scrollView.frame = NSRect(
+            x: 0,
+            y: 0,
+            width: max(0, bounds.width - minimapWidth),
+            height: bounds.height
+        )
         minimap?.isHidden = minimapWidth == 0
-        minimap?.frame = NSRect(x: bounds.width - minimapWidth, y: 0, width: minimapWidth, height: bounds.height)
+        minimap?.frame = NSRect(
+            x: bounds.width - minimapWidth,
+            y: 0,
+            width: minimapWidth,
+            height: bounds.height
+        )
     }
 }

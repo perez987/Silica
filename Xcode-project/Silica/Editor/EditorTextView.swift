@@ -24,7 +24,9 @@ final class EditorTextView: NSTextView {
         var width: Int
 
         /// The text one level of indentation inserts.
-        var unitString: String { usesTabs ? "\t" : String(repeating: " ", count: width) }
+        var unitString: String {
+            usesTabs ? "\t" : String(repeating: " ", count: width)
+        }
     }
 
     /// The language being edited, for comment markers and block-opening `:`.
@@ -36,7 +38,9 @@ final class EditorTextView: NSTextView {
 
     var indentation: Indentation {
         if let cachedIndentation { return cachedIndentation }
-        let detected = Self.detectIndentation(in: (textStorage?.string ?? "") as NSString)
+        let detected = Self.detectIndentation(
+            in: (textStorage?.string ?? "") as NSString
+        )
         cachedIndentation = detected
         return detected
     }
@@ -74,7 +78,11 @@ final class EditorTextView: NSTextView {
     private var measuredView: MeasuredView?
 
     private var currentMeasuredView: MeasuredView {
-        MeasuredView(top: visibleRect.minY, width: bounds.width, fontSize: font?.pointSize ?? 0)
+        MeasuredView(
+            top: visibleRect.minY,
+            width: bounds.width,
+            fontSize: font?.pointSize ?? 0
+        )
     }
 
     /// TextKit 2 only lays out the lines on screen. After a jump with the scroller, the
@@ -86,7 +94,8 @@ final class EditorTextView: NSTextView {
     /// It's skipped until the view scrolls, resizes or changes font.
     func measureLinesAboveView() {
         guard let layoutManager = textLayoutManager,
-              let contentManager = layoutManager.textContentManager else { return }
+            let contentManager = layoutManager.textContentManager
+        else { return }
         guard currentMeasuredView != measuredView else { return }
         let visible = visibleRect
         // At the very top there's nothing above to measure.
@@ -99,19 +108,33 @@ final class EditorTextView: NSTextView {
         let documentStart = layoutManager.documentRange.location
         // A point into the view, so rounding at a line boundary doesn't pick the line above.
         let topPoint = CGPoint(x: 0, y: max(0, visible.minY - origin.y + 1))
-        guard let top = layoutManager.textLayoutFragment(for: topPoint) else { return }
-        let topOffset = contentManager.offset(from: documentStart, to: top.rangeInElement.location)
+        guard let top = layoutManager.textLayoutFragment(for: topPoint) else {
+            return
+        }
+        let topOffset = contentManager.offset(
+            from: documentStart,
+            to: top.rangeInElement.location
+        )
         let delta = visible.minY - (top.layoutFragmentFrame.minY + origin.y)
 
         // Through the bottom of the view, so the lines on screen land where they really go.
         let bottomPoint = CGPoint(x: 0, y: max(0, visible.maxY - origin.y))
-        let end = layoutManager.textLayoutFragment(for: bottomPoint)?.rangeInElement.endLocation
+        let end =
+            layoutManager.textLayoutFragment(for: bottomPoint)?.rangeInElement
+            .endLocation
             ?? top.rangeInElement.endLocation
-        guard let range = NSTextRange(location: documentStart, end: end) else { return }
+        guard let range = NSTextRange(location: documentStart, end: end) else {
+            return
+        }
         layoutManager.ensureLayout(for: range)
 
-        guard let location = contentManager.location(documentStart, offsetBy: topOffset),
-              let measured = layoutManager.textLayoutFragment(for: location) else { return }
+        guard
+            let location = contentManager.location(
+                documentStart,
+                offsetBy: topOffset
+            ),
+            let measured = layoutManager.textLayoutFragment(for: location)
+        else { return }
         let y = measured.layoutFragmentFrame.minY + origin.y + delta
         if abs(y - visible.minY) >= 0.5 {
             // The view's height follows the corrected line heights.
@@ -121,14 +144,26 @@ final class EditorTextView: NSTextView {
         measuredView = currentMeasuredView
     }
 
-    override func shouldChangeText(in affectedCharRange: NSRange, replacementString: String?) -> Bool {
-        let allowed = super.shouldChangeText(in: affectedCharRange, replacementString: replacementString)
+    override func shouldChangeText(
+        in affectedCharRange: NSRange,
+        replacementString: String?
+    ) -> Bool {
+        let allowed = super.shouldChangeText(
+            in: affectedCharRange,
+            replacementString: replacementString
+        )
         if allowed { measureLinesAboveView() }
         return allowed
     }
 
-    override func shouldChangeText(inRanges affectedRanges: [NSValue], replacementStrings: [String]?) -> Bool {
-        let allowed = super.shouldChangeText(inRanges: affectedRanges, replacementStrings: replacementStrings)
+    override func shouldChangeText(
+        inRanges affectedRanges: [NSValue],
+        replacementStrings: [String]?
+    ) -> Bool {
+        let allowed = super.shouldChangeText(
+            inRanges: affectedRanges,
+            replacementStrings: replacementStrings
+        )
         if allowed { measureLinesAboveView() }
         return allowed
     }
@@ -140,7 +175,9 @@ final class EditorTextView: NSTextView {
     /// fallen off the top line on screen, not for every caret scroll.
     override func scrollRangeToVisible(_ range: NSRange) {
         super.scrollRangeToVisible(range)
-        if enclosingScrollView?.isFindBarVisible == true, window?.firstResponder !== self {
+        if enclosingScrollView?.isFindBarVisible == true,
+            window?.firstResponder !== self
+        {
             textLayoutManager?.textViewportLayoutController.layoutViewport()
         } else if viewportMissesTopLine() {
             textLayoutManager?.textViewportLayoutController.layoutViewport()
@@ -169,7 +206,8 @@ final class EditorTextView: NSTextView {
             guard let self else { return }
             self.isViewportCheckScheduled = false
             if self.viewportMissesTopLine() {
-                self.textLayoutManager?.textViewportLayoutController.layoutViewport()
+                self.textLayoutManager?.textViewportLayoutController
+                    .layoutViewport()
                 self.setNeedsDisplay(self.visibleRect)
             }
         }
@@ -178,12 +216,20 @@ final class EditorTextView: NSTextView {
     /// True when the viewport starts below the line at the top of the view.
     private func viewportMissesTopLine() -> Bool {
         guard let layoutManager = textLayoutManager,
-              let viewport = layoutManager.textViewportLayoutController.viewportRange else { return false }
+            let viewport = layoutManager.textViewportLayoutController
+                .viewportRange
+        else { return false }
         let visible = visibleRect
         // A point into the view, so rounding at a line boundary doesn't pick the line above.
-        let point = CGPoint(x: 0, y: max(0, visible.minY - textContainerOrigin.y + 1))
-        guard let top = layoutManager.textLayoutFragment(for: point) else { return false }
-        return viewport.location.compare(top.rangeInElement.location) == .orderedDescending
+        let point = CGPoint(
+            x: 0,
+            y: max(0, visible.minY - textContainerOrigin.y + 1)
+        )
+        guard let top = layoutManager.textLayoutFragment(for: point) else {
+            return false
+        }
+        return viewport.location.compare(top.rangeInElement.location)
+            == .orderedDescending
     }
 
     override func draw(_ dirtyRect: NSRect) {
@@ -205,15 +251,22 @@ final class EditorTextView: NSTextView {
             if layer.mask != nil { layer.mask = nil }
             return
         }
-        let mask = gutterMask ?? {
-            let mask = CALayer()
-            mask.backgroundColor = NSColor.black.cgColor
-            gutterMask = mask
-            return mask
-        }()
+        let mask =
+            gutterMask
+            ?? {
+                let mask = CALayer()
+                mask.backgroundColor = NSColor.black.cgColor
+                gutterMask = mask
+                return mask
+            }()
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        mask.frame = CGRect(x: minX, y: 0, width: max(0, bounds.width - minX), height: bounds.height)
+        mask.frame = CGRect(
+            x: minX,
+            y: 0,
+            width: max(0, bounds.width - minX),
+            height: bounds.height
+        )
         CATransaction.commit()
         if layer.mask !== mask { layer.mask = mask }
     }
@@ -222,35 +275,46 @@ final class EditorTextView: NSTextView {
 
     private func drawIndentGuides(in dirtyRect: NSRect) {
         guard let layoutManager = textLayoutManager,
-              let contentManager = layoutManager.textContentManager,
-              let storage = textStorage, storage.length > 0,
-              let font else { return }
+            let contentManager = layoutManager.textContentManager,
+            let storage = textStorage, storage.length > 0,
+            let font
+        else { return }
 
         let text = storage.string as NSString
         let unit = indentation.width
-        let charWidth = (" " as NSString).size(withAttributes: [.font: font]).width
+        let charWidth = (" " as NSString).size(withAttributes: [.font: font])
+            .width
         let origin = textContainerOrigin
         let baseX = origin.x + (textContainer?.lineFragmentPadding ?? 0)
         let scale = window?.backingScaleFactor ?? 2
         let documentStart = layoutManager.documentRange.location
         let top = CGPoint(x: 0, y: max(0, dirtyRect.minY - origin.y))
-        let start = layoutManager.textLayoutFragment(for: top)?.rangeInElement.location ?? documentStart
+        let start =
+            layoutManager.textLayoutFragment(for: top)?.rangeInElement.location
+            ?? documentStart
 
         SyntaxTheme.indentGuide.setFill()
         var previousIndent: Int?
 
-        layoutManager.enumerateTextLayoutFragments(from: start, options: [.ensuresLayout]) { fragment in
+        layoutManager.enumerateTextLayoutFragments(
+            from: start,
+            options: [.ensuresLayout]
+        ) { fragment in
             let frame = fragment.layoutFragmentFrame
             guard frame.minY + origin.y <= dirtyRect.maxY else { return false }
 
-            let offset = contentManager.offset(from: documentStart, to: fragment.rangeInElement.location)
+            let offset = contentManager.offset(
+                from: documentStart,
+                to: fragment.rangeInElement.location
+            )
             let indent: Int
             if let own = Self.indent(ofLineAt: offset, in: text) {
                 indent = own
                 previousIndent = own
             } else {
                 indent = Self.blankLineIndent(
-                    above: previousIndent ?? Self.indentOfNonBlankLine(before: offset, in: text),
+                    above: previousIndent
+                        ?? Self.indentOfNonBlankLine(before: offset, in: text),
                     below: Self.indentOfNonBlankLine(after: offset, in: text),
                     unit: unit
                 )
@@ -259,7 +323,12 @@ final class EditorTextView: NSTextView {
             let guides = (indent + unit - 1) / unit
             for level in 0..<guides {
                 let x = (baseX + CGFloat(level * unit) * charWidth) * scale
-                NSRect(x: x.rounded() / scale, y: origin.y + frame.minY, width: 1, height: frame.height).fill()
+                NSRect(
+                    x: x.rounded() / scale,
+                    y: origin.y + frame.minY,
+                    width: 1,
+                    height: frame.height
+                ).fill()
             }
             return true
         }
@@ -270,14 +339,17 @@ final class EditorTextView: NSTextView {
     /// One level deeper than the shallower neighbor, but no deeper than the deeper one:
     /// a blank line after `{` joins the block it opens, one between two lines of a block
     /// keeps its depth, and one after `}` before less-indented code drops out.
-    private static func blankLineIndent(above: Int?, below: Int?, unit: Int) -> Int {
+    private static func blankLineIndent(above: Int?, below: Int?, unit: Int)
+        -> Int
+    {
         guard let above, let below else { return 0 }
         if above == below { return below }
         return min(min(above, below) + unit, max(above, below))
     }
 
     /// Indent of the line starting at `offset` in columns, or `nil` for a blank line.
-    private static func indent(ofLineAt offset: Int, in text: NSString) -> Int? {
+    private static func indent(ofLineAt offset: Int, in text: NSString) -> Int?
+    {
         var column = 0
         var index = offset
         while index < text.length {
@@ -293,23 +365,39 @@ final class EditorTextView: NSTextView {
     }
 
     /// Indent of the nearest non-blank line above the line starting at `offset`.
-    private static func indentOfNonBlankLine(before offset: Int, in text: NSString) -> Int? {
+    private static func indentOfNonBlankLine(
+        before offset: Int,
+        in text: NSString
+    ) -> Int? {
         var lineStart = offset
         for _ in 0..<1000 {
             guard lineStart > 0 else { return nil }
-            lineStart = text.lineRange(for: NSRange(location: lineStart - 1, length: 0)).location
-            if let indent = indent(ofLineAt: lineStart, in: text) { return indent }
+            lineStart =
+                text.lineRange(for: NSRange(location: lineStart - 1, length: 0))
+                .location
+            if let indent = indent(ofLineAt: lineStart, in: text) {
+                return indent
+            }
         }
         return nil
     }
 
     /// Indent of the nearest non-blank line below the line starting at `offset`.
-    private static func indentOfNonBlankLine(after offset: Int, in text: NSString) -> Int? {
-        var lineStart = NSMaxRange(text.lineRange(for: NSRange(location: offset, length: 0)))
+    private static func indentOfNonBlankLine(
+        after offset: Int,
+        in text: NSString
+    ) -> Int? {
+        var lineStart = NSMaxRange(
+            text.lineRange(for: NSRange(location: offset, length: 0))
+        )
         for _ in 0..<1000 {
             guard lineStart < text.length else { return nil }
-            if let indent = indent(ofLineAt: lineStart, in: text) { return indent }
-            lineStart = NSMaxRange(text.lineRange(for: NSRange(location: lineStart, length: 0)))
+            if let indent = indent(ofLineAt: lineStart, in: text) {
+                return indent
+            }
+            lineStart = NSMaxRange(
+                text.lineRange(for: NSRange(location: lineStart, length: 0))
+            )
         }
         return nil
     }
@@ -326,24 +414,35 @@ final class EditorTextView: NSTextView {
         while lineStart < text.length, lines < 2000 {
             let first = text.character(at: lineStart)
             if let indent = Self.indent(ofLineAt: lineStart, in: text) {
-                if first == 0x09 { tabLines += 1 } else if first == 0x20 { spaceLines += 1 }
+                if first == 0x09 {
+                    tabLines += 1
+                } else if first == 0x20 {
+                    spaceLines += 1
+                }
                 let step = indent - previous
                 if step > 1, step <= 8 { steps[step, default: 0] += 1 }
                 previous = indent
             }
-            lineStart = NSMaxRange(text.lineRange(for: NSRange(location: lineStart, length: 0)))
+            lineStart = NSMaxRange(
+                text.lineRange(for: NSRange(location: lineStart, length: 0))
+            )
             lines += 1
         }
         let settings = EditorSettings.shared
         // Nothing indented yet (a new file): the style from Settings.
         if tabLines == 0 && spaceLines == 0 {
-            return Indentation(usesTabs: settings.indentsWithTabs, width: settings.tabWidth)
+            return Indentation(
+                usesTabs: settings.indentsWithTabs,
+                width: settings.tabWidth
+            )
         }
         if tabLines > spaceLines {
             return Indentation(usesTabs: true, width: tabWidth)
         }
-        let width = [2, 4, 8].max { steps[$0, default: 0] < steps[$1, default: 0] }
-            .flatMap { steps[$0, default: 0] > 0 ? $0 : nil } ?? settings.tabWidth
+        let width =
+            [2, 4, 8].max { steps[$0, default: 0] < steps[$1, default: 0] }
+            .flatMap { steps[$0, default: 0] > 0 ? $0 : nil }
+            ?? settings.tabWidth
         return Indentation(usesTabs: false, width: width)
     }
 }

@@ -129,7 +129,11 @@ private struct TerminalTabBar: View {
                             close: { workspace.closeTerminal(terminal) },
                             drag: { handleDrag($0, of: terminal, proxy: proxy) }
                         )
-                        .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { tabWidths[terminal.id] = $0 }
+                        .onGeometryChange(for: CGFloat.self) {
+                            $0.size.width
+                        } action: {
+                            tabWidths[terminal.id] = $0
+                        }
                         // Room on either side that the row scrolls into view with the
                         // tab, so that it comes to rest clear of the faded ends of the
                         // bar. The row's spacing and padding take the same room back out.
@@ -137,7 +141,10 @@ private struct TerminalTabBar: View {
                         .offset(x: offset)
                         .zIndex(isDragged ? 1 : 0)
                         // The dragged tab stays under the pointer; the others slide out of its way.
-                        .animation(isDragged ? nil : Self.reorderAnimation, value: offset)
+                        .animation(
+                            isDragged ? nil : Self.reorderAnimation,
+                            value: offset
+                        )
                         .id(terminal.id)
                     }
                 }
@@ -147,30 +154,46 @@ private struct TerminalTabBar: View {
             }
             .scrollIndicators(.never)
             .scrollPosition($scrollPosition)
-            .onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.x } action: { _, offset in
+            .onScrollGeometryChange(for: CGFloat.self) {
+                $0.contentOffset.x
+            } action: { _, offset in
                 scrollOffset = offset
             }
             .onScrollGeometryChange(for: EdgeFades.self) { geometry in
                 let offset = geometry.contentOffset.x
-                let hiddenAfter = geometry.contentSize.width - geometry.containerSize.width - offset
-                return EdgeFades(leading: offset, trailing: hiddenAfter, over: Self.fadeWidth)
+                let hiddenAfter =
+                    geometry.contentSize.width - geometry.containerSize.width
+                    - offset
+                return EdgeFades(
+                    leading: offset,
+                    trailing: hiddenAfter,
+                    over: Self.fadeWidth
+                )
             } action: { _, fades in
                 edgeFades = fades
             }
             .fixedSize(horizontal: false, vertical: true)
-            .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { barWidth = $0 }
+            .onGeometryChange(for: CGFloat.self) {
+                $0.size.width
+            } action: {
+                barWidth = $0
+            }
             .mask { fadeMask }
             .background(WheelScrollsSideways())
             .background(
                 MiddleClickClosesTab(tab: tab(at:)) { id in
-                    if let terminal = workspace.terminals.first(where: { $0.id == id }) {
+                    if let terminal = workspace.terminals.first(where: {
+                        $0.id == id
+                    }) {
                         workspace.closeTerminal(terminal)
                     }
                 }
             )
             .coordinateSpace(Self.space)
             .onAppear {
-                if let selected = workspace.terminal { proxy.scrollTo(selected.id) }
+                if let selected = workspace.terminal {
+                    proxy.scrollTo(selected.id)
+                }
             }
             .onChange(of: workspace.terminal?.id) { _, selected in
                 if let selected {
@@ -198,16 +221,30 @@ private struct TerminalTabBar: View {
         }
     }
 
-    private func handleDrag(_ event: TabDragEvent, of terminal: TerminalSession, proxy: ScrollViewProxy) {
+    private func handleDrag(
+        _ event: TabDragEvent,
+        of terminal: TerminalSession,
+        proxy: ScrollViewProxy
+    ) {
         let id = terminal.id
         switch event {
         case .moved(let translation, let location):
             if let drag, drag.tab == id {
-                self.drag = TabDrag(tab: id, translation: translation, location: location, startScrollOffset: drag.startScrollOffset)
+                self.drag = TabDrag(
+                    tab: id,
+                    translation: translation,
+                    location: location,
+                    startScrollOffset: drag.startScrollOffset
+                )
             } else {
                 // Dragging a tab brings its terminal forward, as clicking it does.
                 workspace.selectTerminal(terminal)
-                drag = TabDrag(tab: id, translation: translation, location: location, startScrollOffset: scrollOffset)
+                drag = TabDrag(
+                    tab: id,
+                    translation: translation,
+                    location: location,
+                    startScrollOffset: scrollOffset
+                )
             }
         case .dropped(let translation):
             guard var dropped = drag, dropped.tab == id else { return }
@@ -216,7 +253,9 @@ private struct TerminalTabBar: View {
             // The new order and the end of the drag go in one animation, so every tab
             // settles from where the drag left it instead of jumping to its new place.
             withAnimation(Self.reorderAnimation) {
-                if let destination { workspace.moveTerminal(terminal, to: destination) }
+                if let destination {
+                    workspace.moveTerminal(terminal, to: destination)
+                }
                 drag = nil
             }
             // Its new place can reach past the end of the bar. Once the row is laid out
@@ -235,15 +274,20 @@ private struct TerminalTabBar: View {
     /// The row as it's laid out now, for a drag or a middle click to be worked out from.
     private var layout: TabBarLayout<TerminalSession.ID> {
         TabBarLayout(
-            tabs: workspace.terminals.map(\.id), widths: tabWidths, spacing: Self.spacing, inset: 0,
-            barWidth: barWidth, scrollOffset: scrollOffset
+            tabs: workspace.terminals.map(\.id),
+            widths: tabWidths,
+            spacing: Self.spacing,
+            inset: 0,
+            barWidth: barWidth,
+            scrollOffset: scrollOffset
         )
     }
 
     /// Scrolls the row while a tab is held near an end of the bar, so a tab can be
     /// taken past the ones that fit in the bar.
     private func autoscroll(elapsed: TimeInterval) {
-        guard let target = drag?.autoscrollOffset(in: layout, elapsed: elapsed) else { return }
+        guard let target = drag?.autoscrollOffset(in: layout, elapsed: elapsed)
+        else { return }
         scrollPosition.scrollTo(x: target)
         // Ahead of the scroll view reporting it, so the tab doesn't trail the row by a frame.
         scrollOffset = target
@@ -254,13 +298,15 @@ private struct TerminalTabBar: View {
         HStack(spacing: 0) {
             LinearGradient(
                 colors: [.black.opacity(1 - edgeFades.leading), .black],
-                startPoint: .leading, endPoint: .trailing
+                startPoint: .leading,
+                endPoint: .trailing
             )
             .frame(width: Self.fadeWidth)
             Color.black
             LinearGradient(
                 colors: [.black, .black.opacity(1 - edgeFades.trailing)],
-                startPoint: .leading, endPoint: .trailing
+                startPoint: .leading,
+                endPoint: .trailing
             )
             .frame(width: Self.fadeWidth)
         }
@@ -303,15 +349,28 @@ private struct TerminalTab: View {
             Color.primary.opacity(!isSelected && isHovering ? 0.05 : 0),
             in: .rect(cornerRadius: 6, style: .continuous)
         )
-        .glassSurface(isSelected, in: .rect(cornerRadius: 6, style: .continuous))
+        .glassSurface(
+            isSelected,
+            in: .rect(cornerRadius: 6, style: .continuous)
+        )
         .contentShape(.rect(cornerRadius: 6, style: .continuous))
         .onTapGesture(perform: select)
         // Measured in the bar, as the tab moves with the drag.
         .gesture(
-            DragGesture(minimumDistance: 1, coordinateSpace: TerminalTabBar.space)
-                .updating($isDragging) { _, state, _ in state = true }
-                .onChanged { drag(.moved(translation: $0.translation.width, location: $0.location.x)) }
-                .onEnded { drag(.dropped(translation: $0.translation.width)) }
+            DragGesture(
+                minimumDistance: 1,
+                coordinateSpace: TerminalTabBar.space
+            )
+            .updating($isDragging) { _, state, _ in state = true }
+            .onChanged {
+                drag(
+                    .moved(
+                        translation: $0.translation.width,
+                        location: $0.location.x
+                    )
+                )
+            }
+            .onEnded { drag(.dropped(translation: $0.translation.width)) }
         )
         // A cancelled gesture resets its state without calling `onEnded`.
         .onChange(of: isDragging) { _, isDragging in
@@ -334,14 +393,25 @@ struct TerminalToggleButton: View {
         Button {
             // Unlike ⌃`, which goes to a terminal that's showing but doesn't have
             // the keyboard, a click on this always shows or hides.
-            if workspace.isTerminalVisible { workspace.hideTerminal() } else { workspace.showTerminal() }
+            if workspace.isTerminalVisible {
+                workspace.hideTerminal()
+            } else {
+                workspace.showTerminal()
+            }
         } label: {
             Image(systemName: "terminal")
         }
         .buttonStyle(.titleBarIcon)
         // Tinted while it's on, like the Search button in the sidebar's header.
-        .foregroundStyle(workspace.isTerminalVisible ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
-        .help(workspace.isTerminalVisible ? String(localized: "Hide Terminal (⌃`)") : String(localized: "Show Terminal (⌃`)"))
+        .foregroundStyle(
+            workspace.isTerminalVisible
+                ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary)
+        )
+        .help(
+            workspace.isTerminalVisible
+                ? String(localized: "Hide Terminal (⌃`)")
+                : String(localized: "Show Terminal (⌃`)")
+        )
     }
 }
 

@@ -11,8 +11,11 @@ enum MenuShortcutRefresh {
 
     static func install() {
         guard monitor == nil else { return }
-        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            let flags = event.modifierFlags.intersection([.command, .control, .option])
+        monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) {
+            event in
+            let flags = event.modifierFlags.intersection([
+                .command, .control, .option,
+            ])
             if !flags.isEmpty, let menu = NSApp.mainMenu {
                 refresh(menu)
             }

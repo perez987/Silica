@@ -80,12 +80,23 @@ struct FileTreeView: View {
 
             // Last, so it stays in place when the Collapse button hides in search mode.
             Button {
-                if workspace.sidebarMode == .search { workspace.showExplorer() } else { workspace.showSearch() }
+                if workspace.sidebarMode == .search {
+                    workspace.showExplorer()
+                } else {
+                    workspace.showSearch()
+                }
             } label: {
                 Image(systemName: "magnifyingglass")
-                    .foregroundStyle(workspace.sidebarMode == .search ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                    .foregroundStyle(
+                        workspace.sidebarMode == .search
+                            ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary)
+                    )
             }
-            .help(workspace.sidebarMode == .search ? String(localized: "Show Explorer (⇧⌘E)") : String(localized: "Find in Project (⇧⌘F)"))
+            .help(
+                workspace.sidebarMode == .search
+                    ? String(localized: "Show Explorer (⇧⌘E)")
+                    : String(localized: "Find in Project (⇧⌘F)")
+            )
         }
         .buttonStyle(.titleBarIcon)
         .foregroundStyle(.secondary)
@@ -106,21 +117,36 @@ struct FileTreeView: View {
         return ScrollViewReader { proxy in
             List(selection: $workspace.selection) {
                 if rows.isEmpty {
-                    Text(workspace.isFilteringTree ? String(localized: "No files match “\(workspace.treeFilter)”") : String(localized: "This project is empty"))
-                        .font(.system(size: EditorSettings.shared.sidebarFontSize))
-                        .foregroundStyle(.secondary)
-                        .selectionDisabled()
+                    Text(
+                        workspace.isFilteringTree
+                            ? String(
+                                localized:
+                                    "No files match “\(workspace.treeFilter)”"
+                            ) : String(localized: "This project is empty")
+                    )
+                    .font(.system(size: EditorSettings.shared.sidebarFontSize))
+                    .foregroundStyle(.secondary)
+                    .selectionDisabled()
                 } else {
                     // A flat list of the visible nodes, each indented by its depth, so the
                     // rows can draw their own compact disclosure chevrons.
                     ForEach(rows) { row in
                         switch row.kind {
                         case .node(let node):
-                            FileNodeRow(node: node, depth: row.depth, workspace: workspace)
-                                .id(node.url)
+                            FileNodeRow(
+                                node: node,
+                                depth: row.depth,
+                                workspace: workspace
+                            )
+                            .id(node.url)
                         case .draft(let folder, let isDirectory):
-                            NewItemRow(folder: folder, isDirectory: isDirectory, depth: row.depth, workspace: workspace)
-                                .selectionDisabled()
+                            NewItemRow(
+                                folder: folder,
+                                isDirectory: isDirectory,
+                                depth: row.depth,
+                                workspace: workspace
+                            )
+                            .selectionDisabled()
                         }
                     }
                 }
@@ -136,27 +162,47 @@ struct FileTreeView: View {
             .scrollContentBackground(.hidden)
             .scrollIndicators(.never)
             // ← / → collapse and expand folders, as the system outline did.
-            .onKeyPress(.rightArrow) { workspace.setSelectedFolderExpanded(true) ? .handled : .ignored }
-            .onKeyPress(.leftArrow) { workspace.setSelectedFolderExpanded(false) ? .handled : .ignored }
+            .onKeyPress(.rightArrow) {
+                workspace.setSelectedFolderExpanded(true) ? .handled : .ignored
+            }
+            .onKeyPress(.leftArrow) {
+                workspace.setSelectedFolderExpanded(false) ? .handled : .ignored
+            }
             // Return renames and ⌘⌫ moves to the Trash, as in Finder.
             .onKeyPress(.return) {
-                guard workspace.treeEdit == nil, let selection = workspace.selection else { return .ignored }
+                guard workspace.treeEdit == nil,
+                    let selection = workspace.selection
+                else { return .ignored }
                 workspace.beginRename(selection)
                 return .handled
             }
             .onKeyPress(.delete, phases: .down) { press in
                 guard press.modifiers == .command, workspace.treeEdit == nil,
-                      let selection = workspace.selection else { return .ignored }
+                    let selection = workspace.selection
+                else { return .ignored }
                 workspace.moveToTrash(selection)
                 return .handled
             }
             .contextMenu {
-                Button("New File…") { workspace.beginNewItem(isDirectory: false, in: workspace.rootURL) }
-                Button("New Folder…") { workspace.beginNewItem(isDirectory: true, in: workspace.rootURL) }
+                Button("New File…") {
+                    workspace.beginNewItem(
+                        isDirectory: false,
+                        in: workspace.rootURL
+                    )
+                }
+                Button("New Folder…") {
+                    workspace.beginNewItem(
+                        isDirectory: true,
+                        in: workspace.rootURL
+                    )
+                }
             }
             // Compact, editor-style rows, 22pt high at the default font size.
             .environment(\.sidebarRowSize, .small)
-            .environment(\.defaultMinListRowHeight, EditorSettings.shared.sidebarFontSize + 11)
+            .environment(
+                \.defaultMinListRowHeight,
+                EditorSettings.shared.sidebarFontSize + 11
+            )
             // The sidebar list style has a fixed top inset that content margins don't
             // change. Pull the list up by most of it and clip, so rows start closer to
             // the title bar and scrolled rows still disappear at its bottom edge.
@@ -170,25 +216,38 @@ struct FileTreeView: View {
             // background for them to cover the rows with.
             // Turned off in Settings, the tracker gets no rows to pin.
             .modifier(PinnedFolderMask(tracker: pinnedFolders))
-            .background(PinnedFolderAnchor(
-                tracker: pinnedFolders,
-                rows: EditorSettings.shared.pinsParentFolders ? rows.map(\.pinnedFolderRow) : []
-            ))
-            .background(FileTreeDragSource(
-                rows: rows,
-                isEnabled: workspace.treeEdit == nil,
-                onInteraction: { draggedURL = nil },
-                onDragStart: { url in draggedURL = workspace.selection == url ? nil : url }
-            ))
+            .background(
+                PinnedFolderAnchor(
+                    tracker: pinnedFolders,
+                    rows: EditorSettings.shared.pinsParentFolders
+                        ? rows.map(\.pinnedFolderRow) : []
+                )
+            )
+            .background(
+                FileTreeDragSource(
+                    rows: rows,
+                    isEnabled: workspace.treeEdit == nil,
+                    onInteraction: { draggedURL = nil },
+                    onDragStart: { url in
+                        draggedURL = workspace.selection == url ? nil : url
+                    }
+                )
+            )
             .overlay(alignment: .top) {
-                PinnedFolders(rows: rows, tracker: pinnedFolders, workspace: workspace)
+                PinnedFolders(
+                    rows: rows,
+                    tracker: pinnedFolders,
+                    workspace: workspace
+                )
             }
             // Quick Open reveals the file it opened; wait a turn so newly
             // expanded folders have rows to scroll to.
             .onChange(of: workspace.revealCount) {
                 guard let url = workspace.revealedURL else { return }
                 DispatchQueue.main.async {
-                    withAnimation(.snappy) { proxy.scrollTo(url, anchor: .center) }
+                    withAnimation(.snappy) {
+                        proxy.scrollTo(url, anchor: .center)
+                    }
                 }
             }
             // A file revealed before the tree existed: the active tab of a new
@@ -246,18 +305,37 @@ struct FileTreeView: View {
         }
 
         // While filtering: only matches and the folders above them, all open.
-        let filtered = workspace.isFilteringTree ? workspace.treeFilterResult?.visiblePaths : nil
+        let filtered =
+            workspace.isFilteringTree
+            ? workspace.treeFilterResult?.visiblePaths : nil
         if workspace.isFilteringTree && filtered == nil { return [] }
 
         func add(_ nodes: [FileNode], depth: Int, in folder: URL) {
             // A new item's name field goes first in its folder.
             if folder == draftFolder {
-                rows.append(TreeRow(kind: .draft(folder: folder, isDirectory: draftIsDirectory), depth: depth))
+                rows.append(
+                    TreeRow(
+                        kind: .draft(
+                            folder: folder,
+                            isDirectory: draftIsDirectory
+                        ),
+                        depth: depth
+                    )
+                )
             }
             for node in nodes {
-                if let filtered, !filtered.contains(node.relativePath) { continue }
-                let isOpen = node.isDirectory && (filtered != nil || node.isExpanded)
-                rows.append(TreeRow(kind: .node(node), depth: depth, isOpenFolder: isOpen))
+                if let filtered, !filtered.contains(node.relativePath) {
+                    continue
+                }
+                let isOpen =
+                    node.isDirectory && (filtered != nil || node.isExpanded)
+                rows.append(
+                    TreeRow(
+                        kind: .node(node),
+                        depth: depth,
+                        isOpenFolder: isOpen
+                    )
+                )
                 if isOpen, let children = node.children {
                     add(children, depth: depth + 1, in: node.url)
                 }
@@ -275,9 +353,12 @@ private struct ProjectTitle: View {
     var body: some View {
         HStack(spacing: 4) {
             if isHovering {
-                FolderProxyIcon(url: workspace.rootURL, icon: FolderIcons.shared.icon(for: workspace.rootURL))
-                    .frame(width: 16, height: 16)
-                    .transition(.opacity)
+                FolderProxyIcon(
+                    url: workspace.rootURL,
+                    icon: FolderIcons.shared.icon(for: workspace.rootURL)
+                )
+                .frame(width: 16, height: 16)
+                .transition(.opacity)
             }
             Text(workspace.name)
                 .lineLimit(1)
@@ -309,13 +390,26 @@ private struct FolderProxyIcon: NSViewRepresentable {
         override func updateTrackingAreas() {
             super.updateTrackingAreas()
             if trackingAreas.isEmpty {
-                addTrackingArea(NSTrackingArea(rect: .zero, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect], owner: self))
+                addTrackingArea(
+                    NSTrackingArea(
+                        rect: .zero,
+                        options: [
+                            .mouseEnteredAndExited, .activeAlways,
+                            .inVisibleRect,
+                        ],
+                        owner: self
+                    )
+                )
             }
             updateWindowMovability()
         }
 
-        override func mouseEntered(with event: NSEvent) { updateWindowMovability() }
-        override func mouseExited(with event: NSEvent) { updateWindowMovability() }
+        override func mouseEntered(with event: NSEvent) {
+            updateWindowMovability()
+        }
+        override func mouseExited(with event: NSEvent) {
+            updateWindowMovability()
+        }
 
         override func viewWillMove(toWindow newWindow: NSWindow?) {
             super.viewWillMove(toWindow: newWindow)
@@ -325,7 +419,9 @@ private struct FolderProxyIcon: NSViewRepresentable {
 
         private func updateWindowMovability() {
             guard let window else { return }
-            let isInside = bounds.contains(convert(window.mouseLocationOutsideOfEventStream, from: nil))
+            let isInside = bounds.contains(
+                convert(window.mouseLocationOutsideOfEventStream, from: nil)
+            )
             guard isInside != holdsWindow else { return }
             holdsWindow = isInside
             window.isMovable = !isInside
@@ -340,11 +436,18 @@ private struct FolderProxyIcon: NSViewRepresentable {
             beginDraggingSession(with: [item], event: event, source: self)
         }
 
-        func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+        func draggingSession(
+            _ session: NSDraggingSession,
+            sourceOperationMaskFor context: NSDraggingContext
+        ) -> NSDragOperation {
             context == .outsideApplication ? [.copy, .link] : []
         }
 
-        func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
+        func draggingSession(
+            _ session: NSDraggingSession,
+            endedAt screenPoint: NSPoint,
+            operation: NSDragOperation
+        ) {
             updateWindowMovability()
         }
     }
@@ -376,28 +479,38 @@ private struct PinnedFolders: View {
         VStack(spacing: 0) {
             ForEach(tracker.pinned, id: \.index) { pinned in
                 if let node = node(at: pinned.index) {
-                    FileNodeRow(node: node, depth: rows[pinned.index].depth, workspace: workspace, isPinned: true)
-                        .frame(height: layout.height)
-                        .padding(.leading, layout.leading)
-                        .padding(.trailing, layout.trailing)
-                        .padding(.top, layout.top)
-                        .frame(height: pinned.height, alignment: .top)
-                        .background {
-                            if workspace.selection == node.url {
-                                SelectionHighlightShape()
-                                    .padding(.leading, 10 - FileTreeView.listLeadingOutset)
-                                    .padding(.trailing, 10)
-                            }
+                    FileNodeRow(
+                        node: node,
+                        depth: rows[pinned.index].depth,
+                        workspace: workspace,
+                        isPinned: true
+                    )
+                    .frame(height: layout.height)
+                    .padding(.leading, layout.leading)
+                    .padding(.trailing, layout.trailing)
+                    .padding(.top, layout.top)
+                    .frame(height: pinned.height, alignment: .top)
+                    .background {
+                        if workspace.selection == node.url {
+                            SelectionHighlightShape()
+                                .padding(
+                                    .leading,
+                                    10 - FileTreeView.listLeadingOutset
+                                )
+                                .padding(.trailing, 10)
                         }
-                        .contentShape(.rect)
-                        .onTapGesture { tracker.reveal(pinned) }
-                        // On the whole row, as in the list; the row's own menu only
-                        // covers its icon and name out here.
-                        .contextMenu { FileNodeMenu(node: node, workspace: workspace) }
-                        // A folder scrolling out slides up under the one above it.
-                        .offset(y: pinned.top - pinned.slotTop)
-                        .frame(height: pinned.height)
-                        .clipped()
+                    }
+                    .contentShape(.rect)
+                    .onTapGesture { tracker.reveal(pinned) }
+                    // On the whole row, as in the list; the row's own menu only
+                    // covers its icon and name out here.
+                    .contextMenu {
+                        FileNodeMenu(node: node, workspace: workspace)
+                    }
+                    // A folder scrolling out slides up under the one above it.
+                    .offset(y: pinned.top - pinned.slotTop)
+                    .frame(height: pinned.height)
+                    .clipped()
                 }
             }
         }
@@ -415,25 +528,33 @@ private struct PinnedFolders: View {
         }
         // Names are typed in the list's own rows: bring the folder's row back.
         .onChange(of: workspace.treeEdit) { _, edit in
-            let url: URL? = switch edit {
-            case .rename(let url): url
-            case .create(let folder, _): folder
-            case nil: nil
-            }
-            guard let url, let pinned = tracker.pinned.first(where: { node(at: $0.index)?.url == url }) else { return }
+            let url: URL? =
+                switch edit {
+                case .rename(let url): url
+                case .create(let folder, _): folder
+                case nil: nil
+                }
+            guard let url,
+                let pinned = tracker.pinned.first(where: {
+                    node(at: $0.index)?.url == url
+                })
+            else { return }
             tracker.reveal(pinned)
         }
         // The arrow keys can move the selection up under the pinned folders.
         .onChange(of: workspace.selection) { _, selection in
             guard let selection, !tracker.pinned.isEmpty,
-                  let index = rows.firstIndex(where: { $0.url == selection }) else { return }
+                let index = rows.firstIndex(where: { $0.url == selection })
+            else { return }
             // After the list has scrolled the row into view itself.
             DispatchQueue.main.async { tracker.uncover(row: index) }
         }
     }
 
     private func node(at index: Int) -> FileNode? {
-        guard rows.indices.contains(index), case .node(let node) = rows[index].kind else { return nil }
+        guard rows.indices.contains(index),
+            case .node(let node) = rows[index].kind
+        else { return nil }
         return node
     }
 }
@@ -449,7 +570,10 @@ private struct TreeFilterField: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: "line.3.horizontal.decrease")
-                .foregroundStyle(workspace.isFilteringTree ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                .foregroundStyle(
+                    workspace.isFilteringTree
+                        ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary)
+                )
             TextField("Filter", text: $workspace.treeFilter)
                 .textFieldStyle(.plain)
                 .focused($isFocused)
@@ -458,11 +582,20 @@ private struct TreeFilterField: View {
                     workspace.treeFilter = ""
                     return .handled
                 }
-            if let result = workspace.treeFilterResult, workspace.isFilteringTree {
+            if let result = workspace.treeFilterResult,
+                workspace.isFilteringTree
+            {
                 Text(result.matchCount.formatted())
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
-                    .help(result.matchCount == 1 ? String(localized: "1 matching file") : String(localized: "\(result.matchCount.formatted()) matching files"))
+                    .help(
+                        result.matchCount == 1
+                            ? String(localized: "1 matching file")
+                            : String(
+                                localized:
+                                    "\(result.matchCount.formatted()) matching files"
+                            )
+                    )
             }
             if !workspace.treeFilter.isEmpty {
                 Button {
@@ -523,7 +656,9 @@ private struct FileTreeDragSource: NSViewRepresentable {
             super.viewDidMoveToWindow()
             stopWatching()
             guard window != nil else { return }
-            monitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .leftMouseDragged, .leftMouseUp, .keyDown]) { [weak self] event in
+            monitor = NSEvent.addLocalMonitorForEvents(matching: [
+                .leftMouseDown, .leftMouseDragged, .leftMouseUp, .keyDown,
+            ]) { [weak self] event in
                 guard let self else { return event }
                 return self.handle(event)
             }
@@ -536,7 +671,9 @@ private struct FileTreeDragSource: NSViewRepresentable {
         }
 
         private func handle(_ event: NSEvent) -> NSEvent? {
-            if event.window === window, event.type == .leftMouseDown || event.type == .keyDown {
+            if event.window === window,
+                event.type == .leftMouseDown || event.type == .keyDown
+            {
                 onInteraction()
             }
             switch event.type {
@@ -545,7 +682,8 @@ private struct FileTreeDragSource: NSViewRepresentable {
             case .leftMouseDragged:
                 guard let press else { break }
                 let location = event.locationInWindow
-                let dx = location.x - press.event.locationInWindow.x, dy = location.y - press.event.locationInWindow.y
+                let dx = location.x - press.event.locationInWindow.x
+                let dy = location.y - press.event.locationInWindow.y
                 guard dx * dx + dy * dy >= 9 else { break }
                 self.press = nil
                 startDrag(press, with: event)
@@ -557,46 +695,79 @@ private struct FileTreeDragSource: NSViewRepresentable {
         }
 
         private func pressedRow(_ event: NSEvent) -> Press? {
-            guard isEnabled, !rows.isEmpty, event.clickCount == 1, !event.modifierFlags.contains(.control),
-                  let window, event.window === window, window.attachedSheet == nil, NSApp.modalWindow == nil,
-                  bounds.contains(convert(event.locationInWindow, from: nil))
+            guard isEnabled, !rows.isEmpty, event.clickCount == 1,
+                !event.modifierFlags.contains(.control),
+                let window, event.window === window,
+                window.attachedSheet == nil, NSApp.modalWindow == nil,
+                bounds.contains(convert(event.locationInWindow, from: nil))
             else { return nil }
-            var view = window.contentView?.superview?.hitTest(event.locationInWindow)
-            while let current = view, !(current is NSTableView) { view = current.superview }
+            var view = window.contentView?.superview?.hitTest(
+                event.locationInWindow
+            )
+            while let current = view, !(current is NSTableView) {
+                view = current.superview
+            }
             guard let table = view as? NSTableView else { return nil }
-            let row = table.row(at: table.convert(event.locationInWindow, from: nil))
-            guard rows.indices.contains(row), let url = rows[row].url else { return nil }
+            let row = table.row(
+                at: table.convert(event.locationInWindow, from: nil)
+            )
+            guard rows.indices.contains(row), let url = rows[row].url else {
+                return nil
+            }
             return Press(row: row, url: url, table: table, event: event)
         }
 
         private func startDrag(_ press: Press, with event: NSEvent) {
             let item = NSDraggingItem(pasteboardWriter: press.url as NSURL)
-            item.setDraggingFrame(press.table.rect(ofRow: press.row), contents: image(ofRow: press.row, in: press.table))
+            item.setDraggingFrame(
+                press.table.rect(ofRow: press.row),
+                contents: image(ofRow: press.row, in: press.table)
+            )
             draggedPress = press
             onDragStart(press.url)
-            press.table.beginDraggingSession(with: [item], event: event, source: self)
+            press.table.beginDraggingSession(
+                with: [item],
+                event: event,
+                source: self
+            )
         }
 
         private func image(ofRow row: Int, in table: NSTableView) -> NSImage? {
             guard let view = table.rowView(atRow: row, makeIfNecessary: false),
-                  let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) else { return nil }
+                let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds)
+            else { return nil }
             view.cacheDisplay(in: view.bounds, to: rep)
             let image = NSImage(size: view.bounds.size)
             image.addRepresentation(rep)
             return image
         }
 
-        func draggingSession(_ session: NSDraggingSession, endedAt screenPoint: NSPoint, operation: NSDragOperation) {
+        func draggingSession(
+            _ session: NSDraggingSession,
+            endedAt screenPoint: NSPoint,
+            operation: NSDragOperation
+        ) {
             guard let down = draggedPress?.event else { return }
             draggedPress = nil
-            if let up = NSEvent.mouseEvent(with: .leftMouseUp, location: NSPoint(x: -10_000, y: -10_000), modifierFlags: [],
-                                           timestamp: ProcessInfo.processInfo.systemUptime, windowNumber: down.windowNumber,
-                                           context: nil, eventNumber: down.eventNumber, clickCount: down.clickCount, pressure: 0) {
+            if let up = NSEvent.mouseEvent(
+                with: .leftMouseUp,
+                location: NSPoint(x: -10_000, y: -10_000),
+                modifierFlags: [],
+                timestamp: ProcessInfo.processInfo.systemUptime,
+                windowNumber: down.windowNumber,
+                context: nil,
+                eventNumber: down.eventNumber,
+                clickCount: down.clickCount,
+                pressure: 0
+            ) {
                 NSApp.postEvent(up, atStart: true)
             }
         }
 
-        func draggingSession(_ session: NSDraggingSession, sourceOperationMaskFor context: NSDraggingContext) -> NSDragOperation {
+        func draggingSession(
+            _ session: NSDraggingSession,
+            sourceOperationMaskFor context: NSDraggingContext
+        ) -> NSDragOperation {
             context == .outsideApplication ? [.copy, .link] : []
         }
     }
@@ -637,9 +808,13 @@ private struct FileNodeRow: View {
     private var highlightedName: AttributedString {
         var name = AttributedString(node.name)
         guard workspace.isFilteringTree,
-              let range = TreeFilter.matchRange(of: workspace.treeFilter.trimmingCharacters(in: .whitespaces), in: node.name),
-              let lower = AttributedString.Index(range.lowerBound, within: name),
-              let upper = AttributedString.Index(range.upperBound, within: name) else { return name }
+            let range = TreeFilter.matchRange(
+                of: workspace.treeFilter.trimmingCharacters(in: .whitespaces),
+                in: node.name
+            ),
+            let lower = AttributedString.Index(range.lowerBound, within: name),
+            let upper = AttributedString.Index(range.upperBound, within: name)
+        else { return name }
         name[lower..<upper].inlinePresentationIntent = .stronglyEmphasized
         name[lower..<upper].backgroundColor = Color.accentColor.opacity(0.25)
         return name
@@ -649,12 +824,23 @@ private struct FileNodeRow: View {
         HStack(spacing: 4) {
             disclosureChevron
             Group {
-                FileIcon(url: node.url, isDirectory: node.isDirectory, isExpanded: isOpen,
-                         width: EditorSettings.shared.sidebarIconWidth)
-                    .padding(.trailing, 2)
+                FileIcon(
+                    url: node.url,
+                    isDirectory: node.isDirectory,
+                    isExpanded: isOpen,
+                    width: EditorSettings.shared.sidebarIconWidth
+                )
+                .padding(.trailing, 2)
                 if isRenaming {
-                    NameField(initialName: node.name, selectsExtension: node.isDirectory) { name in
-                        if let name { workspace.rename(node.url, to: name) } else { workspace.cancelTreeEdit() }
+                    NameField(
+                        initialName: node.name,
+                        selectsExtension: node.isDirectory
+                    ) { name in
+                        if let name {
+                            workspace.rename(node.url, to: name)
+                        } else {
+                            workspace.cancelTreeEdit()
+                        }
                     }
                 } else {
                     Text(highlightedName)
@@ -675,7 +861,9 @@ private struct FileNodeRow: View {
         .padding(.leading, Self.leadingPadding(depth: depth))
         .font(.system(size: EditorSettings.shared.sidebarFontSize))
         .tag(node.url)
-        .listRowBackground(SelectionHighlight(isSelected: workspace.selection == node.url))
+        .listRowBackground(
+            SelectionHighlight(isSelected: workspace.selection == node.url)
+        )
         .contextMenu { FileNodeMenu(node: node, workspace: workspace) }
     }
 
@@ -714,9 +902,14 @@ private struct FileNodeMenu: View {
             Button("Open") { workspace.open(node.url) }
             Divider()
         }
-        let folder = node.isDirectory ? node.url : node.url.deletingLastPathComponent()
-        Button("New File…") { workspace.beginNewItem(isDirectory: false, in: folder) }
-        Button("New Folder…") { workspace.beginNewItem(isDirectory: true, in: folder) }
+        let folder =
+            node.isDirectory ? node.url : node.url.deletingLastPathComponent()
+        Button("New File…") {
+            workspace.beginNewItem(isDirectory: false, in: folder)
+        }
+        Button("New Folder…") {
+            workspace.beginNewItem(isDirectory: true, in: folder)
+        }
         Divider()
         Button("Rename…") { workspace.beginRename(node.url) }
         Button("Duplicate") { workspace.duplicate(node.url) }
@@ -726,7 +919,10 @@ private struct FileNodeMenu: View {
         Button("Copy Path") { Finder.copyPath(node.url) }
         Button("Copy Relative Path") {
             NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(workspace.relativePath(of: node.url), forType: .string)
+            NSPasteboard.general.setString(
+                workspace.relativePath(of: node.url),
+                forType: .string
+            )
         }
     }
 }
@@ -799,12 +995,19 @@ private struct NewItemRow: View {
     var body: some View {
         HStack(spacing: 4) {
             Color.clear.frame(width: 12, height: 16)
-            FileIcon(url: folder.appending(path: "untitled"), isDirectory: isDirectory,
-                     width: EditorSettings.shared.sidebarIconWidth)
-                .padding(.trailing, 2)
+            FileIcon(
+                url: folder.appending(path: "untitled"),
+                isDirectory: isDirectory,
+                width: EditorSettings.shared.sidebarIconWidth
+            )
+            .padding(.trailing, 2)
             NameField(initialName: "", selectsExtension: true) { name in
                 if let name {
-                    workspace.createItem(named: name, in: folder, isDirectory: isDirectory)
+                    workspace.createItem(
+                        named: name,
+                        in: folder,
+                        isDirectory: isDirectory
+                    )
                 } else {
                     workspace.cancelTreeEdit()
                 }
@@ -858,9 +1061,12 @@ private struct NameField: View {
     /// lands, since focusing a field selects all of it.
     private func selectStem() {
         DispatchQueue.main.async {
-            let stemEnd = selectsExtension
+            let stemEnd =
+                selectsExtension
                 ? name.endIndex
-                : (name.lastIndex(of: ".").flatMap { $0 == name.startIndex ? nil : $0 } ?? name.endIndex)
+                : (name.lastIndex(of: ".").flatMap {
+                    $0 == name.startIndex ? nil : $0
+                } ?? name.endIndex)
             selection = TextSelection(range: name.startIndex..<stemEnd)
         }
     }

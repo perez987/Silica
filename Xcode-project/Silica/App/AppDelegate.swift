@@ -12,7 +12,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func application(_ application: NSApplication, open urls: [URL]) {
         ExternalOpener.shared.open(urls)
     }
-    
+
     /// Register Open in Silica service at launch
     /// If fails, run `/System/Library/CoreServices/pbs -flush;killall Finder`
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -22,8 +22,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     /// Quitting asks about unsaved files in each project window first, in a sheet,
     /// so the answer comes back later.
-    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        guard UnsavedChangesGuard.GuardView.hasUnsavedChanges else { return .terminateNow }
+    func applicationShouldTerminate(_ sender: NSApplication)
+        -> NSApplication.TerminateReply
+    {
+        guard UnsavedChangesGuard.GuardView.hasUnsavedChanges else {
+            return .terminateNow
+        }
         UnsavedChangesGuard.GuardView.confirmQuitting { proceed in
             NSApp.reply(toApplicationShouldTerminate: proceed)
         }

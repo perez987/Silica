@@ -78,7 +78,12 @@ final class ProjectSearchModel {
             try? await Task.sleep(for: delay)
             guard !Task.isCancelled else { return }
             let outcome = await Task.detached(priority: .userInitiated) {
-                ProjectSearch.run(root: root, query: query, caseSensitive: caseSensitive, overrides: overrides)
+                ProjectSearch.run(
+                    root: root,
+                    query: query,
+                    caseSensitive: caseSensitive,
+                    overrides: overrides
+                )
             }.value
             guard let self, !Task.isCancelled else { return }
             self.results = outcome.files
@@ -104,16 +109,35 @@ nonisolated enum ProjectSearch {
         var isTruncated = false
     }
 
-    static func run(root: URL, query: String, caseSensitive: Bool, overrides: [URL: String]) -> Outcome {
+    static func run(
+        root: URL,
+        query: String,
+        caseSensitive: Bool,
+        overrides: [URL: String]
+    ) -> Outcome {
         var outcome = Outcome()
-        let options: NSString.CompareOptions = caseSensitive ? [.literal] : [.caseInsensitive]
+        let options: NSString.CompareOptions =
+            caseSensitive ? [.literal] : [.caseInsensitive]
         for item in ProjectFileIndex.scan(root: root) {
             if Task.isCancelled { return Outcome() }
-            guard let text = overrides[item.url] ?? readText(item.url) else { continue }
-            let matches = search(text as NSString, for: query, options: options, file: item.url,
-                                 limit: maxMatches - outcome.matchCount)
+            guard let text = overrides[item.url] ?? readText(item.url) else {
+                continue
+            }
+            let matches = search(
+                text as NSString,
+                for: query,
+                options: options,
+                file: item.url,
+                limit: maxMatches - outcome.matchCount
+            )
             guard !matches.isEmpty else { continue }
-            outcome.files.append(SearchFileResult(url: item.url, path: item.path, matches: matches))
+            outcome.files.append(
+                SearchFileResult(
+                    url: item.url,
+                    path: item.path,
+                    matches: matches
+                )
+            )
             outcome.matchCount += matches.count
             if outcome.matchCount >= maxMatches {
                 outcome.isTruncated = true
@@ -124,51 +148,94 @@ nonisolated enum ProjectSearch {
     }
 
     private static func readText(_ url: URL) -> String? {
-        guard let size = try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize, size <= maxFileSize,
-              let data = try? Data(contentsOf: url), !data.prefix(8192).contains(0) else { return nil }
-        return String(data: data, encoding: .utf8) ?? String(data: data, encoding: .isoLatin1)
+        guard
+            let size = try? url.resourceValues(forKeys: [.fileSizeKey])
+                .fileSize, size <= maxFileSize,
+            let data = try? Data(contentsOf: url),
+            !data.prefix(8192).contains(0)
+        else { return nil }
+        return String(data: data, encoding: .utf8)
+            ?? String(data: data, encoding: .isoLatin1)
     }
 
-    private static func search(_ text: NSString, for query: String, options: NSString.CompareOptions,
-                               file: URL, limit: Int) -> [SearchMatch] {
+    private static func search(
+        _ text: NSString,
+        for query: String,
+        options: NSString.CompareOptions,
+        file: URL,
+        limit: Int
+    ) -> [SearchMatch] {
         var matches: [SearchMatch] = []
         var location = 0
         // Line counting walks forward from the previous match.
         var line = 1
         var counted = 0
         while location < text.length, matches.count < limit {
-            let range = text.range(of: query, options: options, range: NSRange(location: location, length: text.length - location))
+            let range = text.range(
+                of: query,
+                options: options,
+                range: NSRange(
+                    location: location,
+                    length: text.length - location
+                )
+            )
             guard range.location != NSNotFound, range.length > 0 else { break }
 
-            for index in counted..<range.location where text.character(at: index) == 0x0A { line += 1 }
+            for index in counted..<range.location
+            where text.character(at: index) == 0x0A { line += 1 }
             counted = range.location
 
-            let lineRange = text.lineRange(for: NSRange(location: range.location, length: 0))
+            let lineRange = text.lineRange(
+                for: NSRange(location: range.location, length: 0)
+            )
             var contentsEnd = NSMaxRange(lineRange)
             while contentsEnd > lineRange.location,
-                  [0x0A, 0x0D].contains(text.character(at: contentsEnd - 1)) { contentsEnd -= 1 }
+                [0x0A, 0x0D].contains(text.character(at: contentsEnd - 1))
+            { contentsEnd -= 1 }
             // Skip the indentation, then keep a window around the match.
             var start = lineRange.location
-            while start < range.location, [0x20, 0x09].contains(text.character(at: start)) { start += 1 }
+            while start < range.location,
+                [0x20, 0x09].contains(text.character(at: start))
+            { start += 1 }
             start = max(start, range.location - previewLead)
-            let end = min(contentsEnd, max(NSMaxRange(range), start + previewLength))
-            var preview = text.substring(with: NSRange(location: start, length: max(0, end - start)))
+            let end = min(
+                contentsEnd,
+                max(NSMaxRange(range), start + previewLength)
+            )
+            var preview = text.substring(
+                with: NSRange(location: start, length: max(0, end - start))
+            )
             var previewStart = range.location - start
-            if start == range.location - previewLead, start > lineRange.location,
-               text.substring(with: NSRange(location: lineRange.location, length: start - lineRange.location))
-                   .contains(where: { !$0.isWhitespace }) {
+            if start == range.location - previewLead,
+                start > lineRange.location,
+                text.substring(
+                    with: NSRange(
+                        location: lineRange.location,
+                        length: start - lineRange.location
+                    )
+                )
+                .contains(where: { !$0.isWhitespace })
+            {
                 preview = "…" + preview
                 previewStart += 1
             }
-            let previewLength = min(range.length, (preview as NSString).length - previewStart)
+            let previewLength = min(
+                range.length,
+                (preview as NSString).length - previewStart
+            )
 
-            matches.append(SearchMatch(
-                id: "\(file.path(percentEncoded: false))#\(matches.count)",
-                line: line,
-                range: range,
-                preview: preview,
-                previewRange: NSRange(location: previewStart, length: max(0, previewLength))
-            ))
+            matches.append(
+                SearchMatch(
+                    id: "\(file.path(percentEncoded: false))#\(matches.count)",
+                    line: line,
+                    range: range,
+                    preview: preview,
+                    previewRange: NSRange(
+                        location: previewStart,
+                        length: max(0, previewLength)
+                    )
+                )
+            )
             location = NSMaxRange(range)
         }
         return matches

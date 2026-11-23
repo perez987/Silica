@@ -32,7 +32,8 @@ nonisolated struct MarkdownHTMLRenderer: MarkupWalker {
 
     mutating func visitHeading(_ heading: Heading) {
         let tag = "h\(heading.level)"
-        result += "<\(tag) id=\"\(anchor(for: heading.plainText))\"\(line(heading))>"
+        result +=
+            "<\(tag) id=\"\(anchor(for: heading.plainText))\"\(line(heading))>"
         descendInto(heading)
         result += "</\(tag)>\n"
     }
@@ -44,8 +45,12 @@ nonisolated struct MarkdownHTMLRenderer: MarkupWalker {
     }
 
     mutating func visitCodeBlock(_ codeBlock: CodeBlock) {
-        let language = codeBlock.language.flatMap(SyntaxLanguage.init(fenceName:))
-        let languageClass = codeBlock.language.map { " class=\"language-\(Self.escape($0))\"" } ?? ""
+        let language = codeBlock.language.flatMap(
+            SyntaxLanguage.init(fenceName:)
+        )
+        let languageClass =
+            codeBlock.language.map { " class=\"language-\(Self.escape($0))\"" }
+            ?? ""
         result += "<pre\(line(codeBlock))><code\(languageClass)>"
         result += Self.highlight(codeBlock.code, language: language)
         result += "</code></pre>\n"
@@ -61,7 +66,9 @@ nonisolated struct MarkdownHTMLRenderer: MarkupWalker {
     }
 
     mutating func visitOrderedList(_ orderedList: OrderedList) {
-        let start = orderedList.startIndex == 1 ? "" : " start=\"\(orderedList.startIndex)\""
+        let start =
+            orderedList.startIndex == 1
+            ? "" : " start=\"\(orderedList.startIndex)\""
         result += "<ol\(start)\(line(orderedList))>\n"
         descendInto(orderedList)
         result += "</ol>\n"
@@ -75,7 +82,8 @@ nonisolated struct MarkdownHTMLRenderer: MarkupWalker {
 
     mutating func visitListItem(_ listItem: ListItem) {
         if let checkbox = listItem.checkbox {
-            result += "<li class=\"task\"\(line(listItem))><input type=\"checkbox\" disabled"
+            result +=
+                "<li class=\"task\"\(line(listItem))><input type=\"checkbox\" disabled"
             result += checkbox == .checked ? " checked" : ""
             result += " /> "
         } else {
@@ -121,12 +129,15 @@ nonisolated struct MarkdownHTMLRenderer: MarkupWalker {
         guard cell.colspan > 0, cell.rowspan > 0 else { return }
         let tag = inTableHead ? "th" : "td"
         var attributes = ""
-        if column < tableAlignments.count, let alignment = tableAlignments[column] {
-            let value = switch alignment {
-            case .left: "left"
-            case .center: "center"
-            case .right: "right"
-            }
+        if column < tableAlignments.count,
+            let alignment = tableAlignments[column]
+        {
+            let value =
+                switch alignment {
+                case .left: "left"
+                case .center: "center"
+                case .right: "right"
+                }
             attributes += " style=\"text-align: \(value)\""
         }
         if cell.colspan > 1 { attributes += " colspan=\"\(cell.colspan)\"" }
@@ -167,15 +178,20 @@ nonisolated struct MarkdownHTMLRenderer: MarkupWalker {
 
     mutating func visitLink(_ link: Link) {
         result += "<a href=\"\(Self.escape(link.destination ?? ""))\""
-        if let title = link.title, !title.isEmpty { result += " title=\"\(Self.escape(title))\"" }
+        if let title = link.title, !title.isEmpty {
+            result += " title=\"\(Self.escape(title))\""
+        }
         result += ">"
         descendInto(link)
         result += "</a>"
     }
 
     mutating func visitImage(_ image: Image) {
-        result += "<img src=\"\(Self.escape(image.source ?? ""))\" alt=\"\(Self.escape(image.plainText))\""
-        if let title = image.title, !title.isEmpty { result += " title=\"\(Self.escape(title))\"" }
+        result +=
+            "<img src=\"\(Self.escape(image.source ?? ""))\" alt=\"\(Self.escape(image.plainText))\""
+        if let title = image.title, !title.isEmpty {
+            result += " title=\"\(Self.escape(title))\""
+        }
         result += " />"
     }
 
@@ -200,10 +216,16 @@ nonisolated struct MarkdownHTMLRenderer: MarkupWalker {
     /// GitHub-style heading anchors: lowercase, spaces to dashes, punctuation dropped,
     /// with -1, -2… added to repeats.
     private mutating func anchor(for title: String) -> String {
-        let slug = String(title.lowercased().compactMap { character -> Character? in
-            if character.isLetter || character.isNumber || character == "-" || character == "_" { return character }
-            return character == " " ? "-" : nil
-        })
+        let slug = String(
+            title.lowercased().compactMap { character -> Character? in
+                if character.isLetter || character.isNumber || character == "-"
+                    || character == "_"
+                {
+                    return character
+                }
+                return character == " " ? "-" : nil
+            }
+        )
         let count = usedAnchors[slug, default: 0]
         usedAnchors[slug] = count + 1
         return Self.escape(count == 0 ? slug : "\(slug)-\(count)")
@@ -226,19 +248,28 @@ nonisolated struct MarkdownHTMLRenderer: MarkupWalker {
 
     /// Wraps highlighted ranges in `<span class="tok-…">`, letting later tokens win
     /// where they overlap, as the editor does.
-    private static func highlight(_ code: String, language: SyntaxLanguage?) -> String {
+    private static func highlight(_ code: String, language: SyntaxLanguage?)
+        -> String
+    {
         guard let language else { return escape(code) }
         let text = code as NSString
         var kinds = [TokenKind?](repeating: nil, count: text.length)
-        for token in language.tokenizer.tokenize(text) where NSMaxRange(token.range) <= text.length {
-            for index in token.range.location..<NSMaxRange(token.range) { kinds[index] = token.kind }
+        for token in language.tokenizer.tokenize(text)
+        where NSMaxRange(token.range) <= text.length {
+            for index in token.range.location..<NSMaxRange(token.range) {
+                kinds[index] = token.kind
+            }
         }
         var html = ""
         var start = 0
         while start < text.length {
             var end = start + 1
             while end < text.length, kinds[end] == kinds[start] { end += 1 }
-            let piece = escape(text.substring(with: NSRange(location: start, length: end - start)))
+            let piece = escape(
+                text.substring(
+                    with: NSRange(location: start, length: end - start)
+                )
+            )
             if let kind = kinds[start] {
                 html += "<span class=\"tok-\(kind)\">\(piece)</span>"
             } else {

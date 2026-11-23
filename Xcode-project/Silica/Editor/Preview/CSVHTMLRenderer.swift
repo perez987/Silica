@@ -12,9 +12,14 @@ nonisolated enum CSVHTMLRenderer {
 
     /// `delimiter` is `nil` to tell commas, semicolons and tabs apart from the first row.
     static func render(_ text: String, delimiter: Character? = nil) -> String {
-        let table = CSVTable(parsing: text, delimiter: delimiter?.utf16.first, maxCells: maxCells)
+        let table = CSVTable(
+            parsing: text,
+            delimiter: delimiter?.utf16.first,
+            maxCells: maxCells
+        )
         guard let header = table.rows.first else {
-            return "<p class=\"note\">\(MarkdownHTMLRenderer.escape(String(localized: "No rows to show.")))</p>\n"
+            return
+                "<p class=\"note\">\(MarkdownHTMLRenderer.escape(String(localized: "No rows to show.")))</p>\n"
         }
         let rows = table.rows.dropFirst()
         // Rows can differ in length; short ones are filled out with empty cells.
@@ -22,7 +27,9 @@ nonisolated enum CSVHTMLRenderer {
         let numericColumns = (0..<columnCount).map { column -> Bool in
             var hasNumber = false
             for row in rows where column < row.fields.count {
-                let field = row.fields[column].trimmingCharacters(in: .whitespaces)
+                let field = row.fields[column].trimmingCharacters(
+                    in: .whitespaces
+                )
                 if field.isEmpty { continue }
                 guard isNumber(field) else { return false }
                 hasNumber = true
@@ -36,24 +43,31 @@ nonisolated enum CSVHTMLRenderer {
                 let field = column < fields.count ? fields[column] : ""
                 // In a div, which is what cuts a long field short: `max-width` isn't
                 // defined for table cells themselves.
-                html += numericColumns[column] ? "<\(tag) class=\"num\"><div>" : "<\(tag)><div>"
+                html +=
+                    numericColumns[column]
+                    ? "<\(tag) class=\"num\"><div>" : "<\(tag)><div>"
                 html += MarkdownHTMLRenderer.escape(field)
                 html += "</div></\(tag)>"
             }
             return html
         }
 
-        var html = "<table>\n<thead><tr>\(cells("th", header.fields))</tr></thead>\n<tbody>\n"
+        var html =
+            "<table>\n<thead><tr>\(cells("th", header.fields))</tr></thead>\n<tbody>\n"
         for row in rows {
-            html += "<tr data-line=\"\(row.line)\">\(cells("td", row.fields))</tr>\n"
+            html +=
+                "<tr data-line=\"\(row.line)\">\(cells("td", row.fields))</tr>\n"
         }
         html += "</tbody>\n</table>\n"
         if table.rowCount > table.rows.count {
             // Counted without the header row.
             let shown = (table.rows.count - 1).formatted()
             let total = (table.rowCount - 1).formatted()
-            let note = String(localized: "Showing the first \(shown) of \(total) rows.")
-            html += "<p class=\"note\">\(MarkdownHTMLRenderer.escape(note))</p>\n"
+            let note = String(
+                localized: "Showing the first \(shown) of \(total) rows."
+            )
+            html +=
+                "<p class=\"note\">\(MarkdownHTMLRenderer.escape(note))</p>\n"
         }
         return html
     }
@@ -63,7 +77,8 @@ nonisolated enum CSVHTMLRenderer {
     private static func isNumber(_ field: String) -> Bool {
         let bytes = Array(field.utf8)
         func isDigit(_ index: Int) -> Bool {
-            index < bytes.count && bytes[index] >= UInt8(ascii: "0") && bytes[index] <= UInt8(ascii: "9")
+            index < bytes.count && bytes[index] >= UInt8(ascii: "0")
+                && bytes[index] <= UInt8(ascii: "9")
         }
         func isOne(of characters: String, _ index: Int) -> Bool {
             index < bytes.count && characters.utf8.contains(bytes[index])
@@ -73,7 +88,9 @@ nonisolated enum CSVHTMLRenderer {
         var digitCount = 0
         if isOne(of: "+-", index) { index += 1 }
         // Commas group thousands.
-        while isDigit(index) || (digitCount > 0 && isOne(of: ",", index) && isDigit(index + 1)) {
+        while isDigit(index)
+            || (digitCount > 0 && isOne(of: ",", index) && isDigit(index + 1))
+        {
             if isDigit(index) { digitCount += 1 }
             index += 1
         }
@@ -153,7 +170,10 @@ nonisolated struct CSVTable {
                 if unit != Self.quote {
                     if isKept { field.append(unit) }
                     // The quote that opened the field is before it, so there is a unit to look back at.
-                    if Self.isLineBreak(unit), !(unit == Self.lineFeed && units[index - 2] == Self.carriageReturn) {
+                    if Self.isLineBreak(unit),
+                        !(unit == Self.lineFeed
+                            && units[index - 2] == Self.carriageReturn)
+                    {
                         line += 1
                     }
                 } else if index < units.count, units[index] == Self.quote {
@@ -191,7 +211,9 @@ nonisolated struct CSVTable {
                 isAtFieldStart = true
                 rowHasContent = false
                 // CRLF is one line break.
-                if unit == Self.carriageReturn, index < units.count, units[index] == Self.lineFeed {
+                if unit == Self.carriageReturn, index < units.count,
+                    units[index] == Self.lineFeed
+                {
                     index += 1
                 }
                 line += 1
@@ -208,12 +230,16 @@ nonisolated struct CSVTable {
 
     /// The characters `NSString` (and so the editor) ends a line at.
     private static func isLineBreak(_ unit: UInt16) -> Bool {
-        unit == lineFeed || unit == carriageReturn || unit == 0x85 || unit == 0x2028 || unit == 0x2029
+        unit == lineFeed || unit == carriageReturn || unit == 0x85
+            || unit == 0x2028 || unit == 0x2029
     }
 
     /// A comma, unless the first row has more semicolons or tabs outside its quotes.
-    private static func detectDelimiter(in units: ArraySlice<UInt16>) -> UInt16 {
-        var commas = 0, semicolons = 0, tabs = 0
+    private static func detectDelimiter(in units: ArraySlice<UInt16>) -> UInt16
+    {
+        var commas = 0
+        var semicolons = 0
+        var tabs = 0
         var isInQuotes = false
         var isInRow = false
         for unit in units {

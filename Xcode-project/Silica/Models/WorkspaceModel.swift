@@ -57,7 +57,10 @@ final class WorkspaceModel {
     @ObservationIgnored private var isRestoringSession = false
     @ObservationIgnored private var sessionSaveTask: Task<Void, Never>?
 
-    var name: String { isStandalone ? (activeBuffer?.name ?? String(localized: "Untitled")) : root.name }
+    var name: String {
+        isStandalone
+            ? (activeBuffer?.name ?? String(localized: "Untitled")) : root.name
+    }
 
     var activeBuffer: EditorBuffer? {
         activeTab.flatMap { buffers[$0] }
@@ -68,13 +71,17 @@ final class WorkspaceModel {
     }
 
     convenience init() {
-        self.init(rootURL: FileManager.default.homeDirectoryForCurrentUser, isStandalone: true)
+        self.init(
+            rootURL: FileManager.default.homeDirectoryForCurrentUser,
+            isStandalone: true
+        )
     }
 
     init(rootURL: URL, isStandalone: Bool = false) {
         self.rootURL = rootURL
         self.isStandalone = isStandalone
-        self.isAccessingScope = !isStandalone && rootURL.startAccessingSecurityScopedResource()
+        self.isAccessingScope =
+            !isStandalone && rootURL.startAccessingSecurityScopedResource()
         self.root = FileNode(root: rootURL)
         self.quickOpen = QuickOpenModel(rootURL: rootURL)
         self.search = ProjectSearchModel(rootURL: rootURL)
@@ -86,7 +93,8 @@ final class WorkspaceModel {
         search.unsavedTexts = { [weak self] in
             guard let self else { return [:] }
             var texts: [URL: String] = [:]
-            for (url, buffer) in self.buffers where buffer.isDirty && !buffer.isUntitled {
+            for (url, buffer) in self.buffers
+            where buffer.isDirty && !buffer.isUntitled {
                 texts[url] = buffer.textController?.textView.string
             }
             return texts
@@ -99,7 +107,9 @@ final class WorkspaceModel {
             restoreSession()
         }
         terminationObserver = NotificationCenter.default.addObserver(
-            forName: NSApplication.willTerminateNotification, object: nil, queue: .main
+            forName: NSApplication.willTerminateNotification,
+            object: nil,
+            queue: .main
         ) { [weak self] _ in
             MainActor.assumeIsolated { self?.saveSession() }
         }
@@ -139,8 +149,10 @@ final class WorkspaceModel {
 
     /// Expands or collapses the selected folder; returns `false` if nothing changed.
     func setSelectedFolderExpanded(_ expanded: Bool) -> Bool {
-        guard let url = selection, url.hasDirectoryPath, let node = node(for: url),
-              node.isExpanded != expanded else { return false }
+        guard let url = selection, url.hasDirectoryPath,
+            let node = node(for: url),
+            node.isExpanded != expanded
+        else { return false }
         toggleExpansion(of: node)
         return true
     }
@@ -195,13 +207,16 @@ final class WorkspaceModel {
     /// from either end to the other.
     func selectTerminal(offsetBy offset: Int) {
         let count = terminals.count
-        guard count > 1, let index = terminals.firstIndex(where: { $0 === terminal }) else { return }
+        guard count > 1,
+            let index = terminals.firstIndex(where: { $0 === terminal })
+        else { return }
         selectTerminal(terminals[((index + offset) % count + count) % count])
     }
 
     /// Puts a terminal's tab at another place in the row (dragging it there).
     func moveTerminal(_ terminal: TerminalSession, to index: Int) {
-        guard let current = terminals.firstIndex(where: { $0 === terminal }) else { return }
+        guard let current = terminals.firstIndex(where: { $0 === terminal })
+        else { return }
         let target = min(max(index, 0), terminals.count - 1)
         guard target != current else { return }
         var moved = terminals
@@ -222,7 +237,9 @@ final class WorkspaceModel {
 
     /// Whether Select Next Tab and Select Previous Tab have another tab to go to.
     var canSelectOtherTab: Bool {
-        openTabs.count > 1 || (terminals.count > 1 && isTerminalVisible && terminal?.isFocused == true)
+        openTabs.count > 1
+            || (terminals.count > 1 && isTerminalVisible
+                && terminal?.isFocused == true)
     }
 
     /// Ends a terminal's shell and closes its tab: the one that's showing, unless
@@ -230,15 +247,20 @@ final class WorkspaceModel {
     /// and the next ⌃` starts a new shell.
     func closeTerminal(_ closing: TerminalSession? = nil) {
         guard let closing = closing ?? terminal,
-              let index = terminals.firstIndex(where: { $0 === closing }) else { return }
+            let index = terminals.firstIndex(where: { $0 === closing })
+        else { return }
         let hadFocus = closing.isFocused
         terminals.remove(at: index)
         if closing === terminal {
-            terminal = terminals.isEmpty ? nil : terminals[min(index, terminals.count - 1)]
+            terminal =
+                terminals.isEmpty
+                ? nil : terminals[min(index, terminals.count - 1)]
             if let terminal {
                 if hadFocus { terminal.view.focus() }
             } else {
-                withAnimation(.snappy(duration: 0.2)) { isTerminalVisible = false }
+                withAnimation(.snappy(duration: 0.2)) {
+                    isTerminalVisible = false
+                }
                 if hadFocus { focusEditor() }
             }
         }
@@ -251,7 +273,9 @@ final class WorkspaceModel {
         guard let terminal = TerminalSession(directory: rootURL) else {
             let alert = NSAlert()
             alert.messageText = String(localized: "Can’t Open Terminal")
-            alert.informativeText = String(localized: "Silica couldn’t initialize the terminal emulator.")
+            alert.informativeText = String(
+                localized: "Silica couldn’t initialize the terminal emulator."
+            )
             alert.runModal()
             return nil
         }
@@ -325,7 +349,11 @@ final class WorkspaceModel {
     }
 
     private func showQuickOpen(query: String) {
-        quickOpen.prepareForPresentation(activeFile: activeTab, query: query, indexProject: !isStandalone)
+        quickOpen.prepareForPresentation(
+            activeFile: activeTab,
+            query: query,
+            indexProject: !isStandalone
+        )
         if !isQuickOpenVisible {
             withAnimation(.snappy(duration: 0.18)) { isQuickOpenVisible = true }
         }
@@ -342,7 +370,8 @@ final class WorkspaceModel {
     }
 
     private func goToLine(_ line: Int) {
-        guard let buffer = activeBuffer, let controller = buffer.textController else { return }
+        guard let buffer = activeBuffer, let controller = buffer.textController
+        else { return }
         if buffer.isShowingPreview { buffer.setShowingPreview(false) }
         DispatchQueue.main.async { controller.goToLine(line) }
     }
@@ -395,8 +424,11 @@ final class WorkspaceModel {
         guard !isStandalone else { return false }
         let rootComponents = rootURL.standardizedFileURL.pathComponents
         let components = url.standardizedFileURL.pathComponents
-        guard url.isFileURL, components.dropLast().starts(with: rootComponents) else { return false }
-        return !components.dropFirst(rootComponents.count).contains { FileNode.hiddenNames.contains($0) }
+        guard url.isFileURL, components.dropLast().starts(with: rootComponents)
+        else { return false }
+        return !components.dropFirst(rootComponents.count).contains {
+            FileNode.hiddenNames.contains($0)
+        }
     }
 
     func revealInTree(_ url: URL) {
@@ -404,9 +436,14 @@ final class WorkspaceModel {
         showExplorer()
         if isFilteringTree {
             let path = relativePath(of: url)
-            let query = treeFilter.trimmingCharacters(in: .whitespaces).lowercased()
-            let matchesQuery = path.split(separator: "/").contains { $0.lowercased().contains(query) }
-            if !matchesQuery || treeFilterResult?.visiblePaths.contains(path) != true {
+            let query = treeFilter.trimmingCharacters(in: .whitespaces)
+                .lowercased()
+            let matchesQuery = path.split(separator: "/").contains {
+                $0.lowercased().contains(query)
+            }
+            if !matchesQuery
+                || treeFilterResult?.visiblePaths.contains(path) != true
+            {
                 treeFilter = ""
             }
         }
@@ -425,7 +462,9 @@ final class WorkspaceModel {
         search.refresh()
         // Files may have come or gone: filter a fresh list.
         treeFilterItems = nil
-        if treeFilterResult != nil { scheduleTreeFilter(after: .milliseconds(300)) }
+        if treeFilterResult != nil {
+            scheduleTreeFilter(after: .milliseconds(300))
+        }
     }
 
     // MARK: Tree filter
@@ -440,7 +479,8 @@ final class WorkspaceModel {
         treeFilterFocusRequest += 1
     }
 
-    private func scheduleTreeFilter(after delay: Duration = .milliseconds(120)) {
+    private func scheduleTreeFilter(after delay: Duration = .milliseconds(120))
+    {
         treeFilterTask?.cancel()
         let query = treeFilter.trimmingCharacters(in: .whitespaces)
         guard !query.isEmpty else {
@@ -452,7 +492,8 @@ final class WorkspaceModel {
         treeFilterTask = Task { [weak self] in
             try? await Task.sleep(for: delay)
             guard !Task.isCancelled else { return }
-            let (items, result) = await Task.detached(priority: .userInitiated) {
+            let (items, result) = await Task.detached(priority: .userInitiated)
+            {
                 let items = cached ?? ProjectFileIndex.scan(root: root)
                 return (items, TreeFilter.filter(items, by: query))
             }.value
@@ -470,7 +511,11 @@ final class WorkspaceModel {
             var current = root
             for name in path.split(separator: "/") {
                 current.loadChildrenIfNeeded()
-                guard let next = current.children?.first(where: { $0.name == name }) else { break }
+                guard
+                    let next = current.children?.first(where: {
+                        $0.name == name
+                    })
+                else { break }
                 current = next
             }
             if current.isDirectory { current.loadChildrenIfNeeded() }
@@ -479,7 +524,9 @@ final class WorkspaceModel {
 
     private func syncOpenFilesWithDisk() {
         for url in openTabs {
-            guard let buffer = buffers[url], buffer.syncWithDisk() else { continue }
+            guard let buffer = buffers[url], buffer.syncWithDisk() else {
+                continue
+            }
             // An image or other non-text file changed: read it again.
             buffers[url] = makeBuffer(for: url)
         }
@@ -502,7 +549,8 @@ final class WorkspaceModel {
         guard components.starts(with: rootComponents) else { return nil }
         var current = root
         for name in components.dropFirst(rootComponents.count) {
-            guard let next = current.children?.first(where: { $0.name == name }) else { return nil }
+            guard let next = current.children?.first(where: { $0.name == name })
+            else { return nil }
             current = next
         }
         return current
@@ -515,7 +563,9 @@ final class WorkspaceModel {
             buffers[url] = makeBuffer(for: url)
         }
         if !openTabs.contains(url) {
-            if let active = activeTab, let index = openTabs.firstIndex(of: active) {
+            if let active = activeTab,
+                let index = openTabs.firstIndex(of: active)
+            {
                 openTabs.insert(url, at: index + 1)
             } else {
                 openTabs.append(url)
@@ -552,7 +602,9 @@ final class WorkspaceModel {
     /// active one, going round from either end to the other.
     func activateTab(offsetBy offset: Int) {
         let count = openTabs.count
-        guard count > 1, let activeTab, let index = openTabs.firstIndex(of: activeTab) else { return }
+        guard count > 1, let activeTab,
+            let index = openTabs.firstIndex(of: activeTab)
+        else { return }
         activate(openTabs[((index + offset) % count + count) % count])
     }
 
@@ -598,7 +650,9 @@ final class WorkspaceModel {
 
     func closeTab(_ url: URL) {
         guard let index = openTabs.firstIndex(of: url) else { return }
-        if let buffer = buffers[url], buffer.needsSaving, !confirmDiscardOrSave(buffer) {
+        if let buffer = buffers[url], buffer.needsSaving,
+            !confirmDiscardOrSave(buffer)
+        {
             return
         }
 
@@ -625,7 +679,10 @@ final class WorkspaceModel {
     /// Starts naming a new file or folder in the tree: inside the selected folder,
     /// next to the selected file, or at the top of the project.
     func beginNewItem(isDirectory: Bool, in folder: URL? = nil) {
-        let target = folder ?? selection.map { $0.hasDirectoryPath ? $0 : $0.deletingLastPathComponent() } ?? rootURL
+        let target =
+            folder ?? selection.map {
+                $0.hasDirectoryPath ? $0 : $0.deletingLastPathComponent()
+            } ?? rootURL
         let node = node(for: target) ?? root
         if !node.isExpanded { node.isExpanded = true }
         showExplorer()
@@ -647,17 +704,33 @@ final class WorkspaceModel {
         treeEdit = nil
         let name = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
-        let url = Self.normalized(folder.appending(path: name), isDirectory: isDirectory)
-        guard !FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else {
-            showAlert(String(localized: "“\(url.lastPathComponent)” already exists."), info: String(localized: "Choose a different name."))
+        let url = Self.normalized(
+            folder.appending(path: name),
+            isDirectory: isDirectory
+        )
+        guard
+            !FileManager.default.fileExists(
+                atPath: url.path(percentEncoded: false)
+            )
+        else {
+            showAlert(
+                String(localized: "“\(url.lastPathComponent)” already exists."),
+                info: String(localized: "Choose a different name.")
+            )
             return
         }
         do {
             let fileManager = FileManager.default
             if isDirectory {
-                try fileManager.createDirectory(at: url, withIntermediateDirectories: true)
+                try fileManager.createDirectory(
+                    at: url,
+                    withIntermediateDirectories: true
+                )
             } else {
-                try fileManager.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+                try fileManager.createDirectory(
+                    at: url.deletingLastPathComponent(),
+                    withIntermediateDirectories: true
+                )
                 try Data().write(to: url, options: .withoutOverwriting)
             }
         } catch {
@@ -676,15 +749,30 @@ final class WorkspaceModel {
         let name = rawName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty, name != url.lastPathComponent else { return }
         guard !name.contains("/"), !name.contains(":") else {
-            showAlert(String(localized: "“\(name)” can’t be used as a name."), info: String(localized: "Names can’t contain “/” or “:”."))
+            showAlert(
+                String(localized: "“\(name)” can’t be used as a name."),
+                info: String(localized: "Names can’t contain “/” or “:”.")
+            )
             return
         }
         let isDirectory = url.hasDirectoryPath
-        let destination = Self.normalized(url.deletingLastPathComponent().appending(path: name), isDirectory: isDirectory)
+        let destination = Self.normalized(
+            url.deletingLastPathComponent().appending(path: name),
+            isDirectory: isDirectory
+        )
         // A case-only change is the same file on a case-insensitive disk.
-        let isCaseChange = name.lowercased() == url.lastPathComponent.lowercased()
-        guard isCaseChange || !FileManager.default.fileExists(atPath: destination.path(percentEncoded: false)) else {
-            showAlert(String(localized: "“\(name)” already exists."), info: String(localized: "Choose a different name."))
+        let isCaseChange =
+            name.lowercased() == url.lastPathComponent.lowercased()
+        guard
+            isCaseChange
+                || !FileManager.default.fileExists(
+                    atPath: destination.path(percentEncoded: false)
+                )
+        else {
+            showAlert(
+                String(localized: "“\(name)” already exists."),
+                info: String(localized: "Choose a different name.")
+            )
             return
         }
         do {
@@ -703,15 +791,23 @@ final class WorkspaceModel {
         let isDirectory = url.hasDirectoryPath
         let folder = url.deletingLastPathComponent()
         let ext = isDirectory ? "" : url.pathExtension
-        let base = ext.isEmpty ? url.lastPathComponent : url.deletingPathExtension().lastPathComponent
+        let base =
+            ext.isEmpty
+            ? url.lastPathComponent
+            : url.deletingPathExtension().lastPathComponent
         var copy: URL
         var number = 1
         repeat {
             let suffix = number == 1 ? " copy" : " copy \(number)"
             let name = base + suffix + (ext.isEmpty ? "" : "." + ext)
-            copy = Self.normalized(folder.appending(path: name), isDirectory: isDirectory)
+            copy = Self.normalized(
+                folder.appending(path: name),
+                isDirectory: isDirectory
+            )
             number += 1
-        } while FileManager.default.fileExists(atPath: copy.path(percentEncoded: false))
+        } while FileManager.default.fileExists(
+            atPath: copy.path(percentEncoded: false)
+        )
         do {
             try FileManager.default.copyItem(at: url, to: copy)
         } catch {
@@ -731,10 +827,13 @@ final class WorkspaceModel {
             NSAlert(error: error).runModal()
             return
         }
-        for tab in openTabs where Self.url(tab, isInside: url) && buffers[tab]?.isDirty != true {
+        for tab in openTabs
+        where Self.url(tab, isInside: url) && buffers[tab]?.isDirty != true {
             closeTab(tab)
         }
-        if let selection, Self.url(selection, isInside: url) { self.selection = nil }
+        if let selection, Self.url(selection, isInside: url) {
+            self.selection = nil
+        }
         refresh()
     }
 
@@ -742,7 +841,8 @@ final class WorkspaceModel {
     /// original file keeps what was last saved.
     func saveActiveAs() {
         guard let buffer = activeBuffer, buffer.textController != nil,
-              let window = NSApp.keyWindow ?? NSApp.mainWindow else { return }
+            let window = NSApp.keyWindow ?? NSApp.mainWindow
+        else { return }
         let panel = savePanel(for: buffer)
         panel.canCreateDirectories = true
         panel.beginSheetModal(for: window) { [weak self] response in
@@ -754,8 +854,12 @@ final class WorkspaceModel {
     /// Starts in the file's folder, or the project for an untitled file.
     private func savePanel(for buffer: EditorBuffer) -> NSSavePanel {
         let panel = NSSavePanel()
-        panel.directoryURL = buffer.isUntitled ? (isStandalone ? nil : rootURL) : buffer.url.deletingLastPathComponent()
-        panel.nameFieldStringValue = buffer.isUntitled ? buffer.name + ".txt" : buffer.name
+        panel.directoryURL =
+            buffer.isUntitled
+            ? (isStandalone ? nil : rootURL)
+            : buffer.url.deletingLastPathComponent()
+        panel.nameFieldStringValue =
+            buffer.isUntitled ? buffer.name + ".txt" : buffer.name
         panel.canCreateDirectories = true
         return panel
     }
@@ -799,8 +903,13 @@ final class WorkspaceModel {
         let newPath = new.path(percentEncoded: false).trimmingTrailingSlash
         func moved(_ url: URL) -> URL? {
             let path = url.path(percentEncoded: false)
-            guard path == oldPath || path.hasPrefix(oldPath + "/") else { return nil }
-            return Self.normalized(URL(filePath: newPath + path.dropFirst(oldPath.count)), isDirectory: url.hasDirectoryPath)
+            guard path == oldPath || path.hasPrefix(oldPath + "/") else {
+                return nil
+            }
+            return Self.normalized(
+                URL(filePath: newPath + path.dropFirst(oldPath.count)),
+                isDirectory: url.hasDirectoryPath
+            )
         }
         for (url, buffer) in buffers {
             guard let target = moved(url) else { continue }
@@ -809,8 +918,12 @@ final class WorkspaceModel {
             buffer.move(to: target)
         }
         openTabs = openTabs.map { moved($0) ?? $0 }
-        if let activeTab, let target = moved(activeTab) { self.activeTab = target }
-        if let selection, let target = moved(selection) { self.selection = target }
+        if let activeTab, let target = moved(activeTab) {
+            self.activeTab = target
+        }
+        if let selection, let target = moved(selection) {
+            self.selection = target
+        }
         quickOpen.noteMoved { moved($0) }
     }
 
@@ -818,13 +931,16 @@ final class WorkspaceModel {
     private static func normalized(_ url: URL, isDirectory: Bool) -> URL {
         // Not `standardizedFileURL`: it turns /private/tmp into /tmp, and the tree keeps
         // paths as listed.
-        URL(filePath: url.path(percentEncoded: false).trimmingTrailingSlash,
-            directoryHint: isDirectory ? .isDirectory : .notDirectory)
+        URL(
+            filePath: url.path(percentEncoded: false).trimmingTrailingSlash,
+            directoryHint: isDirectory ? .isDirectory : .notDirectory
+        )
     }
 
     private static func url(_ url: URL, isInside container: URL) -> Bool {
         let path = url.path(percentEncoded: false).trimmingTrailingSlash
-        let containerPath = container.path(percentEncoded: false).trimmingTrailingSlash
+        let containerPath = container.path(percentEncoded: false)
+            .trimmingTrailingSlash
         return path == containerPath || path.hasPrefix(containerPath + "/")
     }
 
@@ -841,7 +957,8 @@ final class WorkspaceModel {
     /// positions (unless turned off in Settings).
     private func restoreSession() {
         guard EditorSettings.shared.restoresTabs,
-              let session = ProjectSessionStore.session(for: rootURL) else { return }
+            let session = ProjectSessionStore.session(for: rootURL)
+        else { return }
         isRestoringSession = true
         defer { isRestoringSession = false }
 
@@ -850,14 +967,24 @@ final class WorkspaceModel {
             let url = sessionURL(for: tab.path)
             var isDirectory: ObjCBool = false
             guard !openTabs.contains(url),
-                  FileManager.default.fileExists(atPath: url.path(percentEncoded: false), isDirectory: &isDirectory),
-                  !isDirectory.boolValue else { continue }
+                FileManager.default.fileExists(
+                    atPath: url.path(percentEncoded: false),
+                    isDirectory: &isDirectory
+                ),
+                !isDirectory.boolValue
+            else { continue }
             let buffer = makeBuffer(for: url)
             buffers[url] = buffer
             openTabs.append(url)
-            buffer.textController?.restorePosition(cursor: tab.cursor, topLine: tab.topLine)
+            buffer.textController?.restorePosition(
+                cursor: tab.cursor,
+                topLine: tab.topLine
+            )
         }
-        let active = session.activeTab.map(sessionURL(for:)).flatMap { openTabs.contains($0) ? $0 : nil } ?? openTabs.first
+        let active =
+            session.activeTab.map(sessionURL(for:)).flatMap {
+                openTabs.contains($0) ? $0 : nil
+            } ?? openTabs.first
         if let active {
             activate(active)
             reveal(active)
@@ -880,7 +1007,9 @@ final class WorkspaceModel {
         }
         let session = ProjectSession(
             tabs: tabs,
-            activeTab: activeTab.flatMap { $0.isUntitled ? nil : relativePath(of: $0) },
+            activeTab: activeTab.flatMap {
+                $0.isUntitled ? nil : relativePath(of: $0)
+            },
             isSidebarVisible: isSidebarVisible,
             savedAt: .now
         )
@@ -899,7 +1028,11 @@ final class WorkspaceModel {
 
     /// A saved path: relative to the project, or absolute.
     private func sessionURL(for path: String) -> URL {
-        let absolute = path.hasPrefix("/") ? path : rootURL.path(percentEncoded: false).trimmingTrailingSlash + "/" + path
+        let absolute =
+            path.hasPrefix("/")
+            ? path
+            : rootURL.path(percentEncoded: false).trimmingTrailingSlash + "/"
+                + path
         return URL(filePath: absolute, directoryHint: .notDirectory)
     }
 
@@ -917,7 +1050,8 @@ final class WorkspaceModel {
     /// Saves every edited file. Untitled ones are left for their own Save, since each
     /// needs a name.
     func saveAll() {
-        for buffer in buffers.values where buffer.isDirty && !buffer.isUntitled {
+        for buffer in buffers.values where buffer.isDirty && !buffer.isUntitled
+        {
             save(buffer)
         }
     }
@@ -927,7 +1061,9 @@ final class WorkspaceModel {
         // Untitled: ask where, in a panel of its own (this runs inside other prompts).
         if buffer.isUntitled {
             let panel = savePanel(for: buffer)
-            guard panel.runModal() == .OK, let url = panel.url else { return false }
+            guard panel.runModal() == .OK, let url = panel.url else {
+                return false
+            }
             return save(buffer, as: url)
         }
         if case .modified = buffer.diskChange(), !confirmOverwrite(buffer) {
@@ -947,8 +1083,13 @@ final class WorkspaceModel {
     private func confirmOverwrite(_ buffer: EditorBuffer) -> Bool {
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = String(localized: "“\(buffer.name)” was changed by another app.")
-        alert.informativeText = String(localized: "Saving replaces those changes with yours. Revert discards your unsaved edits and shows the file as it is on disk (you can undo it).")
+        alert.messageText = String(
+            localized: "“\(buffer.name)” was changed by another app."
+        )
+        alert.informativeText = String(
+            localized:
+                "Saving replaces those changes with yours. Revert discards your unsaved edits and shows the file as it is on disk (you can undo it)."
+        )
         alert.addButton(withTitle: String(localized: "Save Anyway"))
         alert.addButton(withTitle: String(localized: "Revert"))
         alert.addButton(withTitle: String(localized: "Cancel"))
@@ -966,8 +1107,13 @@ final class WorkspaceModel {
     /// Returns `true` if the tab may be closed.
     private func confirmDiscardOrSave(_ buffer: EditorBuffer) -> Bool {
         let alert = NSAlert()
-        alert.messageText = String(localized: "Do you want to save the changes you made to “\(buffer.name)”?")
-        alert.informativeText = String(localized: "Your changes will be lost if you don’t save them.")
+        alert.messageText = String(
+            localized:
+                "Do you want to save the changes you made to “\(buffer.name)”?"
+        )
+        alert.informativeText = String(
+            localized: "Your changes will be lost if you don’t save them."
+        )
         alert.addButton(withTitle: String(localized: "Save"))
         addDontSaveButton(to: alert)
         alert.addButton(withTitle: String(localized: "Cancel"))
@@ -988,7 +1134,10 @@ final class WorkspaceModel {
     /// Asks, in a sheet on `window`, whether to save edited files before the window
     /// closes or the app quits. `completion(true)` means go ahead: everything was
     /// saved, or the user chose not to save.
-    func confirmClosing(in window: NSWindow, completion: @escaping (Bool) -> Void) {
+    func confirmClosing(
+        in window: NSWindow,
+        completion: @escaping (Bool) -> Void
+    ) {
         let unsaved = unsavedBuffers
         guard !unsaved.isEmpty else {
             completion(true)
@@ -998,14 +1147,28 @@ final class WorkspaceModel {
 
         let alert = NSAlert()
         if unsaved.count == 1 {
-            alert.messageText = String(localized: "Do you want to save the changes you made to “\(unsaved[0].name)”?")
-            alert.informativeText = String(localized: "Your changes will be lost if you don’t save them.")
+            alert.messageText = String(
+                localized:
+                    "Do you want to save the changes you made to “\(unsaved[0].name)”?"
+            )
+            alert.informativeText = String(
+                localized: "Your changes will be lost if you don’t save them."
+            )
             alert.addButton(withTitle: String(localized: "Save"))
         } else {
-            alert.messageText = String(localized: "Do you want to save the changes you made to \(unsaved.count) files in “\(name)”?")
-            let names = unsaved.prefix(5).map(\.name).formatted(.list(type: .and))
-            let more = unsaved.count > 5 ? String(localized: " and \(unsaved.count - 5) more") : ""
-            let warning = String(localized: "Your changes will be lost if you don’t save them.")
+            alert.messageText = String(
+                localized:
+                    "Do you want to save the changes you made to \(unsaved.count) files in “\(name)”?"
+            )
+            let names = unsaved.prefix(5).map(\.name).formatted(
+                .list(type: .and)
+            )
+            let more =
+                unsaved.count > 5
+                ? String(localized: " and \(unsaved.count - 5) more") : ""
+            let warning = String(
+                localized: "Your changes will be lost if you don’t save them."
+            )
             alert.informativeText = "\(names)\(more)\n\n\(warning)"
             alert.addButton(withTitle: String(localized: "Save All"))
         }
@@ -1017,7 +1180,9 @@ final class WorkspaceModel {
             switch response {
             case .alertFirstButtonReturn:
                 // Stop at the first file that fails to save (or whose save is cancelled).
-                let saved = unsaved.allSatisfy { !$0.needsSaving || self.save($0) }
+                let saved = unsaved.allSatisfy {
+                    !$0.needsSaving || self.save($0)
+                }
                 completion(saved)
             case .alertSecondButtonReturn:
                 completion(true)

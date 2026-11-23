@@ -16,10 +16,17 @@ extension View {
     @ViewBuilder
     func workspaceCard() -> some View {
         if #available(macOS 26.0, *) {
-            let shape = ConcentricRectangle(corners: .concentric(minimum: .fixed(WorkspaceLayout.cardCornerRadius)))
+            let shape = ConcentricRectangle(
+                corners: .concentric(
+                    minimum: .fixed(WorkspaceLayout.cardCornerRadius)
+                )
+            )
             clipShape(shape).glassSurface(in: shape)
         } else {
-            let shape = RoundedRectangle(cornerRadius: WorkspaceLayout.cardCornerRadius, style: .continuous)
+            let shape = RoundedRectangle(
+                cornerRadius: WorkspaceLayout.cardCornerRadius,
+                style: .continuous
+            )
             clipShape(shape).glassSurface(in: shape)
         }
     }
@@ -66,7 +73,10 @@ private struct GlassSurface<S: Shape>: ViewModifier {
                 .overlay {
                     if isOn {
                         shape
-                            .stroke(Color.secondary.opacity(0.5), lineWidth: 0.5)
+                            .stroke(
+                                Color.secondary.opacity(0.5),
+                                lineWidth: 0.5
+                            )
                             .allowsHitTesting(false)
                     }
                 }

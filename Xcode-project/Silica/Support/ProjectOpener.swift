@@ -16,7 +16,9 @@ struct ProjectOpener {
         panel.allowsMultipleSelection = true
         panel.canCreateDirectories = true
         panel.prompt = String(localized: "Open")
-        panel.message = String(localized: "Choose a project folder or files to open in Silica")
+        panel.message = String(
+            localized: "Choose a project folder or files to open in Silica"
+        )
         guard panel.runModal() == .OK else { return }
         ExternalOpener.shared.openWindow = openWindow
         ExternalOpener.shared.open(panel.urls)
@@ -34,15 +36,23 @@ struct ProjectOpener {
     func open(_ project: RecentProject) {
         do {
             let url = try store.resolveURL(for: project.id)
-            guard FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) else {
+            guard
+                FileManager.default.fileExists(
+                    atPath: url.path(percentEncoded: false)
+                )
+            else {
                 throw CocoaError(.fileNoSuchFile)
             }
             store.markOpened(project.id)
             openWindow(id: WindowID.workspace, value: project.id)
         } catch {
             let alert = NSAlert()
-            alert.messageText = String(localized: "“\(project.name)” couldn’t be opened.")
-            alert.informativeText = String(localized: "It may have been moved, renamed or deleted.")
+            alert.messageText = String(
+                localized: "“\(project.name)” couldn’t be opened."
+            )
+            alert.informativeText = String(
+                localized: "It may have been moved, renamed or deleted."
+            )
             alert.addButton(withTitle: String(localized: "Remove from Recents"))
             alert.addButton(withTitle: String(localized: "Cancel"))
             if alert.runModal() == .alertFirstButtonReturn {
@@ -59,6 +69,9 @@ enum Finder {
 
     static func copyPath(_ url: URL) {
         NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(url.path(percentEncoded: false), forType: .string)
+        NSPasteboard.general.setString(
+            url.path(percentEncoded: false),
+            forType: .string
+        )
     }
 }

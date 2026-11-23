@@ -38,18 +38,27 @@ nonisolated enum FuzzyMatcher {
         query.unicodeScalars.filter { !$0.properties.isWhitespace }.map(lower)
     }
 
-    static func match(_ query: [UInt32], in item: QuickOpenItem) -> FuzzyMatch? {
+    static func match(_ query: [UInt32], in item: QuickOpenItem) -> FuzzyMatch?
+    {
         guard !query.isEmpty, query.count <= item.lowered.count,
-              isSubsequence(query, of: item.lowered[...]) else { return nil }
+            isSubsequence(query, of: item.lowered[...])
+        else { return nil }
 
         var best: FuzzyMatch?
         // Prefer a match inside the file name; try a few starting points there.
         if isSubsequence(query, of: item.lowered[item.nameStart...]) {
             var attempts = 0
-            for start in item.nameStart..<item.lowered.count where item.lowered[start] == query[0] {
-                if let positions = forward(query, in: item.lowered, from: start) {
-                    let candidate = FuzzyMatch(score: score(positions, query: query, in: item), positions: positions)
-                    if best == nil || candidate.score > best!.score { best = candidate }
+            for start in item.nameStart..<item.lowered.count
+            where item.lowered[start] == query[0] {
+                if let positions = forward(query, in: item.lowered, from: start)
+                {
+                    let candidate = FuzzyMatch(
+                        score: score(positions, query: query, in: item),
+                        positions: positions
+                    )
+                    if best == nil || candidate.score > best!.score {
+                        best = candidate
+                    }
                 }
                 attempts += 1
                 if attempts == 6 { break }
@@ -58,7 +67,10 @@ nonisolated enum FuzzyMatcher {
         // Otherwise (or as a competitor) match right-to-left over the whole path,
         // which keeps the tail of the query as close to the file name as possible.
         if let positions = backward(query, in: item.lowered) {
-            let candidate = FuzzyMatch(score: score(positions, query: query, in: item), positions: positions)
+            let candidate = FuzzyMatch(
+                score: score(positions, query: query, in: item),
+                positions: positions
+            )
             if best == nil || candidate.score > best!.score { best = candidate }
         }
         return best
@@ -66,7 +78,10 @@ nonisolated enum FuzzyMatcher {
 
     // MARK: Matching
 
-    private static func isSubsequence(_ query: [UInt32], of text: ArraySlice<UInt32>) -> Bool {
+    private static func isSubsequence(
+        _ query: [UInt32],
+        of text: ArraySlice<UInt32>
+    ) -> Bool {
         var q = 0
         for value in text where value == query[q] {
             q += 1
@@ -75,7 +90,11 @@ nonisolated enum FuzzyMatcher {
         return false
     }
 
-    private static func forward(_ query: [UInt32], in text: [UInt32], from start: Int) -> [Int]? {
+    private static func forward(
+        _ query: [UInt32],
+        in text: [UInt32],
+        from start: Int
+    ) -> [Int]? {
         var positions: [Int] = []
         positions.reserveCapacity(query.count)
         var q = 0
@@ -90,7 +109,8 @@ nonisolated enum FuzzyMatcher {
         return q == query.count ? positions : nil
     }
 
-    private static func backward(_ query: [UInt32], in text: [UInt32]) -> [Int]? {
+    private static func backward(_ query: [UInt32], in text: [UInt32]) -> [Int]?
+    {
         var positions = [Int](repeating: 0, count: query.count)
         var q = query.count - 1
         var i = text.count - 1
@@ -106,7 +126,11 @@ nonisolated enum FuzzyMatcher {
 
     // MARK: Scoring
 
-    private static func score(_ positions: [Int], query: [UInt32], in item: QuickOpenItem) -> Int {
+    private static func score(
+        _ positions: [Int],
+        query: [UInt32],
+        in item: QuickOpenItem
+    ) -> Int {
         let scalars = item.scalars
         var score = 0
         var previous = -2
@@ -121,7 +145,9 @@ nonisolated enum FuzzyMatcher {
                 score += 25
             } else if position == 0 || isSeparator(scalars[position - 1]) {
                 score += 12
-            } else if isUpper(scalars[position]) && !isUpper(scalars[position - 1]) {
+            } else if isUpper(scalars[position])
+                && !isUpper(scalars[position - 1])
+            {
                 score += 10
             }
             if position >= item.nameStart { score += 6 }
@@ -130,7 +156,9 @@ nonisolated enum FuzzyMatcher {
         if let first = positions.first, first >= item.nameStart {
             score += 30
             // The query is a prefix of the file name, e.g. "main" for main.swift.
-            if first == item.nameStart, positions.last! - first == positions.count - 1 {
+            if first == item.nameStart,
+                positions.last! - first == positions.count - 1
+            {
                 score += 40
             }
         }
@@ -153,6 +181,7 @@ nonisolated enum FuzzyMatcher {
             let value = scalar.value
             return (0x41...0x5A).contains(value) ? value + 0x20 : value
         }
-        return scalar.properties.lowercaseMapping.unicodeScalars.first?.value ?? scalar.value
+        return scalar.properties.lowercaseMapping.unicodeScalars.first?.value
+            ?? scalar.value
     }
 }
