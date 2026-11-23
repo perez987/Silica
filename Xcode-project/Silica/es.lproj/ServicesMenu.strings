@@ -1,0 +1,2 @@
+/* Finder's Services menu: opens the selected folders as projects (NSServices in Info.plist). */
+"Open in Silica" = "Abrir en Silica";
