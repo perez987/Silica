@@ -3,14 +3,18 @@
     <channel>
         <title>Silica</title>
        <item>
-            <title>0.9.0</title>
+            <title>0.9.1</title>
             <pubDate>Thu, 20 Nov 2026 18:58:59 +0800</pubDate>
             <link>https://github.com/perez987/Silica</link>
             <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>0090</sparkle:version>
-            <sparkle:shortVersionString>0.9.0</sparkle:shortVersionString>
+            <sparkle:version>0091</sparkle:version>
+            <sparkle:shortVersionString>0.9.1</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <description xml:lang="en"><![CDATA[
+         	<h3>What's new in Silica 0.9.1</h3>
+			<ul>
+				<li>Add the <i>Open in Silica</i> Finder service to folders</li>
+			</ul>  
          	<h3>What's new in Silica 0.9.0</h3>
 			<ul>
 				<li>Fix Release build crash on Xcode 26, in tab click handler</li>
@@ -97,6 +101,10 @@
 			</ul>
 			]]></description>
             <description xml:lang="es"><![CDATA[
+        	<h3>Lo nuevo de Silica 0.9.1</h3>
+			<ul>
+				<li>Añade el servicio del Finder <i>Abrir en Silica</i> a las carpetas</li>
+			</ul>  
          	<h3>Lo nuevo de Silica 0.9.0</h3>
 			<ul>
 				<li><h3>Novedades de Silica 0.0.0</h3>
@@ -178,10 +186,10 @@
 			</ul>
 			]]></description>
             <enclosure 
-            url="https://github.com/perez987/Silica/releases/download/0.9.0/Silica.0.9.0.dmg" 
-            length="9492199" 
+            url="https://github.com/perez987/Silica/releases/download/0.9.1/Silica.0.9.1.dmg" 
+            length="9582643" 
             type="application/octet-stream" 
-            sparkle:edSignature="lLkiLgLvFm1s3S/32CZpqNQ5i0rAUo4HIoTNlarLRnWx/zwQ+r0pK5Qa7Lw3erf6KNjNuJe1k0zrMxPvkbuBBw=="/>
+            sparkle:edSignature="h7FC5dYDLRxGChNy4BddfSdNQD53ufIBmwptqEqRtpEqc12FShkjeT6DJyVqqPlLMNXbrIvaaHcHS0I2cR6EBw=="/>
         </item>
     </channel>
 </rss>
