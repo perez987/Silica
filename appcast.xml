@@ -107,8 +107,6 @@
 			</ul>  
          	<h3>Lo nuevo de Silica 0.9.0</h3>
 			<ul>
-				<li><h3>Novedades de Silica 0.0.0</h3>
-			<ul>
 				<li>Corrección del error en la compilación Release en Xcode 26, en el controlador de clics de pestaña</li>
 			</ul>
          	<h3>Lo nuevo de Silica 0.7.5</h3>
