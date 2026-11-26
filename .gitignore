@@ -11,6 +11,7 @@ xcuserdata/
 *.xccheckout
 
 # Build output
+/Distribute/
 build/
 DerivedData/
 *.moved-aside
