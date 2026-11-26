@@ -4,13 +4,13 @@
 # Then publish.sh uploads it to a GitHub Release and updates the Sparkle feed (appcast.xml).
 #
 # Usage (from anywhere):
-#   ./Xcode-project/release.sh                    full run: archive, export, notarize app, DMG
-#   DMG_ONLY=1 ./Xcode-project/release.sh         reuse the app already notarized in the cache
+#   ./Scripts/release.sh                    full run: archive, export, notarize app, DMG
+#   DMG_ONLY=1 ./Scripts/release.sh         reuse the app already notarized in the cache
 #                                                 and only rebuild, sign and notarize the DMG
-#   DMG_TOOL=node ./Xcode-project/release.sh      choose how the DMG is made (see below)
+#   DMG_TOOL=node ./Scripts/release.sh      choose how the DMG is made (see below)
 #
 # DMG_TOOL:
-#   appdmg (default)  appdmg (npm) with our own background (Backgrounds/background.png and
+#   appdmg (default)  appdmg (npm) with our own background (Xcode-project/Backgrounds/background.png and
 #                     background@2x.png) and icon layout. Writes the window layout (.DS_Store)
 #                     directly, without scripting Finder, so it works on Tahoe on Intel.
 #   node              sindresorhus' create-dmg (npm) with its own standard design.
@@ -34,10 +34,11 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="${0:A:h}"            # .../Silica/Xcode-project (where Silica.xcodeproj lives)
+SCRIPT_DIR="${0:A:h}"            # .../Silica/Scripts
 REPO_ROOT="${SCRIPT_DIR:h}"      # .../Silica (git repository root)
+XCODE_DIR="$REPO_ROOT/Xcode-project" # where Silica.xcodeproj lives
 APP=Silica
-PROJECT="$SCRIPT_DIR/$APP.xcodeproj"
+PROJECT="$XCODE_DIR/$APP.xcodeproj"
 TEAM=ER43ZD2S4U
 IDENTITY="Developer ID Application"
 NOTARY_PROFILE=notary-profile
@@ -48,8 +49,8 @@ DIST="$REPO_ROOT/Distribute"
 APP_PATH="$WORK/export/$APP.app"
 DMG_TOOL="${DMG_TOOL:-appdmg}"
 DMG_ONLY="${DMG_ONLY:-0}"
-BG="$SCRIPT_DIR/Backgrounds/background.png"         # 600 × 380
-BG2="$SCRIPT_DIR/Backgrounds/background@2x.png"     # 1200 × 760
+BG="$XCODE_DIR/Backgrounds/background.png"         # 600 × 380
+BG2="$XCODE_DIR/Backgrounds/background@2x.png"     # 1200 × 760
 
 # --- Checks ---------------------------------------------------------------------------------
 security find-identity -v -p codesigning | grep -q "$IDENTITY" \
@@ -223,4 +224,4 @@ echo "==> What Gatekeeper will say on another Mac"
 spctl --assess --type open --context context:primary-signature --verbose=2 "$DMG"
 spctl --assess --type execute --verbose=2 "$APP_PATH"
 echo "==> Done: $DMG"
-echo "    Next: RELEASE_NOTES=\$'First change\\nSecond change' ./Xcode-project/publish.sh"
+echo "    Next: RELEASE_NOTES=\$'First change\\nSecond change' ./Scripts/publish.sh"

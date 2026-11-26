@@ -4,7 +4,7 @@
 #   2. the Sparkle update feed (appcast.xml at the repository root, on main) pointing at it.
 #
 # Usage (from anywhere), one change per line:
-#   RELEASE_NOTES=$'First change\nSecond change' ./Xcode-project/publish.sh
+#   RELEASE_NOTES=$'First change\nSecond change' ./publish.sh
 # The notes are listed on the GitHub Release and added at the top of the appcast description
 # (the earlier "What's new" history in appcast.xml is kept). HTML such as <i>…</i> is allowed.
 #
@@ -18,10 +18,11 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="${0:A:h}"            # .../Silica/Xcode-project
+SCRIPT_DIR="${0:A:h}"            # .../Silica/Scripts
 REPO_ROOT="${SCRIPT_DIR:h}"      # .../Silica (git repository root, where appcast.xml lives)
+XCODE_DIR="$REPO_ROOT/Xcode-project" # where Silica.xcodeproj lives
 APP=Silica
-PROJECT="$SCRIPT_DIR/$APP.xcodeproj"
+PROJECT="$XCODE_DIR/$APP.xcodeproj"
 REPO=perez987/Silica
 BRANCH=main                      # SUFeedURL reads appcast.xml from this branch
 SPARKLE_ACCOUNT="${SPARKLE_ACCOUNT:-ed25519}"
