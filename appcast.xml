@@ -31,20 +31,15 @@
 			<h3>What's new in Silica 0.7.2</h3>
 			<ul>
 				<li>Ported latest commit from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-				<ul><li>Option to add the <i>silica</i> command-line tool to /usr/local/bin</li></ul>
+					<ul><li>Option to add the <i>silica</i> command-line tool to /usr/local/bin</li></ul>
 			</ul>
             <h3>What's new in Silica 0.7.0</h3>
 			<ul>
 				<li>Ported commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-				<ul><li>Keep top lines visible when the find bar appears</li>
-				<li>Relayout the TextKit 2 viewport after scrolling so find results highlight correctly</li>
-				<li>Dotfiles are no longer dimmed inside git repositories, they are still dimmed outside a repository</li>
-				<li>The sidebar narrows when the window is too small to give the editor its minimum width</li></ul>
-			</ul>
-            <h3>What's new in Silica 0.6.2</h3>
-			<ul>
-				<li>Raise the deployment target to macOS 26</li>
-				<li>Lower the development target to Xcode 26</li>
+					<ul><li>Keep top lines visible when the find bar appears</li>
+					<li>Relayout the TextKit 2 viewport after scrolling so find results highlight correctly</li>
+					<li>Dotfiles are no longer dimmed inside git repositories, they are still dimmed outside a repository</li>
+					<li>The sidebar narrows when the window is too small to give the editor its minimum width</li></ul>
 			</ul>
             <h3>What's new in Silica 0.6.1</h3>
 			<ul>
@@ -53,15 +48,9 @@
             <h3>What's new in Silica 0.6.0</h3>
 			<ul>
 				<li>Ported commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-   				<ul><li>Lower the deployment target to macOS 15</li>
-   				<li>Add Dart highlighting for files and Markdown fences</li></ul>
+	   				<ul><li>Lower the deployment target to macOS 15</li>
+	   				<li>Add Dart highlighting for files and Markdown fences</li></ul>
 			</ul>			
-            <h3>What's new in Silica 0.6.0</h3>
-			<ul>
-				<li>Adaptar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-   				<ul><li>Bajar el mínimo macOS macOS 15</li>
-   				<li>Añadir coloreado de sintaxis para archivos Dart</li></ul>
-			</ul>
             <h3>What's new in Silica 0.5.0</h3>
 			<ul>
 				<li>Set .txt as the default extension for untitled files when saving them</li>
@@ -70,123 +59,39 @@
 				<li>Reconcile key workspace after view updates</li>
 				<li>Add Spanish translations and update documentation and licensing</li>
 				<li>Ported commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-   				<ul><li>Integrate Terminal (`libghostty-vt`) with shell sessions, resizable terminal card and tabs</li>
-   				<li>Remove the preview markdown article width limit</li>
-   				<li>Use capsule-style picker tabs on macOS 27, retaining segmented controls on macOS 26</li>
-   				<li>Rebuild Settings on NavigationSplitView and grouped Forms</li></ul>
+	   				<ul><li>Integrate Terminal (`libghostty-vt`) with shell sessions, resizable terminal card and tabs</li>
+	   				<li>Remove the preview markdown article width limit</li>
+	   				<li>Use capsule-style picker tabs on macOS 27, retaining segmented controls on macOS 26</li>
+	   				<li>Rebuild Settings on NavigationSplitView and grouped Forms</li></ul>
 			</ul>
             <h3>What's new in Silica 0.4.1</h3>
 			<ul>
-					<li>Enable the menu option and keyboard shortcut for New File (⌘N) from the application launch:</li>
-					<ul><li>It opens a blank, untitled text file.</li></ul>
-					<li>Add a General settings choice at launch:</li>
-					<ul><li>Welcome window</li>
-					<li>Empty workspace</li>
-					<li>Blank text file.</li></ul>
+				<li>Enable the menu option and keyboard shortcut for New File (⌘N) from the application launch:</li>
+				<ul><li>It opens a blank, untitled text file.</li></ul>
+				<li>Add a General settings choice at launch:</li>
+				<ul><li>Welcome window</li>
+				<li>Empty workspace</li>
+				<li>Blank text file.</li></ul>
 			</ul>
             <h3>What's new in Silica 0.4.0</h3>
 			<ul>
-					<li>Port latest commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-					<li>Preview HTML with unsaved edits, project assets and scripts</li>
-					<li>Add Finder folder icons, external drag support and a tab action to reveal files in the explorer</li>
+				<li>Port latest commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+				<li>Preview HTML with unsaved edits, project assets and scripts</li>
+				<li>Add Finder folder icons, external drag support and a tab action to reveal files in the explorer</li>
 			</ul>
             <h3>What's new in Silica 0.3.6</h3>
 			<ul>
-					<li>Port latest commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-					<li>Add PDF viewing with password support</li>
-					<li>Add CSV/TSV previews, and diff highlighting</li>
-					<li>Add sidebar hover effects and font sizing</li>
+				<li>Port latest commits from <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
+				<li>Add PDF viewing with password support</li>
+				<li>Add CSV/TSV previews, and diff highlighting</li>
+				<li>Add sidebar hover effects and font sizing</li>
 			</ul>
             <h3>What's new in Silica 0.3.5</h3>
 			<ul>
-					<li>Localize the interface and alerts</li>
-					<li>Option to switch windows style (glass / opaque)</li>
-					<li>Welcome window is optional at launch</li>
-					<li>Migrate the Xcode project type to `pbxproj` format</li>
-			</ul>
-			]]></description>
-            <description xml:lang="es"><![CDATA[
-        	<h3>Lo nuevo de Silica 0.9.1</h3>
-			<ul>
-				<li>Añade el servicio del Finder <i>Abrir en Silica</i> a las carpetas</li>
-			</ul>  
-         	<h3>Lo nuevo de Silica 0.9.0</h3>
-			<ul>
-				<li>Corrección del error de la compilación Release en Xcode 26</li>
-				<li>Soporte para macOS 15 con ventanas traslúcidas sólo en macOS 26+</li>
-			</ul>
-         	<h3>Lo nuevo de Silica 0.7.5</h3>
-			<ul>
-				<li>Reducir saltos del texto y primeras líneas en blanco en la ventana del editor</li>
-			</ul>
-         	<h3>Lo nuevo de Silica 0.7.2</h3>
-			<ul>
-				<li>Adaptado el último cambio desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-				<ul><li>Opción para instalar la herramienta de comandos <i>silica</i> en /usr/local/bin</li></ul>
-			</ul>
-           <h3>Lo nuevo de 0.7.0</h3>
-			<ul>
-				<li>Adaptados últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-				<ul><li>Primeras líneas visibles al abrir la barra de búsqueda</li>
-				<li>Las coincidencias del texto buscado son resaltadas correctamente</li>
-				<li>Archivos ocultos ya no se muestran atenuados si están dentro del repositorio</li>
-				<li>La barra lateral mantiene la vista cuando la ventana del editor reduce su anchura al mínimo</li></ul>
-			</ul>
-           <h3>Lo nuevo de Silica 0.6.2</h3>
-			<ul>
-				<li>Subir el macOS mínimo a macOS 26 </li>
-				<li>Bajar el Xcode mínimo a Xcode 26 </li>
-			</ul>
-           <h3>Lo nuevo de Silica 0.6.1</h3>
-			<ul>
-				<li>Añadir estilo transparente a la ventana de Ajustes</li>
-			</ul>
-            <h3>Lo nuevo de Silica 0.6.0</h3>
-			<ul>
-				<li>Adaptar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-   				<ul><li>Bajar el mínimo macOS a macOS 15 Sequoia</li>
-   				<li>Añadir coloreado de sintaxis para archivos Dart</li></ul>
-			</ul>
-           <h3>Lo nuevo de Silica 0.5.0</h3>
-			<ul>
-				<li>Usar .txt como extensión por defecto al guardar archivos sin título</li>
-				<li>Barra vertical de scroll para archivos extensos</li>
-				<li>Traducir nombres secuenciales de archivos sin título</li>
-				<li>Añadir traducciones al español y actualizar documentación y licencias</li>
-				<li>Portar cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-   				<ul><li>Integrar Terminal (`libghostty-vt`) con sesiones de shell y pestañas</li>
-   				<li>Eliminar límite de anchura en la vista previa de archivos markdown</li>
-   				<li>Usar estilo de cápsula en selectores macOS 27, manteniendo controlers segmentados en macOS 26</li>
-   				<li>Reconstruir Settings como NavigationSplitView y Forms agrupados</li></ul>
-			</ul>
-            <h3>Lo nuevo de Silica 0.4.1</h3>
-			<ul>
-					<li>Habilita el menú y el atajo de teclado Archivo Nuevo (⌘N) desde el inicio de la app:</li>
-					<ul><li>Abre un archivo de texto en blanco y sin título</li></ul>
-					<li>Añade una opción en Ajustes (General) para elegir al inicio:</li>
-					<ul><li>Ventana de bienvenida</li>
-					<li>Espacio de trabajo vacío</li>
-					<li>Archivo de texto en blanco</li></ul>
-				</ul>
-            <h3>Lo nuevo de Silica 0.4.0</h3>
-			<ul>
-					<li>Adaptar los últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-					<li>Puede mostrar la vista previa de archivos HTML</li>
-					<li>Añadir iconos de carpeta del Finder y soporte para arrastrar y soltar fuera de la app</li>
-				</ul>
-			<h3>Lo nuevo de Silica 0.3.6</h3>
-			<ul>
-					<li>Adaptar los últimos cambios desde <a href="https://github.com/dqhieu/Silica" target="_blank">dqhieu/Silica</a></li>
-					<li>Puede mostrar PDF con soporte para contraseña</li>
-					<li>Añadir vista previa de CSV/TSV, y resaltado de sintaxis para diff</li>
-					<li>Ajustar tamaño de letra de la barra lateral</li>
-			</ul>
-            <h3>Lo nuevo de Silica 0.3.5</h3>
-			<ul>
-					<li>Traducción de interfaz y alertas</li>
-					<li>Opción para cambiar entre estilo de ventanas (translúcidas / opacas)</li>
-					<li>Pantalla de bienvenida es opcional al arrancar la app</li>
-					<li>El tipo de proyecto Xcode ha migrado al formato `pbxproj`</li>
+				<li>Localize the interface and alerts</li>
+				<li>Option to switch windows style (glass / opaque)</li>
+				<li>Welcome window is optional at launch</li>
+				<li>Migrate the Xcode project type to `pbxproj` format</li>
 			</ul>
 			]]></description>
             <enclosure 
