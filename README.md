@@ -20,6 +20,7 @@ I really like the original project and the Silica app, which works very well. It
 - Enable New File (⌘N) menu and keyboard shortcut from the app startup → open a blank text file without an associated project
 - Choose whether to start with the welcome window, an empty workspace, or a blank text file
 - Add "Open in Silica" to the Finder's Services menu for folders
+- Add scripts that build, notarize and publish a release (see [Releasing](#releasing))
 
 ## Download
 
@@ -76,6 +77,31 @@ You need Xcode 26.
 2. In the Silica target's Signing & Capabilities, choose your own team (or "Sign to
    Run Locally"). Please don't commit that change.
 3. Press ⌘R. Xcode fetches the Swift packages on the first build.
+
+## Releasing
+
+Two scripts in `Scripts/` automate a release (macOS only; run them with `./Scripts/…` or `sh Scripts/…`):
+
+- **`release.sh`** archives a Release build, signs it with Developer ID, notarizes and staples the app, then builds `Distribute/Silica.<version>.dmg` and signs, notarizes and staples the DMG too.
+- **`publish.sh`** uploads that DMG to a GitHub Release (tag `v<version>`), signs it for Sparkle and updates `appcast.xml` on `main`, keeping the earlier release notes.
+
+What they need, all kept out of the repository:
+
+- A *Developer ID Application* certificate in the login keychain.
+- Notarization credentials saved once with `xcrun notarytool store-credentials "notary-profile" --apple-id <Apple ID> --team-id <team>` (the app-specific password is typed at the prompt, never stored in a file).
+- `appdmg` or `create-dmg` from npm (`npm install -g create-dmg` brings both).
+- The Sparkle EdDSA private key in the keychain, and `gh` signed in (`gh auth login`).
+
+Steps:
+
+1. Raise `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in the project (Sparkle compares the build number).
+2. `./Scripts/release.sh`
+3. `RELEASE_NOTES=$'First change\nSecond change' ./Scripts/publish.sh`
+
+Options for `release.sh`:
+
+- `DMG_TOOL=appdmg` (default) uses the window background in `Xcode-project/Backgrounds/`; `DMG_TOOL=node` uses the standard design of `create-dmg`.
+- `DMG_ONLY=1` reuses the app notarized in the last full run and only rebuilds the DMG, which is handy for trying DMG layouts.
 
 ## Contributing
 
