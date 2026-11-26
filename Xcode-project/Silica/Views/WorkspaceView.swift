@@ -73,8 +73,10 @@ struct WorkspaceWindow: View {
             return
         }
         guard let projectID else {
-            // e.g. a restored window that never had a project: just close it.
-            dismiss()
+            // e.g. a restored window that never had a project: just close it, once
+            // AppKit is done showing it. Closing a window while it's still being ordered
+            // in can throw inside AppKit (issue #39, a new window tab).
+            DispatchQueue.main.async { dismiss() }
             return
         }
         do {
