@@ -3,14 +3,18 @@
     <channel>
         <title>Silica</title>
        <item>
-            <title>0.9.1</title>
-            <pubDate>Thu, 20 Nov 2026 18:58:59 +0800</pubDate>
+            <title>0.9.2</title>
+            <pubDate>Thu, 26 Nov 2026 18:42:07 +0100</pubDate>
             <link>https://github.com/perez987/Silica</link>
             <sparkle:fullReleaseNotesLink>https://github.com/perez987/Silica/releases</sparkle:fullReleaseNotesLink>
-            <sparkle:version>0091</sparkle:version>
-            <sparkle:shortVersionString>0.9.1</sparkle:shortVersionString>
+            <sparkle:version>0092</sparkle:version>
+            <sparkle:shortVersionString>0.9.2</sparkle:shortVersionString>
             <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
             <description xml:lang="en"><![CDATA[
+			<h3>What's new in Silica 0.9.2</h3>
+			<ul>
+				<li>Add scripts to automate the creation of releases and the publishing of DMGs to GitHub.</li>
+			</ul>
          	<h3>What's new in Silica 0.9.1</h3>
 			<ul>
 				<li>Add the <i>Open in Silica</i> Finder service to folders</li>
@@ -186,10 +190,9 @@
 			</ul>
 			]]></description>
             <enclosure 
-            url="https://github.com/perez987/Silica/releases/download/0.9.1/Silica.0.9.1.dmg" 
-            length="9582643" 
+            url="https://github.com/perez987/Silica/releases/download/v0.9.2/Silica.0.9.2.dmg" 
             type="application/octet-stream" 
-            sparkle:edSignature="h7FC5dYDLRxGChNy4BddfSdNQD53ufIBmwptqEqRtpEqc12FShkjeT6DJyVqqPlLMNXbrIvaaHcHS0I2cR6EBw=="/>
+            sparkle:edSignature="R92OhAPB8CsG7l9xnVpDNPT4I1EWlG0Wv2AGkJ3iU4Xzl3gUBEkw6/+fmAG4U+Chf/YOP15wE4RPeI2qrtu+AQ==" length="8866783"/>
         </item>
     </channel>
 </rss>
