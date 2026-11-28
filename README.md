@@ -100,7 +100,7 @@ Steps:
 
 Options for `release.sh`:
 
-- `DMG_TOOL=appdmg` (default) uses the window background in `Xcode-project/Backgrounds/`; `DMG_TOOL=node` uses the standard design of `create-dmg`.
+- `DMG_TOOL=appdmg` (default) uses a window without a background picture (it follows Light and Dark mode) and an arrow drawn by `Scripts/dmg-arrow.swift`; `DMG_TOOL=node` uses the standard design of `create-dmg`.
 - `DMG_ONLY=1` reuses the app notarized in the last full run and only rebuilds the DMG, which is handy for trying DMG layouts.
 
 ## Contributing

@@ -10,13 +10,13 @@
 #   DMG_TOOL=node ./Scripts/release.sh      choose how the DMG is made (see below)
 #
 # DMG_TOOL:
-#   appdmg (default)  appdmg (npm) with our own background (Xcode-project/Backgrounds/background.png and
-#                     background@2x.png) and icon layout. Writes the window layout (.DS_Store)
+#   appdmg (default)  appdmg (npm) with our own window design (see below). Writes the window layout (.DS_Store)
 #                     directly, without scripting Finder, so it works on Tahoe on Intel.
 #   node              sindresorhus' create-dmg (npm) with its own standard design.
-#   shell             the shell create-dmg (github.com/create-dmg/create-dmg) installed as
-#                     /usr/local/bin/create-dmg-sh. Lays out the window through Finder/AppleScript,
-#                     which on Tahoe Intel ends up with the plain default window.
+#
+# Window design (appdmg): no background picture, so Finder's own window colour shows
+# and the window follows Light and Dark mode. Scripts/dmg-arrow.swift draws a grey arrow from
+# the app to Applications on a transparent PNG, made at build time.
 #
 # Needs, all kept OUT of this repository:
 #   - a "Developer ID Application" certificate (team ER43ZD2S4U) in the login keychain
@@ -49,8 +49,11 @@ DIST="$REPO_ROOT/Distribute"
 APP_PATH="$WORK/export/$APP.app"
 DMG_TOOL="${DMG_TOOL:-appdmg}"
 DMG_ONLY="${DMG_ONLY:-0}"
-BG="$XCODE_DIR/Backgrounds/background.png"         # 600 × 380
-BG2="$XCODE_DIR/Backgrounds/background@2x.png"     # 1200 × 760
+
+# DMG window layout, in points; icon x/y are icon centres measured from the top left.
+# Icons sit high so that with Finder's path bar shown the icons and their names still fit.
+WIN_W=600 WIN_H=320 ICON_SIZE=128 ICON_Y=105 APP_X=150 LINK_X=450
+BG="$WORK/arrow/background.png"; BG2="$WORK/arrow/background@2x.png"
 
 # --- Checks ---------------------------------------------------------------------------------
 security find-identity -v -p codesigning | grep -q "$IDENTITY" \
@@ -70,17 +73,12 @@ case "$DMG_TOOL" in
       done
     fi
     (( ${#APPDMG} )) || { echo "appdmg is missing: npm install -g appdmg"; exit 1; }
-    [[ -f "$BG" && -f "$BG2" ]] || { echo "Missing $BG or $BG2"; exit 1; }
     ;;
   node)
     command -v create-dmg >/dev/null && ! create-dmg --help 2>&1 | grep -q -- '--window-pos' \
       || { echo "The npm create-dmg is missing: npm install -g create-dmg"; exit 1; }
     ;;
-  shell)
-    command -v create-dmg-sh >/dev/null \
-      || { echo "create-dmg-sh is missing (shell create-dmg renamed in /usr/local/bin)"; exit 1; }
-    ;;
-  *) echo "Unknown DMG_TOOL=$DMG_TOOL (use appdmg, node or shell)"; exit 1 ;;
+  *) echo "Unknown DMG_TOOL=$DMG_TOOL (use appdmg or node)"; exit 1 ;;
 esac
 
 # Submits a file to Apple's notary service and fails if it isn't accepted.
@@ -156,21 +154,33 @@ echo "==> Building the DMG"
 DMG="$DIST/$APP.$VERSION.dmg"
 rm -f "$DMG"
 
+if [[ "$DMG_TOOL" == appdmg ]]; then
+  # Transparent picture holding only the arrow, drawn between the icons at icon height.
+  # It covers just the top of the window (ICON_Y + 60 points) so it never adds scrolling.
+  rm -rf "$WORK/arrow"
+  mkdir -p "$WORK/arrow"
+  gap=$(( ICON_SIZE / 2 + 30 ))
+  for scale in 1 2; do
+    out="$BG"; (( scale == 2 )) && out="$BG2"
+    xcrun swift "$SCRIPT_DIR/dmg-arrow.swift" "$out" $WIN_W $(( ICON_Y + 60 )) \
+      $(( APP_X + gap )) $(( LINK_X - gap )) $ICON_Y $scale
+  done
+fi
+
 case "$DMG_TOOL" in
   appdmg)
-    # Window 600 × 380, the size of the background. 148-point icons at 160 and 440 across
-    # (even about the 300-point middle) and 205 down, level with the arrow in the background.
+    # Icons even about the middle of the window and level with the arrow (see WIN_W etc.).
     # appdmg picks up background@2x.png next to background.png for Retina displays.
     cat > "$WORK/appdmg.json" <<JSON
 {
   "title": "$APP",
   "background": "$BG",
-  "icon-size": 148,
-  "window": { "size": { "width": 600, "height": 380 } },
+  "icon-size": $ICON_SIZE,
+  "window": { "size": { "width": $WIN_W, "height": $WIN_H } },
   "format": "UDZO",
   "contents": [
-    { "x": 160, "y": 205, "type": "file", "path": "$APP_PATH" },
-    { "x": 440, "y": 205, "type": "link", "path": "/Applications" }
+    { "x": $APP_X, "y": $ICON_Y, "type": "file", "path": "$APP_PATH" },
+    { "x": $LINK_X, "y": $ICON_Y, "type": "link", "path": "/Applications" }
   ]
 }
 JSON
@@ -184,33 +194,6 @@ JSON
     made=("$WORK"/node-dmg/*.dmg(N))
     (( ${#made} == 1 )) || { echo "create-dmg didn't leave one DMG in $WORK/node-dmg"; exit 1; }
     mv "$made[1]" "$DMG"
-    ;;
-  shell)
-    STAGE="$WORK/dmg"
-    rm -rf "$STAGE"
-    mkdir -p "$STAGE"
-    cp -R "$APP_PATH" "$STAGE/"
-    dmg_args=(--volname "$APP" --window-pos 200 120 --icon-size 148 --text-size 13
-              --icon "$APP.app" 160 205 --hide-extension "$APP.app" --app-drop-link 440 205)
-    if [[ -f "$BG" && -f "$BG2" ]]; then
-      # Finder takes one background file; a TIFF holding both sizes stays sharp on Retina displays.
-      sips -s dpiWidth 72 -s dpiHeight 72 "$BG" --out "$WORK/background.png" >/dev/null
-      sips -s dpiWidth 144 -s dpiHeight 144 "$BG2" --out "$WORK/background@2x.png" >/dev/null
-      tiffutil -cathidpicheck "$WORK/background.png" "$WORK/background@2x.png" -out "$WORK/background.tiff" >/dev/null
-      # 600 × 412 points: the 380-point background plus the 32-point title bar.
-      dmg_args+=(--background "$WORK/background.tiff" --window-size 600 412)
-    else
-      dmg_args+=(--window-size 600 400)
-    fi
-    # Finder may time out (-1712) the first time macOS asks whether Terminal may control it:
-    # try a second time before giving up.
-    for attempt in 1 2; do
-      rm -f "$DMG"
-      create-dmg-sh "${dmg_args[@]}" "$DMG" "$STAGE" && break
-      (( attempt == 2 )) && { echo "create-dmg-sh failed. Allow Terminal to control Finder in System Settings > Privacy & Security > Automation."; exit 1; }
-      echo "==> create-dmg-sh failed; retrying in 5 seconds"
-      sleep 5
-    done
     ;;
 esac
 [[ -f "$DMG" ]] || { echo "No DMG was made at $DMG"; exit 1; }

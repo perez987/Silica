@@ -87,9 +87,10 @@ Rules:
 
 - `Scripts/release.sh` → builds Release, signs with *Developer ID*, creates the DMG in `Distribute/` and notarizes it (`xcrun notarytool` + `xcrun stapler`).
 - `Scripts/publish.sh` → creates the GitHub release and uploads the DMG.
-- The DMG is built with **`create-dmg` from npm (sindresorhus)** or **`appdmg`**. Do **not** use the shell `create-dmg`: on Tahoe Intel it does not apply the window layout.
+- The DMG is built with **`appdmg`** (default, `DMG_TOOL=appdmg`) or **`create-dmg` from npm (sindresorhus)** (`DMG_TOOL=node`); no other DMG tools.
 - **Credentials**: never write passwords, private Team IDs, API keys or notarization profiles into the repo. Use a keychain profile (`notarytool --keychain-profile`) or environment variables.
-- Scripts must work with macOS's **bash 3.2** and with `set -euo pipefail`.
+- Scripts are **zsh** (`#!/bin/zsh`, they re-exec under zsh if started with bash/sh) and run with `set -euo pipefail`.
+- DMG window design: no background picture, so it follows Light/Dark mode; `Scripts/dmg-arrow.swift` draws the arrow as a transparent PNG at build time.
 - Do not run `publish.sh` or create releases/tags without the user's explicit confirmation.
 
 ## Git
